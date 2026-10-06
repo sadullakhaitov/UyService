@@ -113,15 +113,20 @@ create trigger masters_guard
   before insert or update on public.masters
   for each row execute function public.masters_guard();
 
--- Buyurtma olish mumkinmi (ilovadagi useBlocked bilan bir xil):
--- komissiya — balans >= BALANCE_LIMIT (constants/billing.ts, 20 000), obuna — muddati tugamagan
+-- Platforma ulushi, % (constants/billing.ts → commissionPercent):
+-- komissiya tarifi 10, obuna 0; hujjati tasdiqlanmagan usta (pasport/selfi ixtiyoriy) — yana +5
+create or replace function public.master_fee_percent(m public.masters) returns int
+language sql immutable as $$
+  select (case coalesce(m.billing_plan, 'commission') when 'commission' then 10 else 0 end)
+       + (case when m.verify_status = 'approved' then 0 else 5 end)
+$$;
+
+-- Buyurtma olish mumkinmi (ilovadagi useBlocked bilan bir xil). Pasportsiz ham olsa bo'ladi:
+-- ulush bo'lsa (komissiya yoki tasdiqlanmagan) — balans >= BALANCE_LIMIT (20 000); obuna — muddati tugamagan
 create or replace function public.master_can_take_orders(m public.masters) returns boolean
 language sql stable as $$
-  select m.verify_status = 'approved'
-     and case coalesce(m.billing_plan, 'commission')
-           when 'commission' then m.balance >= 20000
-           else coalesce(m.subscription_until > now(), false)
-         end
+  select (public.master_fee_percent(m) = 0 or m.balance >= 20000)
+     and (coalesce(m.billing_plan, 'commission') <> 'subscription' or coalesce(m.subscription_until > now(), false))
 $$;
 
 -- Aktivlik 0..100 oralig'ida (qabul +2, rad/vaqt o'tdi −5, bekor −10 — _shared/dispatch.ts → DISPATCH.activity)
@@ -150,7 +155,7 @@ create or replace function public.orders_guard() returns trigger
 language plpgsql set search_path = public as $$
 declare
   uid uuid := auth.uid();
-  plan public.billing_plan;
+  pct int;
   allowed text[];
   changed text[];
 begin
@@ -224,11 +229,9 @@ begin
   end if;
   if new.status = 'completed' and old.status <> 'completed' then
     new.completed_at := now();
-    select billing_plan into plan from public.masters where id = new.master_id;
-    -- constants/billing.ts → platformCut: komissiya 10% (chaqiruv + ish + qism), obuna 0
-    new.platform_fee := case when coalesce(plan, 'commission') = 'commission'
-      then round((new.call_fee + coalesce(new.price_work, 0) + coalesce(new.price_parts, 0)) * 10 / 100.0)::int
-      else 0 end;
+    select public.master_fee_percent(m) into pct from public.masters m where m.id = new.master_id;
+    -- constants/billing.ts → platformCut: (chaqiruv + ish + qism) × ulush %
+    new.platform_fee := round((new.call_fee + coalesce(new.price_work, 0) + coalesce(new.price_parts, 0)) * coalesce(pct, 10) / 100.0)::int;
   end if;
   if new.master_id is not null and old.master_id is null then
     new.accepted_at := now();
@@ -367,7 +370,7 @@ language sql stable security definer set search_path = public, extensions as $$
   from public.masters m
   join public.master_locations l on l.master_id = m.id
   cross join (select extensions.st_setsrid(extensions.st_makepoint(p_lng, p_lat), 4326)::extensions.geography as pt) p
-  where m.online and m.verify_status = 'approved'
+  where m.online
     and l.updated_at > now() - interval '2 minutes'
     and (p_category is null or p_category = any (m.categories))
     and extensions.st_dwithin(l.location, p.pt, least(p_radius_km, 10) * 1000)

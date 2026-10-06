@@ -243,7 +243,8 @@
     "recommended": "Ko'p ish bo'lsa foydali",
     "choose": "Tanlash",
     "selected": "Tanlangan",
-    "save": "Saqlash"
+    "save": "Saqlash",
+    "unverifiedNote": "Hujjatingiz hali tasdiqlanmagan: har bir tarifga +{{extra}}% qo'shiladi. Pasport yuklab, admin tasdiqlagach bu qo'shimcha olib tashlanadi."
   },
   "tabs": {
     "orders": "Buyurtmalar",
@@ -252,7 +253,6 @@
     "profile": "Profil"
   },
   "mOrders": {
-    "blockedVerify": "Profil tekshirilmoqda",
     "blockedBalance": "Buyurtmalar yopiq — balansni to'ldiring",
     "blockedSubscription": "Obuna muddati tugagan",
     "activity": "Aktivlik",
@@ -274,7 +274,8 @@
     "zoomIn": "Yaqinlashtirish",
     "zoomOut": "Uzoqlashtirish",
     "days": "{{days}} kun",
-    "gpsSent": "Joylashuv yuborildi · {{sec}} s oldin"
+    "gpsSent": "Joylashuv yuborildi · {{sec}} s oldin",
+    "unverified": "Hujjatsiz: ulush {{pct}}% · Pasport yuklasangiz — {{base}}%"
   },
   "money": {
     "title": "Pul",
@@ -386,7 +387,7 @@
     "catTitle": "Qaysi ishlarni qilasiz?",
     "catHint": "Bir nechtasini tanlash mumkin. Buyurtmalar faqat shu kategoriyalar bo'yicha keladi.",
     "passTitle": "Shaxsni tasdiqlash",
-    "passHint": "Pasport (yoki ID-karta) rasmini yuklang. Admin tekshirgach buyurtmalar kela boshlaydi.",
+    "passHint": "Pasport (yoki ID-karta) rasmi mijozlar ishonchini oshiradi va platforma ulushini kamaytiradi.",
     "passport": "Pasport rasmi",
     "selfie": "Selfi",
     "selfieOptional": "Selfi (ixtiyoriy)",
@@ -396,11 +397,12 @@
     "addWork": "Rasm qo'shish",
     "submit": "Arizani yuborish",
     "submitSkip": "Hozircha rasmsiz yuborish",
-    "reviewNote": "Admin odatda 24 soat ichida tekshiradi"
+    "reviewNote": "Admin odatda 24 soat ichida tekshiradi",
+    "passOptional": "Ixtiyoriy. Pasportsiz ham buyurtma olasiz, faqat platforma ulushi +{{extra}}% bo'ladi ({{base}}% o'rniga {{pct}}%). Keyin Profil → Hujjatlar'dan yuklash mumkin."
   },
   "docs": {
     "none": "Hujjatlar yuklanmagan",
-    "noneHint": "Pasport rasmini yuklang — tekshiruvdan keyin buyurtmalar ochiladi",
+    "noneHint": "Pasport rasmini yuklang — tasdiqlangach platforma ulushi kamayadi",
     "pending": "Tekshirilmoqda",
     "pendingHint": "{{date}} kuni yuborildi. Admin odatda 24 soat ichida tekshiradi",
     "approved": "Tasdiqlangan",
@@ -410,7 +412,8 @@
     "passport": "Pasport va selfi",
     "why": "Mijozlar xavfsizligi uchun har bir usta shaxsi tasdiqlanadi. Hujjatni almashtirsangiz, qayta tekshiruvga yuboriladi.",
     "demoNote": "Demo: haqiqiy ilovada admin Supabase panelidan tasdiqlaydi",
-    "demoApprove": "Demo: admin tasdiqladi"
+    "demoApprove": "Demo: admin tasdiqladi",
+    "feeNote": "Hozir ulush {{pct}}%, tasdiqlangach — {{base}}%."
   },
   "works": {
     "count": "{{n}} / {{max}} ta rasm"
@@ -447,7 +450,7 @@
     "ratingTitle": "Reytingni qanday oshirish mumkin?",
     "ratingBody": "Vaqtida keling va kech qolsangiz mijozga yozing|Narxni ish boshlanishidan oldin kelishib oling|Ishdan keyin joyni toza qoldiring|Ish namunalari rasmini qo'shing",
     "moneyTitle": "Pul qanday hisoblanadi?",
-    "moneyBody": "Mijoz chaqiruv narxi va ish haqini naqd to'laydi|Komissiya tarifida platforma ulushi balansingizdan yechiladi|Balans limitdan past bo'lsa, buyurtmalar vaqtincha yopiladi|Obuna tarifida foiz yo'q — oyiga bir marta to'lanadi",
+    "moneyBody": "Mijoz chaqiruv narxi va ish haqini naqd to'laydi|Komissiya tarifida platforma ulushi balansingizdan yechiladi|Pasport tasdiqlanmagan bo'lsa, ulush +5% (obunada ham 5%)|Balans limitdan past bo'lsa, buyurtmalar vaqtincha yopiladi|Obuna tarifida foiz yo'q — oyiga bir marta to'lanadi",
     "safetyTitle": "Xavfsizlik",
     "safetyBody": "Buyurtmani faqat ilova orqali qabul qiling|Mijozga noqulay vaziyatda qo'llab-quvvatlashga yozing|Elektr va gaz bilan ishlashda xavfsizlik qoidalariga rioya qiling"
   },

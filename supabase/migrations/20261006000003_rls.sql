@@ -87,11 +87,11 @@ create policy "masters: anketa yarataman" on public.masters for insert to authen
 create policy "masters: o'zim o'zgartiraman" on public.masters for update to authenticated
   using (id = (select auth.uid())) with check (id = (select auth.uid()));
 
--- Ustaning ochiq kartochkasi (tasdiqlanganlar): ism, reyting, kategoriyalar, ish namunalari
+-- Ustaning ochiq kartochkasi: ism, reyting, kategoriyalar, ish namunalari; verified — hujjati tasdiqlangan (belgi ko'rsatiladi)
 create view public.master_cards as
-  select id, first_name, last_name, experience_years, categories, rating, jobs_count, works
-  from public.masters
-  where verify_status = 'approved';
+  select id, first_name, last_name, experience_years, categories, rating, jobs_count, works,
+         verify_status = 'approved' as verified
+  from public.masters;
 grant select on public.master_cards to anon, authenticated;
 
 -- ---------- master_locations ----------

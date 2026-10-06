@@ -1,7 +1,7 @@
 // Huquqiy hujjatlar: Foydalanish shartlari (ommaviy oferta) va Maxfiylik siyosati — uch tilda.
 // ⚠️ QORALAMA. E'lon qilishdan oldin yurist tekshirsin; [Kompaniya nomi], STIR, manzil to'ldirilsin.
 // Narx, foiz, kafolat muddati shu yerga constants'dan olinadi — u yerda o'zgarsa, matn ham o'zgaradi.
-import { BALANCE_LIMIT, BILLING } from './billing';
+import { BALANCE_LIMIT, BILLING, UNVERIFIED_SURCHARGE_PERCENT } from './billing';
 import { CALL_FEE, WARRANTY_DAYS } from './categories';
 
 export type LegalDoc = 'terms' | 'privacy';
@@ -31,6 +31,7 @@ const num = (v: number) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const fee = num(CALL_FEE);
 const subFee = num(BILLING.subscription.monthlyFee);
 const pct = BILLING.commission.commissionPercent;
+const extra = UNVERIFIED_SURCHARGE_PERCENT;
 const limit = num(BALANCE_LIMIT);
 const days = WARRANTY_DAYS;
 
@@ -71,7 +72,7 @@ const termsUz: LegalText = {
     {
       h: '5. Ustaning majburiyatlari',
       p: [
-        `Usta haqiqiy ma'lumotlarni ko'rsatadi va shaxsini tasdiqlash uchun pasport rasmini (ixtiyoriy ravishda selfi) yuklaydi. Operator ma'lumotlarni tekshirib chiqmaguncha usta buyurtma ololmaydi. Operator sababini ko'rsatmasdan tasdiqlashni rad etishi mumkin.`,
+        `Usta haqiqiy ma'lumotlarni ko'rsatadi va shaxsini tasdiqlash uchun pasport rasmini (va selfi) yuklashi mumkin. Hujjat yuklash ixtiyoriy: hujjati tasdiqlanmagan usta ham buyurtma oladi, lekin uning Operator ulushi ${extra} foiz punktga yuqori bo'ladi. Operator sababini ko'rsatmasdan tasdiqlashni rad etishi mumkin.`,
         `Usta ishni sifatli, o'z vaqtida va xavfsizlik qoidalariga rioya qilib bajaradi. Aniq narx usta kelib ko'rgandan keyin, ish boshlanishidan oldin mijoz bilan kelishiladi; kelishilgan narxni mijozning roziligisiz oshirish mumkin emas.`,
         `Usta bajargan ishiga ${days} kun kafolat beradi: shu muddatda ishdagi kamchilik aniqlansa, uni qo'shimcha haq olmasdan tuzatadi. Kafolat mijoz aybi bilan yuzaga kelgan nosozliklar va mijoz bergan materiallarga tatbiq etilmaydi.`,
         `Usta soliq va boshqa majburiy to'lovlarni o'zi to'laydi hamda faoliyati uchun zarur ruxsatnomalarga ega bo'lishi kerak.`,
@@ -161,7 +162,7 @@ const termsRu: LegalText = {
     {
       h: '5. Обязанности мастера',
       p: [
-        `Мастер указывает достоверные данные и загружает фото паспорта (по желанию — селфи) для подтверждения личности. Пока Оператор не проверит данные, мастер не получает заказы. Оператор вправе отказать в подтверждении без объяснения причин.`,
+        `Мастер указывает достоверные данные и может загрузить фото паспорта (и селфи) для подтверждения личности. Загрузка документов не обязательна: мастер без подтверждённых документов тоже получает заказы, но доля Оператора для него выше на ${extra} процентных пункта. Оператор вправе отказать в подтверждении без объяснения причин.`,
         `Мастер выполняет работу качественно, в срок и с соблюдением правил безопасности. Точная цена согласовывается с клиентом после осмотра, до начала работ; повышать согласованную цену без согласия клиента нельзя.`,
         `Мастер даёт гарантию ${days} дней на выполненную работу: если в этот срок обнаружен недостаток, он устраняет его без дополнительной оплаты. Гарантия не распространяется на поломки по вине клиента и на материалы, предоставленные клиентом.`,
         `Мастер самостоятельно уплачивает налоги и иные обязательные платежи и должен иметь разрешения, необходимые для своей деятельности.`,
@@ -251,7 +252,7 @@ const termsEn: LegalText = {
     {
       h: '5. Master obligations',
       p: [
-        `The master provides accurate information and uploads a passport photo (and, optionally, a selfie) for identity verification. The master receives no orders until the Operator has checked these details. The Operator may refuse verification without giving reasons.`,
+        `The master provides accurate information and may upload a passport photo (and a selfie) for identity verification. Uploading documents is optional: a master without verified documents still receives orders, but the Operator's share is ${extra} percentage points higher. The Operator may refuse verification without giving reasons.`,
         `The master performs the work well, on time and in line with safety rules. The exact price is agreed with the client after inspection and before the work starts; the agreed price may not be raised without the client's consent.`,
         `The master gives a ${days}-day warranty on the work: if a defect appears within that period, the master fixes it at no extra charge. The warranty does not cover damage caused by the client or materials supplied by the client.`,
         `The master pays their own taxes and other mandatory charges and must hold any permits their work requires.`,

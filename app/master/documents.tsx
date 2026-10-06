@@ -6,7 +6,8 @@ import { PhotoTile } from '@/components/ui/PhotoTile';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
 import { takePhoto } from '@/lib/photos';
-import { useMaster, type VerifyStatus } from '@/store';
+import { feePercent } from '@/constants/billing';
+import { useMaster, useUser, type VerifyStatus } from '@/store';
 
 const STATUS = (): Record<VerifyStatus, { icon: typeof Clock3; bg: string; fg: string }> => ({
   none: { icon: Clock3, bg: colors.field, fg: colors.ink2 },
@@ -18,13 +19,14 @@ const STATUS = (): Record<VerifyStatus, { icon: typeof Clock3; bg: string; fg: s
 // Hujjatlar va shaxsni tasdiqlash: admin tekshiruvi holati (5-bosqichda admin Supabase panelidan tasdiqlaydi)
 export default function Documents() {
   useScheme();
-  const { profile, setProfile, setVerifyStatus, submitProfile } = useMaster();
+  const { profile, setProfile, setVerifyStatus } = useMaster();
+  const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const s = STATUS()[profile.status];
   const Icon = s.icon;
   // Hujjat almashtirilsa — qayta tekshiruvga
   const replace = (p: Parameters<typeof setProfile>[0]) => {
     setProfile(p);
-    if (profile.status !== 'none') submitProfile();
+    if (p.passportPhoto || profile.passportPhoto) useMaster.getState().submitProfile();
   };
 
   return (
@@ -39,6 +41,7 @@ export default function Documents() {
               {profile.status === 'pending' && profile.submittedAt
                 ? t('docs.pendingHint', { date: formatDate(new Date(profile.submittedAt)) })
                 : t(`docs.${profile.status}Hint`)}
+              {profile.status !== 'approved' ? ` ${t('docs.feeNote', { pct: feePercent(plan, false), base: feePercent(plan, true) })}` : ''}
             </Text>
           </View>
         </View>

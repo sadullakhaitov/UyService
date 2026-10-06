@@ -161,7 +161,7 @@ do $$ declare ids uuid[]; d double precision; begin
   select array_agg(id), min(distance_km) into ids, d
   from public.nearby_masters(41.2750, 69.2050, 3, 'plumber', '00000000-0000-4000-c000-000000000001');
   if ids is distinct from array['00000000-0000-4000-b000-000000000001'::uuid] then
-    raise exception 'FAIL: nearby_masters noto''g''ri: % (faqat M1 kutilgan; M2 tasdiqlanmagan)', ids;
+    raise exception 'FAIL: nearby_masters noto''g''ri: % (faqat M1 kutilgan; M2 ning balansi yo''q)', ids;
   end if;
   if d < 0.05 or d > 0.3 then raise exception 'FAIL: masofa noto''g''ri: % km', d; end if;
   if exists (select 1 from public.nearby_masters(41.2750, 69.2050, 3, 'aircon')) then
@@ -170,7 +170,22 @@ do $$ declare ids uuid[]; d double precision; begin
   if (select count(*) from public.nearby_masters(41.311, 69.279, 3, 'plumber')) <> 2 then
     raise exception 'FAIL: markazda seed ustalari (101, 103) topilmadi';
   end if;
-  raise notice 'PASS: nearby_masters — M1 (% m), M2 tasdiqlanmagani uchun yo''q', round((d * 1000)::numeric);
+  raise notice 'PASS: nearby_masters — M1 (% m), M2 balansi limitdan past bo''lgani uchun yo''q', round((d * 1000)::numeric);
+end $$;
+-- Pasportsiz (tasdiqlanmagan) usta ham buyurtma oladi — faqat ulushi +5%
+do $$ declare m public.masters; begin
+  update public.masters set balance = 50000 where id = '00000000-0000-4000-b000-000000000002';
+  if not exists (select 1 from public.nearby_masters(41.2750, 69.2050, 3, 'plumber') where id = '00000000-0000-4000-b000-000000000002') then
+    raise exception 'FAIL: tasdiqlanmagan (pending) usta buyurtma olmadi';
+  end if;
+  select * into m from public.masters where id = '00000000-0000-4000-b000-000000000002';
+  if public.master_fee_percent(m) <> 15 then raise exception 'FAIL: tasdiqlanmagan komissiya ulushi % (15 kutilgan)', public.master_fee_percent(m); end if;
+  m.billing_plan := 'subscription';
+  if public.master_fee_percent(m) <> 5 then raise exception 'FAIL: tasdiqlanmagan obuna ulushi % (5 kutilgan)', public.master_fee_percent(m); end if;
+  m.verify_status := 'approved';
+  if public.master_fee_percent(m) <> 0 then raise exception 'FAIL: tasdiqlangan obuna ulushi % (0 kutilgan)', public.master_fee_percent(m); end if;
+  update public.masters set balance = 0 where id = '00000000-0000-4000-b000-000000000002';
+  raise notice 'PASS: pasportsiz usta ham buyurtma oladi; ulush: komissiya 10/15%%, obuna 0/5%%';
 end $$;
 reset role;
 

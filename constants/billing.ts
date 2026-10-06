@@ -1,5 +1,7 @@
 // Usta qaysi to'lov modelida ishlashini o'zi tanlaydi: oylik obuna yoki komissiya.
 // ⚠️ Narx va foiz hali tasdiqlanmagan — shu yerdan o'zgartiriladi.
+import { t } from '@/lib/i18n';
+
 export type BillingPlan = 'subscription' | 'commission';
 
 export const BILLING = {
@@ -17,9 +19,23 @@ export const BILLING = {
 // Balans shu limitdan past bo'lsa — naqd buyurtmalar yopiladi (Yandex Pro'dagidek). TASDIQLANSIN
 export const BALANCE_LIMIT = 20_000;
 
-// Ustaning bitta ishdan platformaga beradigan ulushi
-export function platformCut(plan: BillingPlan, finalPrice: number) {
-  return Math.round((finalPrice * BILLING[plan].commissionPercent) / 100);
+// Pasport va selfi ixtiyoriy: hujjati tasdiqlanmagan usta ham buyurtma oladi, faqat ulushi shuncha foizga ko'p
+export const UNVERIFIED_SURCHARGE_PERCENT = 5;
+
+/** Ustaning bitta ishdan beradigan ulushi, %: komissiya 10 / obuna 0, tasdiqlanmagan bo'lsa +5 (server: master_fee_percent) */
+export function feePercent(plan: BillingPlan, verified: boolean) {
+  return BILLING[plan].commissionPercent + (verified ? 0 : UNVERIFIED_SURCHARGE_PERCENT);
+}
+
+/** Tarif nomi foiz bilan: "Komissiya · 15%", "Oylik obuna · +5%" */
+export function planLabel(plan: BillingPlan, verified: boolean) {
+  const pct = feePercent(plan, verified);
+  return plan === 'subscription' ? `${t('plan.subscription')}${pct ? ` · +${pct}%` : ''}` : `${t('plan.commission')} · ${pct}%`;
+}
+
+// Ustaning bitta ishdan platformaga beradigan ulushi (so'm)
+export function platformCut(plan: BillingPlan, finalPrice: number, verified = true) {
+  return Math.round((finalPrice * feePercent(plan, verified)) / 100);
 }
 
 // Do'st (boshqa usta) taklif qilgani uchun bonus, so'm (⚠️ hali tasdiqlanmagan)

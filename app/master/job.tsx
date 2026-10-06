@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Card, Divider, IconButton, Row, Text } from '@/components/ui';
-import { BILLING, platformCut } from '@/constants/billing';
+import { feePercent, platformCut } from '@/constants/billing';
 import { getCategory } from '@/constants/categories';
 import { colors, fonts, shadow, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
@@ -86,7 +86,9 @@ function JobView({ job }: { job: MasterOrder }) {
   const fitTo = useMemo(() => bboxCorners([...remaining, client]), [fitKey, route]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const total = fee + (Number(work) || 0) + (Number(parts) || 0);
-  const cut = platformCut(plan, total);
+  const verified = useMaster((s) => s.verified);
+  const pct = feePercent(plan, verified);
+  const cut = platformCut(plan, total, verified);
   const stepIndex = STEPS.indexOf(step === 'finishing' ? 'in_progress' : step);
 
   return (
@@ -149,9 +151,9 @@ function JobView({ job }: { job: MasterOrder }) {
             ) : null}
             <Row label={t('rate.callFee')} value={formatSum(fee)} />
             <Row label={t('rate.total')} value={formatSum(total)} strong />
-            {BILLING[plan].commissionPercent ? (
+            {pct ? (
               <>
-                <Row label={`${t('job.platformCut')} (${BILLING[plan].commissionPercent}%)`} value={`− ${formatSum(cut)}`} />
+                <Row label={`${t('job.platformCut')} (${pct}%)`} value={`− ${formatSum(cut)}`} />
                 <Row label={t('job.yourIncome')} value={formatSum(total - cut)} />
               </>
             ) : null}

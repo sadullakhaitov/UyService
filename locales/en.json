@@ -243,7 +243,8 @@
     "recommended": "Best for many jobs",
     "choose": "Choose",
     "selected": "Selected",
-    "save": "Save"
+    "save": "Save",
+    "unverifiedNote": "Your documents are not verified yet: +{{extra}}% on either plan. Upload a passport — once approved, the surcharge is removed."
   },
   "tabs": {
     "orders": "Orders",
@@ -252,7 +253,6 @@
     "profile": "Profile"
   },
   "mOrders": {
-    "blockedVerify": "Profile under review",
     "blockedBalance": "Orders closed — top up your balance",
     "blockedSubscription": "Subscription expired",
     "activity": "Activity",
@@ -274,7 +274,8 @@
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "days": "{{days}} days",
-    "gpsSent": "Location sent · {{sec}} s ago"
+    "gpsSent": "Location sent · {{sec}} s ago",
+    "unverified": "No documents: fee {{pct}}% · With passport — {{base}}%"
   },
   "money": {
     "title": "Money",
@@ -386,7 +387,7 @@
     "catTitle": "What work do you do?",
     "catHint": "You can pick several. You will only get orders in these categories.",
     "passTitle": "Identity check",
-    "passHint": "Upload a photo of your passport (or ID card). Orders start after an admin checks it.",
+    "passHint": "A passport (or ID card) photo builds client trust and lowers the platform fee.",
     "passport": "Passport photo",
     "selfie": "Selfie",
     "selfieOptional": "Selfie (optional)",
@@ -396,11 +397,12 @@
     "addWork": "Add photo",
     "submit": "Submit application",
     "submitSkip": "Submit without photos",
-    "reviewNote": "An admin usually reviews within 24 hours"
+    "reviewNote": "An admin usually reviews within 24 hours",
+    "passOptional": "Optional. You get orders without a passport too, just with a {{extra}}% higher platform fee ({{pct}}% instead of {{base}}%). You can upload it later in Profile → Documents."
   },
   "docs": {
     "none": "No documents uploaded",
-    "noneHint": "Upload a passport photo — orders open after the check",
+    "noneHint": "Upload a passport photo — after verification the platform fee goes down",
     "pending": "Under review",
     "pendingHint": "Sent on {{date}}. Review usually takes up to 24 hours",
     "approved": "Verified",
@@ -410,7 +412,8 @@
     "passport": "Passport and selfie",
     "why": "For clients' safety, every handyman's identity is checked. Replacing a document sends it for review again.",
     "demoNote": "Demo: in the real app an admin approves in the Supabase dashboard",
-    "demoApprove": "Demo: admin approved"
+    "demoApprove": "Demo: admin approved",
+    "feeNote": "Current fee {{pct}}%, after verification — {{base}}%."
   },
   "works": {
     "count": "{{n}} / {{max}} photos"
@@ -447,7 +450,7 @@
     "ratingTitle": "How to raise my rating?",
     "ratingBody": "Arrive on time; message the client if late|Agree the price before starting|Leave the place clean|Add photos of your work",
     "moneyTitle": "How does money work?",
-    "moneyBody": "The client pays the call-out and labour in cash|On commission, the platform share is taken from your balance|If the balance drops below the limit, orders pause|On subscription there is no percentage — pay once a month",
+    "moneyBody": "The client pays the call-out and labour in cash|On commission, the platform share is taken from your balance|Without a verified passport the fee is +5% (5% on subscription too)|If the balance drops below the limit, orders pause|On subscription there is no percentage — pay once a month",
     "safetyTitle": "Safety",
     "safetyBody": "Take orders only through the app|If something feels wrong, message support|Follow safety rules with electricity and gas"
   },

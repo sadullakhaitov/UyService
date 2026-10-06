@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { Camera, IdCard, ImagePlus, ShieldCheck } from 'lucide-react-native';
+import { Camera, IdCard, ImagePlus, Percent, ShieldCheck } from 'lucide-react-native';
+import { feePercent, UNVERIFIED_SURCHARGE_PERCENT } from '@/constants/billing';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,18 +17,19 @@ const MAX_WORKS = 6;
 const YEARS = [1, 2, 3, 5, 10];
 
 // Usta anketasi (TZ, 4-bo'lim): ism, kategoriyalar, pasport rasmi, ish namunalari.
-// Yuborilgach admin tekshiradi — tasdiqlanmaguncha buyurtma kelmaydi (useMaster().verified).
+// Pasport va selfi ixtiyoriy: ularsiz ham buyurtma keladi, faqat platforma ulushi +5% (constants/billing.ts → feePercent).
 export default function Register() {
   useScheme();
   const { profile, setProfile, submitProfile } = useMaster();
   const billingPlan = useUser((s) => s.billingPlan);
+  const plan = billingPlan ?? 'commission';
   const setRole = useUser((s) => s.setRole);
   const [step, setStep] = useState(0);
 
   const valid = [
     profile.firstName.trim().length >= 2 && profile.lastName.trim().length >= 2,
     profile.categories.length > 0,
-    Boolean(profile.passportPhoto),
+    true, // pasport ixtiyoriy
     true, // ish namunalari ixtiyoriy (keyin Profil → Ish namunalari)
   ][step];
 
@@ -115,6 +117,14 @@ export default function Register() {
                   </Text>
                 </View>
               </View>
+              {profile.passportPhoto ? null : (
+                <View style={[styles.note, styles.warn]}>
+                  <Percent size={18} color={colors.accentInk} strokeWidth={2.4} />
+                  <Text variant="small" style={[styles.flex, { color: colors.accentInk }]}>
+                    {t('register.passOptional', { extra: UNVERIFIED_SURCHARGE_PERCENT, pct: feePercent(plan, false), base: feePercent(plan, true) })}
+                  </Text>
+                </View>
+              )}
               <View style={styles.note}>
                 <ShieldCheck size={18} color={colors.primary} strokeWidth={2.2} />
                 <Text variant="small" style={styles.flex}>
@@ -202,6 +212,7 @@ const styles = themed(() => ({
   docs: { flexDirection: 'row', gap: 12 },
   doc: { flex: 1, gap: 6 },
   center: { textAlign: 'center' },
+  warn: { backgroundColor: colors.accentSoft },
   note: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', padding: 12, borderRadius: radius.card, backgroundColor: colors.primarySoft },
   works: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   bottom: { padding: 16, gap: 8 },

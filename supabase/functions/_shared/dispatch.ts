@@ -2,7 +2,7 @@
 // Bu fayl hech narsani import qilmaydi: ham ilovada (constants/dispatch.ts, lib/dispatch.ts orqali),
 // ham Supabase Edge Function'larda (Deno) bir xil ishlaydi. O'zgartirsangiz — ikkalasiga ham ta'sir qiladi.
 //
-// Filtr (kategoriya, onlayn, tasdiqlangan, band emas, rad etmagan) → radius 3/6/10 km →
+// Filtr (kategoriya, onlayn, band emas, rad etmagan; hujjat tasdig'i shart emas) → radius 3/6/10 km →
 // eng yaqin 10 ta uchun yetib kelish vaqti → ball → eng yuqori ballga taklif (60 s).
 // Rad / vaqt o'tdi → keyingi usta. Hamma radiusdan keyin ham topilmasa — "Hozir bo'sh usta yo'q".
 
@@ -122,7 +122,7 @@ export function rankCandidates<C extends string>(
   eta: EtaFn = estimateEtaMin,
 ): Candidate[] {
   const pool = masters
-    .filter((m) => m.categories.includes(order.categoryId) && m.online && m.verified && !m.busy && !declined.includes(m.id))
+    .filter((m) => m.categories.includes(order.categoryId) && m.online && !m.busy && !declined.includes(m.id))
     .map((m) => ({ m, d: distanceKm(m.location, order.location) }))
     .filter((x) => x.d <= radiusKm)
     .sort((a, b) => a.d - b.d)

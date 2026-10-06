@@ -10,6 +10,7 @@ Quyida asl TZ + keyin qabul qilingan qarorlar.
 | Platforma nomi | **UyService**, domen **uyservice.uz** ("UstaTop" o'rniga) |
 | Logotip | **To'rtta yaltiroq rangli kvadrat** (ko'k, yashil, pushti, to'q sariq). Ilova ichida — `assets/logo.png` (shaffof fon, `components/ui/Logo.tsx` → `LogoMark`); ilova ikonkasi — `assets/icon.png`; Android — `android-icon-foreground/background/monochrome.png`; ochilish ekrani — `splash-icon.png` (kunduzgi oq, tungi to'q fon); brauzer — `favicon.png`. Hammasi bitta asl rasmdan yasalgan |
 | Chaqiruv narxi | **50 000 so'm**, hamma kategoriya uchun bir xil — `constants/categories.ts` → `CALL_FEE` |
+| Pasport va selfi | **Ixtiyoriy.** Usta ularsiz ham buyurtma oladi, faqat platforma ulushi **+5 foiz punkt**: komissiya 10% → 15%, obuna 0% → 5% (balansdan). Pasport yuklanib admin tasdiqlagach qo'shimcha olib tashlanadi. `constants/billing.ts` → `UNVERIFIED_SURCHARGE_PERCENT`, `feePercent()`; server — `master_fee_percent()` |
 | Komissiya yoki obuna | **Usta o'zi tanlaydi**: oylik obuna YOKI komissiya. Ro'yxatdan o'tishda `master/plan` ekrani, keyin "Daromad" → "Tarifni o'zgartirish". Narx/foiz: `constants/billing.ts` (⚠️ 149 000 so'm/oy va 10% — hali tasdiqlanmagan) |
 
 ## 1. Loyiha haqida qisqacha
@@ -117,7 +118,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 **Mijoz** (bir vaqtda bir nechta usta chaqira oladi — masalan, santexnik va elektrik; faol buyurtmalar bosh sahifada kartalar bo'lib turadi, `useOrders` + `lib/orderSimulator.ts`): Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim") → Tarix (qayta chaqirish).
 
 **Usta** (pastki menyu: Buyurtmalar · Pul · Chatlar · Profil — Yandex Pro tuzilmasi, Mejgorod yo'q):
-- Buyurtmalar: to'liq xarita, filtr (kategoriya, radius), zoom ±, joylashuv; panelda aktivlik va bugungi daromad, tarif kartasi, "surib ishga chiqish" tugmasi. Buyurtma yopiq bo'lsa tepada qizil banner (profil tekshirilmoqda / balans limitdan past / obuna tugagan).
+- Buyurtmalar: to'liq xarita, filtr (kategoriya, radius), zoom ±, joylashuv; panelda aktivlik va bugungi daromad, tarif kartasi, "surib ishga chiqish" tugmasi. Buyurtma yopiq bo'lsa tepada qizil banner (balans limitdan past / obuna tugagan); hujjatsiz ishlayotgan bo'lsa — to'q sariq eslatma (bloklamaydi).
 - Pul: kunlik daromad + 7 kunlik tanlov, komissiya tarifida balans va limit (`BALANCE_LIMIT`, platforma ulushi ish yakunida balansdan yechiladi), obuna tarifida obuna muddati; "Yordam" → qo'llab-quvvatlash chati.
 - Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar bilan yozishmalar (hozircha mahalliy, 5-bosqichda Realtime).
 - Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; o'qish (qo'llanma); sozlamalar (bildirishnomalar, til), chiqish. Demo promokodlar: `UYSERVICE` (+10 prioritet), `BIRINCHI` (+20 000 balans), `USTA2026`. Do'st uchun bonus `INVITE_BONUS` = 30 000 (⚠️ tasdiqlanmagan).
@@ -127,7 +128,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 **Bildirishnomalar:** mijozga "Usta topildi", "Usta yetib keldi", "Bo'sh usta yo'q"; ustaga "Yangi buyurtma" (Sozlamalarda o'chirish mumkin). Ilova ekranda ochiq bo'lsa chiqmaydi.
 
-**Kirish (mehmon birinchi):** ilova ochilganda — til tanlash, keyin darhol mijoz bosh sahifasi. Ro'yxatdan o'tish (telefon → SMS kod) faqat mijoz hamma narsani tanlab "Usta chaqirish"ni bosganda so'raladi; tasdiqlangach buyurtma avtomatik yuboriladi. Usta bo'lish — Profil → "Usta bo'lib ishlash" (raqam tasdiqlanadi → tarif). Til, raqam, rol telefonda saqlanadi (AsyncStorage). Usta ro'yxatdan o'tganda (`master/register`) ism, tajriba, kategoriyalar, pasport rasmi (+ ixtiyoriy selfi) va ish namunalarini yuklaydi; admin tasdiqlamaguncha buyurtma olmaydi (`useMaster().verified`, `profile.status`: none → pending → approved/rejected). Usta ma'lumotlari telefonda saqlanadi (`uyservice-master`), "onlayn" holati saqlanmaydi.
+**Kirish (mehmon birinchi):** ilova ochilganda — til tanlash, keyin darhol mijoz bosh sahifasi. Ro'yxatdan o'tish (telefon → SMS kod) faqat mijoz hamma narsani tanlab "Usta chaqirish"ni bosganda so'raladi; tasdiqlangach buyurtma avtomatik yuboriladi. Usta bo'lish — Profil → "Usta bo'lib ishlash" (raqam tasdiqlanadi → tarif). Til, raqam, rol telefonda saqlanadi (AsyncStorage). Usta ro'yxatdan o'tganda (`master/register`) ism, tajriba, kategoriyalar, pasport rasmi (+ ixtiyoriy selfi) va ish namunalarini yuklaydi; pasport va selfi ixtiyoriy — ularsiz ham buyurtma oladi, faqat ulushi +5% (`useMaster().verified`, `profile.status`: none (pasportsiz) → pending (yuklandi) → approved/rejected; ustada tepada to'q sariq eslatma "Hujjatsiz: ulush 15%"). Usta ma'lumotlari telefonda saqlanadi (`uyservice-master`), "onlayn" holati saqlanmaydi.
 
 ## 5. Xarita va animatsiyalar
 
@@ -159,7 +160,7 @@ Buyurtma holatlari: `scheduled → searching → assigned → on_the_way → arr
 
 ## 7. Usta qidirish algoritmi
 
-Koeffitsientlar: `constants/dispatch.ts`. Filtr (kategoriya, onlayn, tasdiqlangan, band emas, rad etmagan) → radius 3/6/10 km → eng yaqin 10 ta uchun Google Routes → ball:
+Koeffitsientlar: `constants/dispatch.ts`. Filtr (kategoriya, onlayn, band emas, rad etmagan, buyurtma olishi mumkin — balans/obuna; hujjat tasdig'i shart emas) → radius 3/6/10 km → eng yaqin 10 ta uchun Google Routes → ball:
 
 `ball = 100 − (yetib kelish daqiqasi × 3) + (reyting − 4) × 20 + aktivlik × 0,2 + prioritet ballari`
 

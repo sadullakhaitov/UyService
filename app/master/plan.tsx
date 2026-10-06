@@ -4,16 +4,17 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Squish, Text } from '@/components/ui';
-import { BILLING, type BillingPlan } from '@/constants/billing';
+import { BILLING, UNVERIFIED_SURCHARGE_PERCENT, type BillingPlan } from '@/constants/billing';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
-import { useUser } from '@/store';
+import { useMaster, useUser } from '@/store';
 
 // Usta to'lov modelini o'zi tanlaydi: oylik obuna yoki komissiya
 export default function PlanScreen() {
   useScheme();
   const current = useUser((s) => s.billingPlan);
   const save = useUser((s) => s.setBillingPlan);
+  const verified = useMaster((s) => s.verified);
   const [plan, setPlan] = useState<BillingPlan>(current ?? 'commission');
 
   const submit = () => {
@@ -27,6 +28,13 @@ export default function PlanScreen() {
       <ScreenHeader title={t('plan.title')} onBack={() => (router.canGoBack() ? router.back() : router.replace('/client/account'))} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text variant="small">{t('plan.hint')}</Text>
+        {verified ? null : (
+          <View style={styles.extra}>
+            <Text variant="small" style={styles.extraText}>
+              {t('plan.unverifiedNote', { extra: UNVERIFIED_SURCHARGE_PERCENT })}
+            </Text>
+          </View>
+        )}
         <PlanCard
           icon={Percent}
           title={t('plan.commission')}
@@ -109,4 +117,6 @@ const styles = themed(() => ({
   point: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   pointText: { color: colors.ink, flex: 1 },
   bottom: { padding: 16 },
+  extra: { padding: 12, borderRadius: radius.card, backgroundColor: colors.accentSoft },
+  extraText: { color: colors.accentInk },
 }));

@@ -189,7 +189,8 @@ export const useMaster = create<MasterState>()(
       setProfile: (p) => set((s) => ({ profile: { ...s.profile, ...p } })),
       submitProfile: () =>
         set((s) => ({
-          profile: { ...s.profile, status: 'pending', submittedAt: Date.now() },
+          // Pasport yuklangan bo'lsa — admin tekshiradi; bo'lmasa usta baribir ishlaydi (ulushi +5%)
+          profile: { ...s.profile, status: s.profile.passportPhoto ? 'pending' : 'none', submittedAt: Date.now() },
           categories: s.profile.categories.length ? s.profile.categories : s.categories,
           verified: false,
           online: false,

@@ -17,7 +17,7 @@ import Constants from 'expo-constants';
 import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Squish, Text } from '@/components/ui';
-import { BILLING } from '@/constants/billing';
+import { planLabel } from '@/constants/billing';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
@@ -27,7 +27,7 @@ import { useMaster, useUser } from '@/store';
 export default function Profile() {
   useScheme();
   const m = mockMasterSelf;
-  const { activity, categories, profile, priorityPoints, setOnline } = useMaster();
+  const { activity, categories, profile, priorityPoints, setOnline, verified } = useMaster();
   const name = profile.firstName || m.name.split(' ')[0];
   const initials = profile.firstName ? `${profile.firstName[0]}${profile.lastName[0] ?? ''}`.toUpperCase() : m.initials;
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
@@ -73,7 +73,7 @@ export default function Profile() {
             />
             <Item
               label={t('profile.plan')}
-              value={plan === 'subscription' ? t('plan.subscription') : `${t('plan.commission')} ${BILLING.commission.commissionPercent}%`}
+              value={planLabel(plan, verified)}
               onPress={() => router.push('/master/plan')}
             />
             <Item label={t('profile.payment')} value={t('profile.cash')} onPress={() => Alert.alert(t('profile.payment'), t('profile.cashOnly'))} last />

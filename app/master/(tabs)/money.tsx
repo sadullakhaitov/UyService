@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Squish, Text } from '@/components/ui';
-import { BALANCE_LIMIT, BILLING } from '@/constants/billing';
+import { BALANCE_LIMIT, BILLING, feePercent, planLabel } from '@/constants/billing';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
@@ -21,7 +21,8 @@ const days = Array.from({ length: 7 }, (_, i) => {
 export default function Money() {
   useScheme();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
-  const { balance, subscriptionUntil, todayIncome } = useMaster();
+  const { balance, subscriptionUntil, todayIncome, verified } = useMaster();
+  const fee = feePercent(plan, verified);
   const [sel, setSel] = useState(6);
   // Bugungi kun — haqiqiy (yakunlangan ishlardan), oldingilari soxta
   const day = sel === 6 ? { ...days[6], income: todayIncome } : days[sel];
@@ -69,7 +70,7 @@ export default function Money() {
         </View>
 
         <View style={styles.section}>
-          {plan === 'commission' ? (
+          {fee > 0 ? (
             <>
               <View style={[styles.limit, { backgroundColor: ok ? colors.successSoft : colors.dangerSoft }]}>
                 <View style={[styles.lockIcon, { backgroundColor: ok ? colors.successStrong : colors.dangerStrong }]}>
@@ -91,11 +92,12 @@ export default function Money() {
                   <Text variant="h3">{t('money.balance')}</Text>
                   <Text style={styles.balanceValue}>{formatSum(balance)}</Text>
                 </View>
-                <Text variant="small">{t('money.commissionNote', { percent: BILLING.commission.commissionPercent })}</Text>
+                <Text variant="small">{t('money.commissionNote', { percent: fee })}</Text>
                 <Button title={t('money.topUp')} onPress={soon} />
               </View>
             </>
-          ) : (
+          ) : null}
+          {plan === 'subscription' ? (
             <View style={styles.balance}>
               <View style={styles.rowBetween}>
                 <Text variant="h3">{t('money.subscription')}</Text>
@@ -106,13 +108,13 @@ export default function Money() {
               <Text variant="small">{t('plan.subscriptionPrice', { price: formatSum(BILLING.subscription.monthlyFee) })}</Text>
               <Button title={t('money.renew')} onPress={soon} />
             </View>
-          )}
+          ) : null}
 
           <Squish accessibilityRole="button" onPress={() => router.push('/master/plan')} style={styles.card}>
             <View style={styles.flex}>
               <Text variant="caption">{t('money.plan')}</Text>
               <Text variant="bodyBold">
-                {plan === 'subscription' ? t('plan.subscription') : `${t('plan.commission')} · ${BILLING.commission.commissionPercent}%`}
+                {planLabel(plan, verified)}
               </Text>
             </View>
             <Text style={styles.change}>{t('earnings.changePlan')}</Text>

@@ -7,7 +7,7 @@ import { MapBase, type MapHandle } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Chip, IconButton, Squish, Text } from '@/components/ui';
 import { SwipeButton } from '@/components/ui/SwipeButton';
-import { BILLING } from '@/constants/billing';
+import { BILLING, feePercent } from '@/constants/billing';
 import { categories } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
@@ -26,7 +26,7 @@ const DAY = 86_400_000;
 export default function MasterOrders() {
   useScheme();
   const insets = useSafeAreaInsets();
-  const { online, setOnline, activity, subscriptionUntil, todayIncome, todayJobs } = useMaster();
+  const { online, setOnline, activity, subscriptionUntil, todayIncome, todayJobs, verified } = useMaster();
   const sentAt = useLocationLog((s) => s.lastAt);
   const [, setNow] = useState(0);
   useEffect(() => {
@@ -46,6 +46,7 @@ export default function MasterOrders() {
 
   // Nega buyurtmalar yopiq (Yandex Pro'dagi qizil banner kabi)
   const blocked = useBlocked();
+  const notice = !blocked && !verified;
 
   useEffect(() => {
     if (blocked && online) setOnline(false);
@@ -61,7 +62,7 @@ export default function MasterOrders() {
   };
 
   const daysLeft = Math.max(0, Math.ceil((subscriptionUntil - Date.now()) / DAY));
-  const topH = insets.top + (blocked ? 56 : 12);
+  const topH = insets.top + (blocked || notice ? 56 : 12);
 
   return (
     <View style={styles.root}>
@@ -78,14 +79,26 @@ export default function MasterOrders() {
       {blocked ? (
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.navigate(blocked === 'verify' ? '/master/documents' : '/master/money')}
+          onPress={() => router.navigate('/master/money')}
           style={[styles.banner, { paddingTop: insets.top + 8 }]}
         >
-          <Text style={styles.bannerText}>
-            {blocked === 'verify' ? t('mOrders.blockedVerify') : blocked === 'balance' ? t('mOrders.blockedBalance') : t('mOrders.blockedSubscription')}
-          </Text>
+          <Text style={styles.bannerText}>{blocked === 'balance' ? t('mOrders.blockedBalance') : t('mOrders.blockedSubscription')}</Text>
           <View style={styles.bannerGo}>
             <ChevronRight size={18} color={colors.danger} strokeWidth={3} />
+          </View>
+        </Pressable>
+      ) : notice ? (
+        // Pasportsiz ishlayapti — buyurtmalar ochiq, faqat ulush +5%. Bosilsa — hujjatlar
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.navigate('/master/documents')}
+          style={[styles.banner, styles.notice, { paddingTop: insets.top + 8 }]}
+        >
+          <Text style={[styles.bannerText, { color: colors.accentInk }]}>
+            {t('mOrders.unverified', { pct: feePercent(plan, false), base: feePercent(plan, true) })}
+          </Text>
+          <View style={styles.bannerGo}>
+            <ChevronRight size={18} color={colors.accentInk} strokeWidth={3} />
           </View>
         </Pressable>
       ) : null}
@@ -143,7 +156,7 @@ export default function MasterOrders() {
             <Text style={styles.promoTitle}>{plan === 'commission' ? t('mOrders.promoCommission') : t('mOrders.promoSubscription')}</Text>
             <Text variant="caption" style={styles.promoSub}>
               {plan === 'commission'
-                ? t('mOrders.promoCommissionSub', { percent: BILLING.commission.commissionPercent })
+                ? t('mOrders.promoCommissionSub', { percent: feePercent(plan, verified) })
                 : t('mOrders.promoSubscriptionSub', { days: daysLeft })}
             </Text>
           </View>
@@ -230,6 +243,7 @@ const styles = themed(() => ({
     gap: 10,
   },
   bannerText: { flex: 1, fontFamily: fonts.bold, fontSize: 15, color: colors.onPrimary, textAlign: 'center' },
+  notice: { backgroundColor: colors.accentSoft },
   bannerGo: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   topRow: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   statePill: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 22, paddingHorizontal: 16 },

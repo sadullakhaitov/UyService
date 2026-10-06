@@ -3,7 +3,7 @@
 // 2) onlayn yoki ishda bo'lsa — joylashuv har 5 s "serverga" yoziladi (master_locations).
 import { router, usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import { BALANCE_LIMIT } from '@/constants/billing';
+import { BALANCE_LIMIT, feePercent } from '@/constants/billing';
 import { problemsOf, type CategoryId } from '@/constants/categories';
 import { MASTER_LOCATION_INTERVAL_MS } from '@/constants/dispatch';
 import { publishMasterLocation } from '@/lib/backend';
@@ -15,14 +15,14 @@ import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
 import { useMaster, useMasterWork, useUser, type MasterOrder } from '@/store';
 
-export type Blocked = null | 'verify' | 'balance' | 'subscription';
+export type Blocked = null | 'balance' | 'subscription';
 
 /** Nega buyurtmalar yopiq (Yandex Pro'dagi qizil banner kabi) */
 export function useBlocked(): Blocked {
   const { verified, balance, subscriptionUntil } = useMaster();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
-  if (!verified) return 'verify';
-  if (plan === 'commission' && balance < BALANCE_LIMIT) return 'balance';
+  // Pasportsiz ham ishlaydi (ulushi +5%). Ulush bo'lsa — balans limitdan past bo'lmasin
+  if (feePercent(plan, verified) > 0 && balance < BALANCE_LIMIT) return 'balance';
   if (plan === 'subscription' && subscriptionUntil < Date.now()) return 'subscription';
   return null;
 }
