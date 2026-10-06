@@ -9,7 +9,7 @@ export const DISPATCH = {
 
   radiiKm: [3, 6, 10],
   routesTopN: 10, // Google Routes faqat eng yaqin 10 ta uchun so'raladi
-  offerTimeoutSec: 15,
+  offerTimeoutSec: 60, // usta buyurtma ma'lumotlarini o'qib ulgurishi uchun
   giveUpAfterSec: 180,
 
   activity: {

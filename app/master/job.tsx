@@ -12,6 +12,7 @@ import { BILLING, platformCut } from '@/constants/billing';
 import { getCategory } from '@/constants/categories';
 import { colors, fonts, shadow } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
+import { bboxCorners } from '@/lib/geo';
 import { remainingEtaMin, resample, useRoute } from '@/lib/routes';
 import { useMyLocation } from '@/lib/useMyLocation';
 import { mockClient, mockMasters, mockOffer } from '@/mocks';
@@ -67,7 +68,7 @@ export default function Job() {
         route={step === 'on_the_way' ? path.slice(Math.max(0, i - 1)) : undefined}
         master={step === 'on_the_way' ? path[i] : client}
         clientMarker={client}
-        fitTo={step === 'on_the_way' ? [path[Math.floor(i / 4) * 4], client] : [client]}
+        fitTo={step === 'on_the_way' ? bboxCorners([...path.slice(Math.floor(i / 4) * 4), client]) : [client]}
       />
 
       <View style={[styles.steps, shadow.float, { top: insets.top + 12 }]}>

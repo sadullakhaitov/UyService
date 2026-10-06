@@ -34,5 +34,15 @@ export function blur(p: LatLng, meters = 100): LatLng {
   };
 }
 
+// Nuqtalarni o'rab turuvchi to'rtburchakning 2 burchagi (kamerani moslash uchun)
+export function bboxCorners(points: LatLng[]): LatLng[] {
+  const lats = points.map((p) => p.latitude);
+  const lngs = points.map((p) => p.longitude);
+  return [
+    { latitude: Math.min(...lats), longitude: Math.min(...lngs) },
+    { latitude: Math.max(...lats), longitude: Math.max(...lngs) },
+  ];
+}
+
 const toRad = (d: number) => (d * Math.PI) / 180;
 const toDeg = (r: number) => (r * 180) / Math.PI;

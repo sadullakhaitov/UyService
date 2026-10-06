@@ -132,12 +132,6 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
   const blink = useBlink(Boolean(blinkNearby), nearby?.length ?? 0);
   const moving = useMovingPoint(master);
 
-  const [dash, setDash] = useState(0);
-  useEffect(() => {
-    if (!route?.length) return;
-    const id = setInterval(() => setDash((d) => (d + 1.5) % 20), 50);
-    return () => clearInterval(id);
-  }, [route?.length]);
 
   const toPath = (pts: LatLng[]) => pts.map((p, i) => `${i ? 'L' : 'M'}${project(p).x.toFixed(1)} ${project(p).y.toFixed(1)}`).join(' ');
   const scale = Math.max(0.35, Math.min(1.4, 2 ** (cam.zoom - 16)));
@@ -195,17 +189,8 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
         <Path d={avenue} stroke={colors.mapRoad} strokeWidth={16 * scale} fill="none" strokeLinecap="round" />
         {route?.length ? (
           <>
-            <Path d={toPath(route)} stroke={colors.primaryTint} strokeWidth={9} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            <Path
-              d={toPath(route)}
-              stroke={colors.primary}
-              strokeWidth={5}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeDasharray="14 6"
-              strokeDashoffset={-dash}
-            />
+            <Path d={toPath(route)} stroke={colors.primaryTint} strokeWidth={10} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <Path d={toPath(route)} stroke={colors.primary} strokeWidth={6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </>
         ) : null}
         {pulse

@@ -61,7 +61,7 @@ app/                      ← ekranlar (Expo Router)
   client/history.tsx      ← buyurtmalar tarixi
   master/plan.tsx         ← tarif tanlash: obuna yoki komissiya
   master/index.tsx        ← onlayn/oflayn + xarita
-  master/offer.tsx        ← yangi buyurtma, 15 soniya taymer
+  master/offer.tsx        ← yangi buyurtma, 60 soniya taymer
   master/job.tsx          ← mijozga borish, ishni boshlash/tugatish
   master/earnings.tsx     ← daromad, reyting, tarif
 components/
@@ -87,7 +87,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 **Mijoz:** Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim") → Tarix (qayta chaqirish).
 
-**Usta:** Tarif tanlash (birinchi kirishda) → Bosh sahifa (katta Onlayn/Oflayn tugma, bugungi daromad, aktivlik) → Yangi buyurtma (15 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → Ishni boshladim → Tugatdim + yakuniy narx, platforma ulushi tarifga qarab) → Daromad (kun/hafta/oy, reyting, aktivlik, joriy tarif).
+**Usta:** Tarif tanlash (birinchi kirishda) → Bosh sahifa (katta Onlayn/Oflayn tugma, bugungi daromad, aktivlik) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → Ishni boshladim → Tugatdim + yakuniy narx, platforma ulushi tarifga qarab) → Daromad (kun/hafta/oy, reyting, aktivlik, joriy tarif).
 
 **Kirish:** telefon → SMS kod → rol. Usta ro'yxatdan o'tganda ism, kategoriyalar, pasport rasmi va ish namunalarini yuklaydi; admin tasdiqlamaguncha buyurtma olmaydi (`useMaster().verified`).
 
@@ -100,9 +100,9 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 - Mijoz belgisi: to'q sariq doira + "nafas oluvchi" halqa. Manzil xaritani surish bilan tanlanadi: markazdagi pin surilganda ko'tariladi, to'xtaganda tushadi.
 - Atrofdagi ustalar ~100 m aniqlikda (`lib/geo.ts` → `blur`).
 - Qidiruv: 3 ta to'lqin (2,4 s, 0,8 s farq, cheksiz) — xaritaning o'zida metrda chiziladi (`usePulse` + `Circle`), xarita surilsa nuqtadan ajralmaydi; usta belgilari 0,35 ↔ 1 miltillaydi; kamera 16 → 14.
-- Usta yo'lda: yo'l ko'chalar bo'ylab (OSRM), soxta GPS har 5 s da yo'l bo'ylab ~60 m; nuqtalar orasida 5 s silliq interpolatsiya + burilish; "N daqiqa" qolgan yo'l uzunligidan; yo'l chizig'i chiziq-chiziq (iOS'da oqadi; Android'da `lineDashPhase` yo'q); kamera ikkalasini `fitToCoordinates`.
+- Usta yo'lda: yo'l ko'chalar bo'ylab (OSRM), soxta GPS har 5 s da yo'l bo'ylab ~60 m; nuqtalar orasida 5 s silliq interpolatsiya + burilish; "N daqiqa" qolgan yo'l uzunligidan; yo'l chizig'i yaxlit (miltillamaydi); kamera ikkalasini `fitToCoordinates`.
 - Tugmalar bosilganda biroz kichrayadi (`components/ui/Pressable.tsx`), panellar prujina bilan chiqadi.
-- Usta ilovasi: SVG aylana taymer 15 → 0, oxirgi 5 soniyada tebranish.
+- Usta ilovasi: SVG aylana taymer 60 → 0, oxirgi 5 soniyada tebranish.
 
 ## 6. Ma'lumotlar bazasi (Supabase, 5-bosqich)
 
@@ -124,7 +124,7 @@ Koeffitsientlar: `constants/dispatch.ts`. Filtr (kategoriya, onlayn, tasdiqlanga
 
 `ball = 100 − (yetib kelish daqiqasi × 3) + (reyting − 4) × 20 + aktivlik × 0,2 + prioritet ballari`
 
-Eng yuqori ballga taklif, 15 s taymer. Rad/vaqt o'tdi → aktivlik −5, keyingi ustaga. 3 radiusdan keyin ham topilmasa (≈3 daqiqa) — "Hozir bo'sh usta yo'q" + "Qayta urinish". Aktivlik: qabul +2, rad −5, bekor −10; 0–100. "Mening ustalarim"dan tanlansa — taklif birinchi unga.
+Eng yuqori ballga taklif, 60 s taymer (usta ma'lumotlarni o'qib ulgurishi uchun). Rad/vaqt o'tdi → aktivlik −5, keyingi ustaga. 3 radiusdan keyin ham topilmasa (≈3 daqiqa) — "Hozir bo'sh usta yo'q" + "Qayta urinish". Aktivlik: qabul +2, rad −5, bekor −10; 0–100. "Mening ustalarim"dan tanlansa — taklif birinchi unga.
 
 ## 8. Dizayn qoidalari
 

@@ -8,6 +8,7 @@ import { MOVE_INTERVAL_MS } from '@/components/map/types';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, Button, RatingBadge, Squish, Text } from '@/components/ui';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
+import { bboxCorners } from '@/lib/geo';
 import { remainingEtaMin, resample, useRoute } from '@/lib/routes';
 import { t } from '@/lib/i18n';
 import { mastersAround } from '@/mocks';
@@ -53,7 +54,8 @@ export default function Tracking() {
   // Chiziq usta belgisining orqasidan boshlanadi (belgi oraliqda silliq siljiydi)
   const remaining = mockRoute.slice(Math.max(0, i - 1));
   const eta = route ? remainingEtaMin(route, mockRoute.slice(i)) : 1;
-  const fitTo = useMemo(() => [mockRoute[Math.floor(i / 4) * 4], location], [Math.floor(i / 4), mockRoute]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Kamera usta, qolgan yo'l va mijozni birga ko'rsatadi (har 4 qadamda qayta moslanadi)
+  const fitTo = useMemo(() => bboxCorners([...mockRoute.slice(Math.floor(i / 4) * 4), location]), [Math.floor(i / 4), mockRoute]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const label: Record<string, { text: string; color: string }> = {
     on_the_way: { text: t('tracking.found'), color: colors.success },

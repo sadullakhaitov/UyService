@@ -8,7 +8,7 @@ import { Text } from './Text';
 
 const ACircle = Animated.createAnimatedComponent(Circle);
 
-// Aylana taymer: 15 → 0 kamayadi, oxirgi soniyalarda telefon tebranadi
+// Aylana taymer: 60 → 0 kamayadi, oxirgi soniyalarda telefon tebranadi
 export function CountdownRing({ seconds, size = 132, label, onDone }: { seconds: number; size?: number; label: string; onDone: () => void }) {
   const stroke = 10;
   const r = (size - stroke) / 2;
