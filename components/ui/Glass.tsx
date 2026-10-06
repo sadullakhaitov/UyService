@@ -84,7 +84,9 @@ export function Glass({
 
 const styles = StyleSheet.create({
   clip: { overflow: 'hidden' },
-  edge: { borderWidth: StyleSheet.hairlineWidth },
+  // Yorug' hoshiya faqat telefonda: brauzerda 0,5 px chiziq yumaloq burchakda xira va notekis chiziladi —
+  // u yerda shisha soyasi va tusi bilan ajralib turadi (minimalizm)
+  edge: { borderWidth: Platform.OS === 'web' ? 0 : StyleSheet.hairlineWidth },
   // Brauzer: ichidagi xiralashtirish ham yumaloq burchak bilan kesilishi uchun alohida qatlam
   isolate: Platform.OS === 'web' ? { isolation: 'isolate' } : {},
 });
