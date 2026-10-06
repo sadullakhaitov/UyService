@@ -114,6 +114,7 @@ supabase/                 ← server (tayyor, hali joylanmagan): README.md — j
   functions/{dispatch,offer-respond,offer-timeout,send-sms} ← Edge Functions (send-sms — Eskiz.uz orqali SMS)
   tests/                  ← supabase_stub.sql + rls_test.sql (mahalliy Postgres+PostGIS'da 35 ta tekshiruv)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
+vercel.json               ← sayt (uyservice.uz) Vercel'da: build `expo export -p web` → dist, hamma yo'llar index.html'ga
 eas.json                  ← do'kon uchun build: preview (APK), production
 ```
 
