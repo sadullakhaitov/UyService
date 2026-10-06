@@ -1,0 +1,11 @@
+// Sayt (uyservice.uz) — Cloudflare Workers static assets.
+// Build: `npx expo export --platform web` → dist; deploy: `npx wrangler deploy`.
+// Hamma yo'llar (/client, /about, ...) index.html'ga — Expo Router o'zi ochadi; kesh — public/_headers
+{
+  "name": "uyservice",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}

@@ -1,4 +1,4 @@
-# Cloudflare Pages: nomida hash bor fayllar (JS, shriftlar, rasmlar) uzoq keshlanadi — sayt tez ochiladi
+# Cloudflare (Workers static assets): nomida hash bor fayllar (JS, shriftlar, rasmlar) uzoq keshlanadi — sayt tez ochiladi
 /_expo/static/*
   Cache-Control: public, max-age=31536000, immutable
 /assets/*

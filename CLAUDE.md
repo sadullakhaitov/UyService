@@ -114,7 +114,8 @@ supabase/                 ← server (tayyor, hali joylanmagan): README.md — j
   functions/{dispatch,offer-respond,offer-timeout,send-sms} ← Edge Functions (send-sms — Eskiz.uz orqali SMS)
   tests/                  ← supabase_stub.sql + rls_test.sql (mahalliy Postgres+PostGIS'da 35 ta tekshiruv)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
-public/_headers           ← sayt Cloudflare Pages'da (uyservice.uz): build `npx expo export --platform web` → `dist`, 404.html yo'q — hamma yo'llar index.html'ga (SPA); kesh sozlamalari
+public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
+wrangler.jsonc            ← sayt (uyservice.uz) Cloudflare Workers'da: build `npx expo export --platform web` → `dist`, deploy `npx wrangler deploy`; hamma yo'llar index.html'ga (SPA)
 eas.json                  ← do'kon uchun build: preview (APK), production
 ```
 
