@@ -50,11 +50,13 @@ export function GlassBg({
     );
   }
   return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, r, styles.clip, { borderColor: colors.glassBorder }, styles.edge, style]}>
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, r, styles.clip, styles.isolate, { borderColor: colors.glassBorder }, styles.edge, style]}>
       {BLUR ? (
-        <BlurView intensity={isDark() ? 45 : 60} tint={isDark() ? 'systemThinMaterialDark' : 'systemThinMaterialLight'} style={StyleSheet.absoluteFill} />
+        // Burchak radiusi xiralashtirish qatlamining o'ziga ham beriladi: brauzerda (Chrome) backdrop-filter
+        // ota elementning yumaloq burchagi bilan kesilmaydi va to'rtburchak bo'lib ko'rinadi
+        <BlurView intensity={isDark() ? 45 : 60} tint={isDark() ? 'systemThinMaterialDark' : 'systemThinMaterialLight'} style={[StyleSheet.absoluteFill, r, styles.clip]} />
       ) : null}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: BLUR ? (strong ? colors.glassFillStrong : colors.glassFill) : colors.glassSolid }]} />
+      <View style={[StyleSheet.absoluteFill, r, { backgroundColor: BLUR ? (strong ? colors.glassFillStrong : colors.glassFill) : colors.glassSolid }]} />
     </View>
   );
 }
@@ -83,4 +85,6 @@ export function Glass({
 const styles = StyleSheet.create({
   clip: { overflow: 'hidden' },
   edge: { borderWidth: StyleSheet.hairlineWidth },
+  // Brauzer: ichidagi xiralashtirish ham yumaloq burchak bilan kesilishi uchun alohida qatlam
+  isolate: Platform.OS === 'web' ? { isolation: 'isolate' } : {},
 });

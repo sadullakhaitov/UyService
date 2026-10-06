@@ -52,7 +52,7 @@ function SidePanel({ children, onHeight, top = 76 }: { children: ReactNode; onHe
     onHeight?.(0);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <View style={[styles.side, shadow.sheet, { top, maxHeight: height - top - SIDE_GAP }]}>
+    <View style={[styles.side, shadow.float, { top, maxHeight: height - top - SIDE_GAP }]}>
       <GlassBg radius={radius.sheet} strong />
       <ScrollView style={styles.sideScroll} contentContainerStyle={styles.sideContent} showsVerticalScrollIndicator={false}>
         <SideCtx.Provider value>{children}</SideCtx.Provider>
