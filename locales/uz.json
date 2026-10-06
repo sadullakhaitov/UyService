@@ -518,7 +518,7 @@
     "statFee": "so'm — chaqiruv",
     "statWarranty": "kun kafolat",
     "missionTitle": "Biz kimmiz",
-    "mission": "UyService — Toshkentda uyga usta chaqirish xizmati. Kran oqyaptimi, rozetka ishlamayaptimi yoki konditsioner sovutmayaptimi — ilovani oching, muammoni tanlang, tizim eng yaqin va eng yaxshi baholangan ustani topib beradi. Usta qayerdaligini xaritada xuddi taksidagidek kuzatib turasiz.",
+    "mission": "UyService — O'zbekiston bo'ylab uyga usta chaqirish xizmati. Kran oqyaptimi, rozetka ishlamayaptimi yoki konditsioner sovutmayaptimi — ilovani oching, muammoni tanlang, tizim siz turgan joyga eng yaqin va eng yaxshi baholangan ustani topib beradi. Usta qayerdaligini xaritada xuddi taksidagidek kuzatib turasiz.",
     "howTitle": "Qanday ishlaydi",
     "step1Title": "Muammoni tanlang",
     "step1Text": "6 ta yo'nalishdan birini va muammoni belgilang, xohlasangiz rasm qo'shing.",
@@ -546,9 +546,9 @@
     "site": "Sayt",
     "phone": "Telefon",
     "area": "Xizmat hududi",
-    "areaValue": "Toshkent shahri",
+    "areaValue": "Butun O'zbekiston — siz qayerda bo'lsangiz",
     "hours": "Ish vaqti",
     "hoursValue": "Har kuni {{hours}}",
-    "footer": "UyService · versiya {{version}} · © {{year}} Toshkent"
+    "footer": "UyService · versiya {{version}} · © {{year}} O'zbekiston"
   }
 }

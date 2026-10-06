@@ -6,8 +6,9 @@ export const YANDEX_KEY = process.env.EXPO_PUBLIC_YANDEX_MAPS_KEY ?? '';
 /** Kalitda HTTP Referer cheklovi bo'lsa — so'rovlar shu manzil nomidan yuboriladi */
 const REFERER = 'https://uyservice.uz/';
 const GEOCODER = 'https://geocode-maps.yandex.ru/1.x/';
-// Toshkent atrofi: markaz va o'lcham (uzunlik, kenglik)
-const TASHKENT = { ll: '69.2797,41.3111', spn: '0.45,0.3' };
+// Qidiruv foydalanuvchi atrofida ustun (o'lcham: uzunlik, kenglik), lekin cheklanmaydi; joy noma'lum bo'lsa — O'zbekiston markazi
+const UZ_CENTER = '64.5853,41.3775';
+const NEAR_SPAN = '0.6,0.4';
 
 export type YandexPlace = { id: string; title: string; subtitle: string; location: LatLng };
 
@@ -32,9 +33,9 @@ async function geocoder(params: Record<string, string>, signal?: AbortSignal): P
 
 type GeoObject = { name: string; description?: string; Point: { pos: string } };
 
-/** Matn bo'yicha qidirish (Toshkent ichida). Kalit yo'q yoki xato bo'lsa — null (zaxira xizmat ishlatiladi) */
-export const yandexSearch = (text: string, signal?: AbortSignal) =>
-  geocoder({ geocode: text, ll: TASHKENT.ll, spn: TASHKENT.spn, rspn: '1', results: '8' }, signal);
+/** Matn bo'yicha qidirish (O'zbekiston bo'ylab, yaqinlari birinchi). Kalit yo'q yoki xato bo'lsa — null (zaxira xizmat ishlatiladi) */
+export const yandexSearch = (text: string, near?: LatLng, signal?: AbortSignal) =>
+  geocoder({ geocode: text, ll: near ? `${near.longitude},${near.latitude}` : UZ_CENTER, spn: near ? NEAR_SPAN : '12,5', rspn: '0', results: '8' }, signal);
 
 /** Koordinatadan manzil (uy raqami bilan) */
 export async function yandexReverse(p: LatLng): Promise<string | null> {

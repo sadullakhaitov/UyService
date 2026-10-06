@@ -518,7 +518,7 @@
     "statFee": "UZS call-out",
     "statWarranty": "days warranty",
     "missionTitle": "Who we are",
-    "mission": "UyService is a home repair service in Tashkent. Leaking tap, dead socket or an air conditioner that won't cool — open the app, pick the problem and we'll find the nearest top-rated handyman. You watch them arrive on the map, just like a taxi.",
+    "mission": "UyService is a home repair service across Uzbekistan. Leaking tap, dead socket or an air conditioner that won't cool — open the app, pick the problem and we'll find the top-rated handyman nearest to you. You watch them arrive on the map, just like a taxi.",
     "howTitle": "How it works",
     "step1Title": "Pick the problem",
     "step1Text": "Choose one of 6 service types and the problem, add a photo if you like.",
@@ -546,9 +546,9 @@
     "site": "Website",
     "phone": "Phone",
     "area": "Service area",
-    "areaValue": "Tashkent city",
+    "areaValue": "All of Uzbekistan — wherever you are",
     "hours": "Hours",
     "hoursValue": "Daily {{hours}}",
-    "footer": "UyService · version {{version}} · © {{year}} Tashkent"
+    "footer": "UyService · version {{version}} · © {{year}} Uzbekistan"
   }
 }

@@ -15,7 +15,7 @@ Quyida asl TZ + keyin qabul qilingan qarorlar.
 
 ## 1. Loyiha haqida qisqacha
 
-UyService — Toshkentda uyga usta chaqirish ilovasi: mijoz kategoriyani tanlaydi, tizim Yandex Go'dagidek eng mos ustani topib beradi, mijoz uni xaritada kelayotganini ko'rib turadi.
+UyService — O'zbekiston bo'ylab uyga usta chaqirish ilovasi (xizmat hududi — butun respublika: mijoz qayerda bo'lsa, o'sha atrofdagi ustalar): mijoz kategoriyani tanlaydi, tizim Yandex Go'dagidek eng mos ustani topib beradi, mijoz uni xaritada kelayotganini ko'rib turadi.
 
 **Kim uchun:** Mijoz (uyida muammo bo'lgan odam), Usta (santexnik, elektrik va boshqa mutaxassislar), Admin (ustalarni tasdiqlaydi, buyurtmalarni kuzatadi).
 
@@ -96,7 +96,7 @@ lib/                      ← i18n, geo, location, routes, supabase
   masterFeed.ts           ← usta tomoni: takliflar oqimi, joylashuvni har 5 s yuborish, useBlocked
   backend.ts              ← serverga yoziladigan hamma narsa (hozir mahalliy, 5-bosqichda Supabase)
   notify.ts               ← bildirishnomalar (mahalliy; ilova orqa fonda bo'lsa chiqadi)
-  geocode.ts              ← manzil qidirish (hozir OSM Nominatim, keyin Yandex Geocoder)
+  geocode.ts              ← manzil qidirish butun O'zbekiston bo'ylab, foydalanuvchiga yaqinlari birinchi (Yandex Geocoder, kalit bo'lmasa OSM Nominatim)
   schedule.ts, photos.ts  ← rejalashtirish vaqtlari; rasm tanlash/suratga olish
   yandex.ts               ← Yandex kaliti + HTTP Geocoder (qidiruv, koordinatadan manzil); kalit bo'lmasa — Nominatim / telefon xizmati
   useLayout.ts            ← `useWide()` — kompyuter brauzeri (≥ 900 px): yon panel, o'rtadagi ustun, chap menyu

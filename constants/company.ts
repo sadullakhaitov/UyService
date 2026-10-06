@@ -8,7 +8,8 @@ export const COMPANY = {
   telegram: 'uyservice_uz',
   /** ⚠️ hali yo'q — bo'sh bo'lsa ko'rsatilmaydi */
   phone: '',
-  city: 'Toshkent',
+  /** Xizmat hududi — butun O'zbekiston: mijoz qayerda bo'lsa, o'sha yerdagi ustalar */
+  area: 'UZ',
   founded: 2026,
   /** ⚠️ Ish vaqti — tasdiqlanmagan */
   hours: '08:00–22:00',
