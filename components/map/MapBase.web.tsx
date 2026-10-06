@@ -67,6 +67,10 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
     flyTo: (c, z = DEFAULT_ZOOM) => {
       animateTo({ lat: c.latitude, lng: c.longitude, zoom: z }, 900);
     },
+    zoomBy: (d) => {
+      const c = camRef.current;
+      animateTo({ ...c, zoom: Math.max(11, Math.min(18, c.zoom + d)) }, 300);
+    },
   }));
 
   useEffect(() => {

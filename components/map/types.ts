@@ -39,6 +39,8 @@ export type MapBaseProps = {
 export type MapHandle = {
   /** Kamerani shu nuqtaga silliq uchirish */
   flyTo: (center: LatLng, zoom?: number) => void;
+  /** Zoom +1 / −1 */
+  zoomBy: (delta: number) => void;
 };
 
 export const DEFAULT_ZOOM = 16;

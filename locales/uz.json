@@ -93,7 +93,7 @@
     "callFee": "Chaqiruv (kelib ko'rish)",
     "estimate": "Taxminiy ish narxi",
     "guarantee": "Aniq narx usta kelib ko'rgach kelishiladi. Ishga {{days}} kun kafolat.",
-        "submit": "Usta chaqirish"
+    "submit": "Usta chaqirish"
   },
   "searching": {
     "title": "Usta qidirilmoqda",
@@ -222,5 +222,84 @@
     "choose": "Tanlash",
     "selected": "Tanlangan",
     "save": "Saqlash"
+  },
+  "tabs": {
+    "orders": "Buyurtmalar",
+    "money": "Pul",
+    "chats": "Chatlar",
+    "profile": "Profil"
+  },
+  "mOrders": {
+    "blockedVerify": "Profil tekshirilmoqda",
+    "blockedBalance": "Buyurtmalar yopiq — balansni to'ldiring",
+    "blockedSubscription": "Obuna muddati tugagan",
+    "activity": "Aktivlik",
+    "todayOrders": "{{count}} ta buyurtma",
+    "swipeOnline": "Ishga chiqish",
+    "swipeOnlineHint": "O'ngga suring",
+    "swipeOffline": "Dam olish",
+    "onlineNow": "Siz onlaynsiz · buyurtma kutilmoqda",
+    "blockedTitle": "Buyurtmalar yopiq",
+    "blockedHint": "Muammoni hal qiling",
+    "promoCommission": "Obunaga o'ting — foiz to'lamaysiz",
+    "promoCommissionSub": "Har ishdan {{percent}}% o'rniga oyiga bir marta",
+    "promoSubscription": "Obuna faol",
+    "promoSubscriptionSub": "{{days}} kun qoldi",
+    "filters": "Buyurtma filtri",
+    "filterCategories": "Kategoriyalar",
+    "filterRadius": "Qancha uzoqlikdan",
+    "done": "Tayyor",
+    "zoomIn": "Yaqinlashtirish",
+    "zoomOut": "Uzoqlashtirish"
+  },
+  "money": {
+    "title": "Pul",
+    "support": "Yordam",
+    "today": "Bugun",
+    "jobsCard": "Bajarilgan ishlar",
+    "jobsCardSub": "Bu hafta {{count}} ta ish",
+    "balance": "Balans",
+    "limit": "Balans limiti",
+    "limitOk": "Naqd buyurtmalar ochiq",
+    "limitLow": "Naqd buyurtmalar yopiq — balansni to'ldiring",
+    "topUp": "Balansni to'ldirish",
+    "topUpSoon": "Click / Payme orqali to'ldirish keyingi bosqichda qo'shiladi",
+    "subscription": "Obuna",
+    "subscriptionActive": "Faol · {{date}}gacha",
+    "subscriptionExpired": "Muddati tugagan",
+    "renew": "Obunani uzaytirish",
+    "plan": "Tarif",
+    "commissionNote": "Har bir ishdan {{percent}}% balansdan yechiladi"
+  },
+  "chats": {
+    "title": "Chatlar",
+    "placeholder": "Xabar yozing",
+    "send": "Yuborish",
+    "autoReply": "Rahmat! Operator tez orada javob beradi.",
+    "empty": "Hozircha xabar yo'q"
+  },
+  "profile": {
+    "role": "Usta",
+    "switchRole": "Mijoz bo'lish",
+    "rating": "Reyting",
+    "points": "Aktivlik",
+    "priority": "Prioritet",
+    "categories": "Kategoriyalar",
+    "plan": "Tarif",
+    "payment": "To'lov",
+    "cash": "Naqd",
+    "works": "Ish namunalari",
+    "addWorks": "Ish rasmlarini qo'shing",
+    "worksHint": "Mijozlar ishingizni ko'rib ishonch hosil qiladi",
+    "documents": "Hujjatlar",
+    "verifyPhoto": "Shaxsni tasdiqlash",
+    "promo": "Promokodlar",
+    "invite": "Do'stni taklif qilish",
+    "learn": "O'qish",
+    "settings": "Sozlamalar",
+    "logout": "Chiqish",
+    "version": "Ilova versiyasi",
+    "soon": "Tez kunda",
+    "soonText": "Bu bo'lim keyingi bosqichlarda qo'shiladi"
   }
 }

@@ -59,11 +59,15 @@ app/                      ← ekranlar (Expo Router)
   client/tracking.tsx     ← usta yo'lda
   client/rate.tsx         ← ish tugadi, baholash
   client/history.tsx      ← buyurtmalar tarixi
+  master/(tabs)/          ← usta ilovasi, pastki menyu 4 bo'lim (Yandex Pro tuzilmasi)
+    index.tsx             ← Buyurtmalar: xarita, filtr, zoom, aktivlik, "surib ishga chiqish"
+    money.tsx             ← Pul: kunlik daromad, balans va limit / obuna, tarif
+    chats.tsx             ← Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar
+    profile.tsx           ← Profil: reyting, aktivlik, kategoriyalar, tarif, hujjatlar, chiqish
+  master/chat/[id].tsx    ← chat oynasi
   master/plan.tsx         ← tarif tanlash: obuna yoki komissiya
-  master/index.tsx        ← onlayn/oflayn + xarita
   master/offer.tsx        ← yangi buyurtma, 60 soniya taymer
   master/job.tsx          ← mijozga borish, ishni boshlash/tugatish
-  master/earnings.tsx     ← daromad, reyting, tarif
 components/
   map/                    ← xarita bilan bog'liq hamma narsa
     MapBase.tsx           ← haqiqiy xarita (Android/iOS)
@@ -87,7 +91,12 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 **Mijoz:** Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim") → Tarix (qayta chaqirish).
 
-**Usta:** Tarif tanlash (birinchi kirishda) → Bosh sahifa (katta Onlayn/Oflayn tugma, bugungi daromad, aktivlik) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → Ishni boshladim → Tugatdim + yakuniy narx, platforma ulushi tarifga qarab) → Daromad (kun/hafta/oy, reyting, aktivlik, joriy tarif).
+**Usta** (pastki menyu: Buyurtmalar · Pul · Chatlar · Profil — Yandex Pro tuzilmasi, Mejgorod yo'q):
+- Buyurtmalar: to'liq xarita, filtr (kategoriya, radius), zoom ±, joylashuv; panelda aktivlik va bugungi daromad, tarif kartasi, "surib ishga chiqish" tugmasi. Buyurtma yopiq bo'lsa tepada qizil banner (profil tekshirilmoqda / balans limitdan past / obuna tugagan).
+- Pul: kunlik daromad + 7 kunlik tanlov, komissiya tarifida balans va limit (`BALANCE_LIMIT`, platforma ulushi ish yakunida balansdan yechiladi), obuna tarifida obuna muddati; "Yordam" → qo'llab-quvvatlash chati.
+- Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar bilan yozishmalar (hozircha mahalliy, 5-bosqichda Realtime).
+- Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; sozlamalar, chiqish.
+- Tarif tanlash (birinchi kirishda) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → Ishni boshladim → Tugatdim + yakuniy narx, platforma ulushi tarifga qarab).
 
 **Kirish:** telefon → SMS kod → rol. Usta ro'yxatdan o'tganda ism, kategoriyalar, pasport rasmi va ish namunalarini yuklaydi; admin tasdiqlamaguncha buyurtma olmaydi (`useMaster().verified`).
 

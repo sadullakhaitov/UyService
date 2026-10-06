@@ -16,7 +16,7 @@ import { bboxCorners } from '@/lib/geo';
 import { remainingEtaMin, resample, useRoute } from '@/lib/routes';
 import { useMyLocation } from '@/lib/useMyLocation';
 import { mockClient, mockMasters, mockOffer } from '@/mocks';
-import { useUser } from '@/store';
+import { useMaster, useUser } from '@/store';
 
 type Step = 'on_the_way' | 'arrived' | 'in_progress' | 'finishing' | 'completed';
 const STEPS: Step[] = ['on_the_way', 'arrived', 'in_progress', 'completed'];
@@ -24,6 +24,7 @@ const STEPS: Step[] = ['on_the_way', 'arrived', 'in_progress', 'completed'];
 export default function Job() {
   const insets = useSafeAreaInsets();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
+  const charge = useMaster((s) => s.charge);
   const [step, setStep] = useState<Step>('on_the_way');
   const [i, setI] = useState(0);
   const [sheetH, setSheetH] = useState(360);
@@ -121,7 +122,10 @@ export default function Job() {
         {step === 'on_the_way' ? <Button title={t('job.arrivedBtn')} big onPress={() => setStep('arrived')} /> : null}
         {step === 'arrived' ? <Button title={t('job.startBtn')} big onPress={() => setStep('in_progress')} /> : null}
         {step === 'in_progress' ? <Button title={t('job.finishBtn')} big onPress={() => setStep('finishing')} /> : null}
-        {step === 'finishing' ? <Button title={t('job.confirm')} big onPress={() => setStep('completed')} /> : null}
+        {step === 'finishing' ? <Button title={t('job.confirm')} big onPress={() => {
+              if (cut) charge(cut); // komissiya balansdan yechiladi
+              setStep('completed');
+            }} /> : null}
         {step === 'completed' ? <Button title={t('common.continue')} big onPress={() => router.replace('/master')} /> : null}
       </Sheet>
     </View>

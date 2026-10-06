@@ -118,6 +118,42 @@ export const mockMasterSelf = {
   monthIncome: 4_850_000,
 };
 
+const minAgo = (m: number) => Date.now() - m * 60_000;
+
+export const mockChats = [
+  {
+    id: 'support',
+    title: "UyService qo'llab-quvvatlash",
+    subtitle: 'Savolingiz bormi? Yozing',
+    kind: 'support' as const,
+    unread: 1,
+    messages: [{ id: 's1', mine: false, text: "Assalomu alaykum! UyService'ga xush kelibsiz. Savollaringiz bo'lsa, shu yerga yozing.", at: minAgo(180) }],
+  },
+  {
+    id: 'news',
+    title: 'Yangiliklar',
+    subtitle: "Konditsioner mavsumi: buyurtmalar ko'paydi",
+    kind: 'news' as const,
+    unread: 2,
+    messages: [
+      { id: 'n1', mine: false, text: "Yangi: endi taklifni ko'rib chiqish uchun 60 soniya beriladi.", at: minAgo(600) },
+      { id: 'n2', mine: false, text: "Konditsioner mavsumi: Chilonzor va Yunusobodda buyurtmalar ko'paydi.", at: minAgo(90) },
+    ],
+  },
+  {
+    id: 'o3',
+    title: 'Dilnoza · Kran oqyapti',
+    subtitle: '28-sentyabr buyurtmasi',
+    kind: 'client' as const,
+    unread: 0,
+    messages: [
+      { id: 'c1', mine: false, text: "Assalomu alaykum, podyezd kodi 45#", at: minAgo(8000) },
+      { id: 'c2', mine: true, text: 'Vaalaykum assalom, 10 daqiqada yetib boraman', at: minAgo(7990) },
+      { id: 'c3', mine: false, text: 'Rahmat, kutaman', at: minAgo(7985) },
+    ],
+  },
+];
+
 export const mockOffer = {
   id: 'of1',
   categoryId: 'plumber' as CategoryId,

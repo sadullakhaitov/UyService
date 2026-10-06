@@ -13,6 +13,10 @@ export const BILLING = {
   },
 } as const;
 
+// Komissiya tarifi: usta naqd pulni o'zi oladi, platforma ulushi balansidan yechiladi.
+// Balans shu limitdan past bo'lsa — naqd buyurtmalar yopiladi (Yandex Pro'dagidek). TASDIQLANSIN
+export const BALANCE_LIMIT = 20_000;
+
 // Ustaning bitta ishdan platformaga beradigan ulushi
 export function platformCut(plan: BillingPlan, finalPrice: number) {
   return Math.round((finalPrice * BILLING[plan].commissionPercent) / 100);

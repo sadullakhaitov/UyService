@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { BillingPlan } from '@/constants/billing';
 import type { CategoryId } from '@/constants/categories';
 import type { LatLng } from '@/lib/geo';
-import { mockClient, mockFavorites } from '@/mocks';
+import { mockChats, mockClient, mockFavorites } from '@/mocks';
 
 export type Role = 'client' | 'master';
 
@@ -85,14 +85,51 @@ type MasterState = {
   online: boolean;
   verified: boolean;
   activity: number;
+  /** Komissiya tarifida: platforma ulushi shu balansdan yechiladi (so'm) */
+  balance: number;
+  /** Obuna tarifida: obuna tugash sanasi (ms) */
+  subscriptionUntil: number;
+  /** Buyurtma filtri: qaysi kategoriyalar va qancha uzoqlikdan */
+  categories: CategoryId[];
+  radiusKm: number;
   setOnline: (v: boolean) => void;
   bumpActivity: (delta: number) => void;
+  setFilter: (p: { categories?: CategoryId[]; radiusKm?: number }) => void;
+  /** Komissiya: ish yakunlanganda platforma ulushi balansdan yechiladi */
+  charge: (amount: number) => void;
 };
 
 export const useMaster = create<MasterState>((set) => ({
   online: false,
   verified: true, // soxta: admin tasdiqlagan
   activity: 86,
+  balance: 45_000,
+  subscriptionUntil: Date.now() + 18 * 86_400_000,
+  categories: ['plumber', 'appliance'],
+  radiusKm: 6,
   setOnline: (online) => set({ online }),
   bumpActivity: (d) => set((s) => ({ activity: Math.max(0, Math.min(100, s.activity + d)) })),
+  setFilter: (p) => set(p),
+  charge: (amount) => set((s) => ({ balance: s.balance - amount })),
+}));
+
+// Chatlar (soxta, mahalliy) — 5-bosqichda Supabase Realtime
+export type ChatMessage = { id: string; mine: boolean; text: string; at: number };
+export type Chat = { id: string; title: string; subtitle: string; kind: 'support' | 'news' | 'client'; unread: number; messages: ChatMessage[] };
+
+type ChatState = {
+  chats: Chat[];
+  send: (chatId: string, text: string) => void;
+  markRead: (chatId: string) => void;
+};
+
+export const useChats = create<ChatState>((set) => ({
+  chats: mockChats,
+  send: (chatId, text) =>
+    set((s) => ({
+      chats: s.chats.map((c) =>
+        c.id === chatId ? { ...c, messages: [...c.messages, { id: String(Date.now()), mine: true, text, at: Date.now() }] } : c,
+      ),
+    })),
+  markRead: (chatId) => set((s) => ({ chats: s.chats.map((c) => (c.id === chatId ? { ...c, unread: 0 } : c)) })),
 }));

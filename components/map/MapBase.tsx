@@ -40,6 +40,15 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
 
   useImperativeHandle(handle, () => ({
     flyTo: (c, z = DEFAULT_ZOOM) => ref.current?.animateCamera(cam(c, z), { duration: 900 }),
+    zoomBy: async (d) => {
+      const c = await ref.current?.getCamera();
+      if (!c) return;
+      // Google — zoom, Apple — balandlik (altitude)
+      ref.current?.animateCamera(
+        Platform.OS === 'android' ? { zoom: (c.zoom ?? DEFAULT_ZOOM) + d } : { altitude: (c.altitude ?? zoomToAltitude(DEFAULT_ZOOM)) / 2 ** d },
+        { duration: 300 },
+      );
+    },
   }));
   const ready = useRef(false);
   const dragging = useRef(false);

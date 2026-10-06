@@ -12,14 +12,18 @@ export function Sheet({
   children,
   onHeight,
   peek = 84,
+  bottomInset,
 }: {
   children: ReactNode;
   /** Panelning hozir ko'rinib turgan balandligi (xarita fokus nuqtasi uchun) */
   onHeight?: (h: number) => void;
   /** Kichraytirilgan holatdagi balandlik (tortish chizig'isiz) */
   peek?: number;
+  /** Pastki tab menyu ustida bo'lsa — 0 (xavfsiz zona tab menyuda) */
+  bottomInset?: number;
 }) {
-  const insets = useSafeAreaInsets();
+  const safe = useSafeAreaInsets();
+  const insets = { bottom: bottomInset ?? safe.bottom };
   const spring = useBottomSheetSpringConfigs({ damping: 16, stiffness: 160, mass: 0.9, overshootClamping: false });
   const peekH = peek + HANDLE + insets.bottom;
   const fullH = useRef(0);
@@ -51,7 +55,7 @@ export function Sheet({
       style={shadow.sheet}
     >
       <BottomSheetView
-        style={[styles.content, { paddingBottom: Math.max(insets.bottom, 12) + 12 }]}
+        style={[styles.content, { paddingBottom: Math.max(insets.bottom, 4) + 12 }]}
         onLayout={(e) => {
           fullH.current = e.nativeEvent.layout.height + HANDLE;
           report();
