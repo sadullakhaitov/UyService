@@ -18,8 +18,8 @@ const COS = Math.cos((41.29 * Math.PI) / 180);
 
 // Chilonzor atrofidagi ko'chalar to'ri (soxta)
 const range = (from: number, step: number, n: number) => Array.from({ length: n }, (_, i) => +(from + i * step).toFixed(4));
-const V = range(69.1766, 0.0034, 20); // ... 69.2038, 69.2072, 69.2106, 69.214 ...
-const H = range(41.2692, 0.0023, 22); // ... 41.2853, 41.2876, 41.2899, 41.2922 ...
+const V = range(69.1426, 0.0034, 40); // ... 69.2038, 69.2072, 69.2106, 69.214 ...
+const H = range(41.2462, 0.0023, 44); // ... 41.2853, 41.2876, 41.2899, 41.2922 ...
 const MAJOR_V = new Set([69.2072, 69.2208]);
 const MAJOR_H = new Set([41.2922, 41.2807]);
 
@@ -177,10 +177,10 @@ export function MapBase({
         ))}
         <Path d={canal} stroke="#CFE3E6" strokeWidth={10 * scale} fill="none" strokeLinecap="round" />
         {V.map((lng) => (
-          <Path key={`v${lng}`} d={toPath([{ latitude: 41.26, longitude: lng }, { latitude: 41.32, longitude: lng }])} stroke={colors.mapRoad} strokeWidth={(MAJOR_V.has(lng) ? 13 : 8) * scale} />
+          <Path key={`v${lng}`} d={toPath([{ latitude: 41.24, longitude: lng }, { latitude: 41.35, longitude: lng }])} stroke={colors.mapRoad} strokeWidth={(MAJOR_V.has(lng) ? 13 : 8) * scale} />
         ))}
         {H.map((lat) => (
-          <Path key={`h${lat}`} d={toPath([{ latitude: lat, longitude: 69.17 }, { latitude: lat, longitude: 69.24 }])} stroke={colors.mapRoad} strokeWidth={(MAJOR_H.has(lat) ? 13 : 8) * scale} />
+          <Path key={`h${lat}`} d={toPath([{ latitude: lat, longitude: 69.14 }, { latitude: lat, longitude: 69.28 }])} stroke={colors.mapRoad} strokeWidth={(MAJOR_H.has(lat) ? 13 : 8) * scale} />
         ))}
         <Path d={avenue} stroke={colors.mapRoad} strokeWidth={16 * scale} fill="none" strokeLinecap="round" />
         {route?.length ? (
