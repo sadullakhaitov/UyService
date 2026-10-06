@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Divider, RatingInput, Row, Squish, Text } from '@/components/ui';
 import { getCategory, WARRANTY_DAYS } from '@/constants/categories';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
 import { useActiveOrder, useHistory, useOrders, useUser } from '@/store';
@@ -126,13 +126,13 @@ export default function Rate() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   hero: { backgroundColor: colors.primary, borderBottomLeftRadius: radius.sheet, borderBottomRightRadius: radius.sheet },
   heroInner: { alignItems: 'center', gap: 8, paddingTop: 20, paddingBottom: 26, paddingHorizontal: 20 },
   check: { width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center' },
   heroTitle: { fontFamily: fonts.heavy, fontSize: 22, color: colors.onPrimary },
-  heroSub: { fontFamily: fonts.medium, fontSize: 14, color: '#D7EAE3' },
+  heroSub: { fontFamily: fonts.medium, fontSize: 14, color: colors.onPrimaryMuted },
   scroll: { padding: 16, gap: 20 },
   warranty: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   warrantyText: { fontFamily: fonts.bold, fontSize: 12, color: colors.success },
@@ -148,4 +148,4 @@ const styles = StyleSheet.create({
   favText: { flex: 1, fontFamily: fonts.bold, fontSize: 14, color: colors.ink },
   bottom: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12, gap: 8 },
   center: { textAlign: 'center' },
-});
+}));

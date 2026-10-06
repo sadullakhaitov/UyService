@@ -9,7 +9,7 @@ import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Card, Divider, IconButton, Row, Text } from '@/components/ui';
 import { BILLING, platformCut } from '@/constants/billing';
 import { getCategory } from '@/constants/categories';
-import { colors, fonts, shadow } from '@/constants/theme';
+import { colors, fonts, shadow, themed } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { bboxCorners, distanceKm, type LatLng } from '@/lib/geo';
 import { remainingEtaMin, useRoute } from '@/lib/routes';
@@ -201,7 +201,7 @@ function PriceInput({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
   steps: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', gap: 6, backgroundColor: colors.surface, borderRadius: 16, padding: 10 },
@@ -224,5 +224,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.ink,
   },
-});
+}));
 

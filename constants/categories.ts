@@ -1,4 +1,5 @@
 import { AirVent, Armchair, Droplets, PaintRoller, WashingMachine, Zap, type LucideIcon } from 'lucide-react-native';
+import { pick } from './theme';
 
 // Chaqiruv narxi (usta kelib ko'rishi) — hamma kategoriya uchun bir xil.
 export const CALL_FEE = 50_000;
@@ -22,14 +23,38 @@ export type Category = {
   callFee: number;
 };
 
+type Tones = { main: string; onMain: string; tint: string; ink: string };
+
+// Rang to'plami: kunduzgi va tungi variant. Maydonlar o'qilganda joriy rejim rangi qaytadi.
+function category(id: CategoryId, icon: LucideIcon, day: Tones, night: Tones): Category {
+  const c = { id, icon, callFee: CALL_FEE } as Category;
+  for (const k of ['main', 'onMain', 'tint', 'ink'] as const) {
+    Object.defineProperty(c, k, { enumerable: true, get: () => pick(day[k], night[k]) });
+  }
+  return c;
+}
+
 // Har bir ishning o'z rangi: santexnik — suv, elektrik — chaqmoq, konditsioner — sovuq ko'k ...
+// Tungi rejimda asosiy rang biroz yorqinroq, och fon — to'q, ikonka/matn — och.
 export const categories: Category[] = [
-  { id: 'plumber', icon: Droplets, main: '#0B6FB8', onMain: '#FFFFFF', tint: '#E3F1FB', ink: '#0B6FB8', callFee: CALL_FEE },
-  { id: 'electric', icon: Zap, main: '#F5B800', onMain: '#2B2100', tint: '#FFF6D6', ink: '#8A6500', callFee: CALL_FEE },
-  { id: 'aircon', icon: AirVent, main: '#0E7490', onMain: '#FFFFFF', tint: '#E0F4F8', ink: '#0E7490', callFee: CALL_FEE },
-  { id: 'furniture', icon: Armchair, main: '#8B5A2B', onMain: '#FFFFFF', tint: '#F5ECE3', ink: '#7A4B23', callFee: CALL_FEE },
-  { id: 'repair', icon: PaintRoller, main: '#6D3FC0', onMain: '#FFFFFF', tint: '#EFE8FA', ink: '#5B3A9B', callFee: CALL_FEE },
-  { id: 'appliance', icon: WashingMachine, main: '#3F5A6B', onMain: '#FFFFFF', tint: '#E8EEF2', ink: '#3F5A6B', callFee: CALL_FEE },
+  category('plumber', Droplets,
+    { main: '#0B6FB8', onMain: '#FFFFFF', tint: '#E3F1FB', ink: '#0B6FB8' },
+    { main: '#2A8BD6', onMain: '#FFFFFF', tint: '#132A3B', ink: '#7DBDF0' }),
+  category('electric', Zap,
+    { main: '#F5B800', onMain: '#2B2100', tint: '#FFF6D6', ink: '#8A6500' },
+    { main: '#F5B800', onMain: '#2B2100', tint: '#342A0B', ink: '#F5C842' }),
+  category('aircon', AirVent,
+    { main: '#0E7490', onMain: '#FFFFFF', tint: '#E0F4F8', ink: '#0E7490' },
+    { main: '#1A93B5', onMain: '#FFFFFF', tint: '#10303A', ink: '#6CC8E0' }),
+  category('furniture', Armchair,
+    { main: '#8B5A2B', onMain: '#FFFFFF', tint: '#F5ECE3', ink: '#7A4B23' },
+    { main: '#A87240', onMain: '#FFFFFF', tint: '#33251A', ink: '#D9A877' }),
+  category('repair', PaintRoller,
+    { main: '#6D3FC0', onMain: '#FFFFFF', tint: '#EFE8FA', ink: '#5B3A9B' },
+    { main: '#8B5CE0', onMain: '#FFFFFF', tint: '#2A2040', ink: '#BBA0F0' }),
+  category('appliance', WashingMachine,
+    { main: '#3F5A6B', onMain: '#FFFFFF', tint: '#E8EEF2', ink: '#3F5A6B' },
+    { main: '#5F8196', onMain: '#FFFFFF', tint: '#1F2A31', ink: '#9DB8C8' }),
 ];
 
 export type Problem = {

@@ -498,5 +498,11 @@
     "section": "Documents",
     "terms": "Terms of use",
     "privacy": "Privacy policy"
+  },
+  "theme": {
+    "section": "Appearance",
+    "system": "Auto",
+    "light": "Light",
+    "dark": "Dark"
   }
 }

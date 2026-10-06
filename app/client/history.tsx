@@ -4,7 +4,7 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, RatingBadge, ScreenHeader, Squish, Text } from '@/components/ui';
 import { getCategory } from '@/constants/categories';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import type { CategoryId } from '@/constants/categories';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
@@ -79,7 +79,7 @@ export default function History() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   list: { padding: 16, gap: 12 },
@@ -93,4 +93,4 @@ const styles = StyleSheet.create({
   note: { color: colors.ink, fontStyle: 'italic' },
   again: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.primarySoft },
   againText: { fontFamily: fonts.bold, fontSize: 13, color: colors.primary },
-});
+}));

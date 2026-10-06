@@ -6,7 +6,7 @@ import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, St
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Divider, Row, ScreenHeader, Squish, Text } from '@/components/ui';
 import { getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
-import { colors, fonts, radius, shadow } from '@/constants/theme';
+import { colors, fonts, radius, shadow, themed } from '@/constants/theme';
 import { formatDay, formatRange, formatSchedule, formatSum, formatTime, t } from '@/lib/i18n';
 import { askNotifications } from '@/lib/notify';
 import { isOnline } from '@/lib/useOnline';
@@ -171,7 +171,7 @@ function SchedulePicker({ value, onChange, color, onColor }: { value: number; on
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   whenHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   slots: { gap: 8 },
   root: { flex: 1, backgroundColor: colors.bg },
@@ -199,14 +199,14 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: '#9FB1AA',
+    borderColor: colors.dashed,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   photo: { width: 68, height: 68, borderRadius: 14, overflow: 'hidden', backgroundColor: colors.mapBlock },
-  remove: { position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: 10, backgroundColor: 'rgba(11,42,36,0.7)', alignItems: 'center', justifyContent: 'center' },
+  remove: { position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' },
   note: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
   bottom: { backgroundColor: colors.surface, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 12, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet },
   where: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-});
+}));

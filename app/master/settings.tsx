@@ -4,7 +4,8 @@ import { ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Squish, Text } from '@/components/ui';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
-import { colors, fonts, radius } from '@/constants/theme';
+import { ThemePicker } from '@/components/ui/ThemePicker';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { askNotifications } from '@/lib/notify';
 import { useMaster, useUser } from '@/store';
@@ -40,6 +41,9 @@ export default function Settings() {
         <Text style={styles.section}>{t('account.language')}</Text>
         <LanguagePicker />
 
+        <Text style={styles.section}>{t('theme.section')}</Text>
+        <ThemePicker />
+
         <Text style={styles.section}>{t('legal.section')}</Text>
         <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/legal/terms')} style={styles.row}>
           <Text style={[styles.label, styles.flex]}>{t('legal.terms')}</Text>
@@ -70,7 +74,7 @@ export default function Settings() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { padding: 16, gap: 12 },
@@ -79,4 +83,4 @@ const styles = StyleSheet.create({
   label: { fontFamily: fonts.bold, fontSize: 16, color: colors.ink },
   section: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink, marginTop: 8 },
   logout: { marginTop: 12 },
-});
+}));

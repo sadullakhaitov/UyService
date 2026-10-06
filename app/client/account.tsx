@@ -5,7 +5,8 @@ import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Squish, Text } from '@/components/ui';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
-import { colors, fonts, radius } from '@/constants/theme';
+import { ThemePicker } from '@/components/ui/ThemePicker';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useMaster, useUser } from '@/store';
 
@@ -63,6 +64,9 @@ export default function Account() {
         <Text style={styles.section}>{t('account.language')}</Text>
         <LanguagePicker />
 
+        <Text style={styles.section}>{t('theme.section')}</Text>
+        <ThemePicker />
+
         <Text style={styles.section}>{t('legal.section')}</Text>
         <Row icon={FileText} label={t('legal.terms')} onPress={() => router.push('/legal/terms')} />
         <Row icon={Shield} label={t('legal.privacy')} onPress={() => router.push('/legal/privacy')} />
@@ -88,7 +92,7 @@ function Row({ icon: Icon, label, hint, onPress, primary }: { icon: typeof Globe
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { padding: 16, gap: 12 },
@@ -98,4 +102,4 @@ const styles = StyleSheet.create({
   nameInput: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink, paddingVertical: 4, borderBottomWidth: 1.5, borderBottomColor: colors.line },
   rowLabel: { fontFamily: fonts.bold, fontSize: 16, color: colors.ink },
   section: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink, marginTop: 8 },
-});
+}));

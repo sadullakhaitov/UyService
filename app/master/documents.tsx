@@ -3,22 +3,22 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
 import { PhotoTile } from '@/components/ui/PhotoTile';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
 import { takePhoto } from '@/lib/photos';
 import { useMaster, type VerifyStatus } from '@/store';
 
-const STATUS: Record<VerifyStatus, { icon: typeof Clock3; bg: string; fg: string }> = {
+const STATUS = (): Record<VerifyStatus, { icon: typeof Clock3; bg: string; fg: string }> => ({
   none: { icon: Clock3, bg: colors.field, fg: colors.ink2 },
   pending: { icon: Clock3, bg: colors.accentSoft, fg: colors.accentInk },
   approved: { icon: CircleCheck, bg: colors.primarySoft, fg: colors.primary },
   rejected: { icon: XCircle, bg: colors.dangerSoft, fg: colors.danger },
-};
+});
 
 // Hujjatlar va shaxsni tasdiqlash: admin tekshiruvi holati (5-bosqichda admin Supabase panelidan tasdiqlaydi)
 export default function Documents() {
   const { profile, setProfile, setVerifyStatus, submitProfile } = useMaster();
-  const s = STATUS[profile.status];
+  const s = STATUS()[profile.status];
   const Icon = s.icon;
   // Hujjat almashtirilsa — qayta tekshiruvga
   const replace = (p: Parameters<typeof setProfile>[0]) => {
@@ -92,7 +92,7 @@ export default function Documents() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { padding: 16, gap: 14, paddingBottom: 32 },
@@ -103,4 +103,4 @@ const styles = StyleSheet.create({
   doc: { flex: 1, gap: 6 },
   center: { textAlign: 'center' },
   demo: { gap: 8, marginTop: 8, padding: 12, borderRadius: radius.card, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.line },
-});
+}));

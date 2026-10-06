@@ -1,5 +1,5 @@
 import { StyleSheet, View, type ViewProps } from 'react-native';
-import { colors, radius } from '@/constants/theme';
+import { colors, radius, themed } from '@/constants/theme';
 import { Text } from './Text';
 
 export function Card({ style, tone = 'surface', ...rest }: ViewProps & { tone?: 'surface' | 'muted' }) {
@@ -21,7 +21,7 @@ export function Row({ label, value, strong }: { label: string; value: string; st
 
 export const Divider = () => <View style={styles.divider} />;
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.card,
@@ -35,4 +35,4 @@ const styles = StyleSheet.create({
   label: { color: colors.ink2, flexShrink: 1, fontSize: 14 },
   strong: { fontSize: 22, lineHeight: 28 },
   divider: { height: 1, backgroundColor: colors.line },
-});
+}));

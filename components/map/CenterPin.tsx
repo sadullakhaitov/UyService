@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { Text } from '@/components/ui/Text';
 
 const LIFT = 16;
@@ -41,25 +41,25 @@ const HEAD = 34;
 const STEM = 16;
 const BOX_H = (HEAD + STEM) * 2 + 80;
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   // Quti markazi = pin uchi
   box: { width: 160, height: BOX_H, alignItems: 'center', justifyContent: 'center' },
   bubble: {
     marginBottom: 6,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.pin,
     borderRadius: 12,
     paddingHorizontal: 10,
     height: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  bubbleText: { fontFamily: fonts.heavy, fontSize: 13, color: colors.onPrimary },
+  bubbleText: { fontFamily: fonts.heavy, fontSize: 13, color: colors.onPin },
   bubbleTail: {
     position: 'absolute',
     bottom: -5,
     width: 10,
     height: 10,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.pin,
     transform: [{ rotate: '45deg' }],
   },
   pin: { position: 'absolute', bottom: BOX_H / 2, alignItems: 'center' },
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     borderRadius: HEAD / 2,
     backgroundColor: colors.accent,
     borderWidth: 3,
-    borderColor: colors.surface,
+    borderColor: colors.markerRing,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.shadow,
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
   },
-  inner: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.surface },
-  stem: { width: 3, height: STEM, borderRadius: 2, backgroundColor: colors.ink, marginTop: -2 },
-  shadow: { position: 'absolute', width: 14, height: 5, borderRadius: 7, backgroundColor: colors.ink },
-});
+  inner: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.markerRing },
+  stem: { width: 3, height: STEM, borderRadius: 2, backgroundColor: colors.pin, marginTop: -2 },
+  shadow: { position: 'absolute', width: 14, height: 5, borderRadius: 7, backgroundColor: colors.shadow },
+}));

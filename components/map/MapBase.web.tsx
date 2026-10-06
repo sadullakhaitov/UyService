@@ -2,7 +2,7 @@
 // Yandex skripti yuklanmasa (masalan, tashqi skriptlar taqiqlangan demo sahifada) — soxta xarita (FakeMap).
 import { createElement, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Keyboard, StyleSheet, View } from 'react-native';
-import { colors } from '@/constants/theme';
+import { colors, themed } from '@/constants/theme';
 import { FakeMap } from './FakeMap';
 import { DEFAULT_ZOOM, type MapBaseProps, type MapHandle } from './types';
 import type { MapCommand, MapEvent } from './yandex/html';
@@ -87,7 +87,7 @@ function YandexFrame({ handle, ready, onMode, ...props }: FrameProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   fill: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: colors.map },
   focal: { position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
-});
+}));

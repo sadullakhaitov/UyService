@@ -7,7 +7,7 @@ import { MapBase } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, Button, IconButton, RatingBadge, Squish, Text } from '@/components/ui';
 import { getCategory } from '@/constants/categories';
-import { colors, fonts, radius, shadow } from '@/constants/theme';
+import { colors, fonts, radius, shadow, themed } from '@/constants/theme';
 import { bboxCorners } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { etaMin } from '@/lib/orderSimulator';
@@ -202,7 +202,7 @@ function Action({ icon, label, onPress, tint }: { icon: React.ReactNode; label: 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
   back: { position: 'absolute', left: 16 },
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   another: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 44 },
   anotherText: { fontFamily: fonts.bold, fontSize: 15, color: colors.primary },
   eta: { position: 'absolute', left: 72, backgroundColor: colors.primary, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 10 },
-  etaKicker: { fontFamily: fonts.medium, fontSize: 12, color: '#CFE5DD' },
+  etaKicker: { fontFamily: fonts.medium, fontSize: 12, color: colors.onPrimaryMuted },
   etaValue: { fontFamily: fonts.heavy, fontSize: 22, color: colors.onPrimary },
   status: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dot: { width: 10, height: 10, borderRadius: 5 },
@@ -226,4 +226,4 @@ const styles = StyleSheet.create({
   action: { flex: 1, height: 60, borderRadius: radius.button, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', gap: 4 },
   actionText: { fontFamily: fonts.bold, fontSize: 13, color: colors.ink },
   row: { flexDirection: 'row', gap: 10 },
-});
+}));

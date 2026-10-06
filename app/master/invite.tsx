@@ -3,7 +3,7 @@ import { ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
 import { INVITE_BONUS } from '@/constants/billing';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { useUser } from '@/store';
 
@@ -48,17 +48,17 @@ export default function Invite() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { padding: 16, gap: 14 },
   hero: { alignItems: 'center', gap: 8, padding: 22, borderRadius: radius.card, backgroundColor: colors.primary },
   heroTitle: { fontFamily: fonts.heavy, fontSize: 22, color: colors.onPrimary, textAlign: 'center' },
-  heroText: { fontFamily: fonts.medium, fontSize: 14, color: '#CFE5DD', textAlign: 'center' },
+  heroText: { fontFamily: fonts.medium, fontSize: 14, color: colors.onPrimaryMuted, textAlign: 'center' },
   codeBox: { alignItems: 'center', gap: 4, padding: 16, borderRadius: radius.card, backgroundColor: colors.surface, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.primary },
   code: { fontFamily: fonts.heavy, fontSize: 30, letterSpacing: 4, color: colors.primary },
   step: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   num: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   numText: { fontFamily: fonts.heavy, fontSize: 15, color: colors.accentInk },
   bottom: { padding: 16, gap: 10 },
-});
+}));

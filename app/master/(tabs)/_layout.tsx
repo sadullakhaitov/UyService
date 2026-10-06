@@ -3,7 +3,7 @@ import { MessageCircle, Navigation, Wallet } from 'lucide-react-native';
 import { StyleSheet, View, type ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
 import { useChats, useMaster } from '@/store';
@@ -71,11 +71,11 @@ function Label({ text, color }: { text: string; color: ColorValue }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   bar: { backgroundColor: colors.surface, borderTopColor: colors.line },
   label: { fontFamily: fonts.bold, fontSize: 11, lineHeight: 15 },
   badge: { backgroundColor: colors.accent, fontFamily: fonts.heavy, fontSize: 11 },
   avatar: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.primaryTint, alignItems: 'center', justifyContent: 'center' },
   avatarOn: { backgroundColor: colors.primary },
   avatarText: { fontFamily: fonts.heavy, fontSize: 10, color: colors.primary },
-});
+}));

@@ -10,7 +10,7 @@ import { SwipeButton } from '@/components/ui/SwipeButton';
 import { BILLING } from '@/constants/billing';
 import { categories } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
-import { colors, fonts, radius, shadow } from '@/constants/theme';
+import { colors, fonts, radius, shadow, themed } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { getCurrentLocation } from '@/lib/location';
 import { useBlocked } from '@/lib/masterFeed';
@@ -208,7 +208,7 @@ function FilterModal({ visible, onClose }: { visible: boolean; onClose: () => vo
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
   banner: {
@@ -244,8 +244,8 @@ const styles = StyleSheet.create({
   promoSub: { color: colors.accentInk },
   promoPrice: { fontFamily: fonts.heavy, fontSize: 16, color: colors.accent },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
-  backdrop: { flex: 1, backgroundColor: 'rgba(11,42,36,0.35)' },
+  backdrop: { flex: 1, backgroundColor: colors.backdrop },
   modal: { backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, padding: 20, gap: 14 },
   handle: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.handle, alignSelf: 'center', marginBottom: 4 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-});
+}));

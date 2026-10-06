@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button';
 import { Squish } from '@/components/ui/Pressable';
 import { Text } from '@/components/ui/Text';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 
 export const CLIENT_REASONS = ['changedMind', 'tooLong', 'foundOther', 'wrongAddress', 'other'] as const;
@@ -58,8 +58,8 @@ export function CancelSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(11,42,36,0.35)' },
+const styles = themed(() => ({
+  backdrop: { flex: 1, backgroundColor: colors.backdrop },
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, padding: 20, gap: 12 },
   handle: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.handle, alignSelf: 'center', marginBottom: 4 },
   warn: { padding: 12, borderRadius: radius.card, backgroundColor: colors.accentSoft },
@@ -70,4 +70,4 @@ const styles = StyleSheet.create({
   rowText: { flex: 1, fontFamily: fonts.bold, fontSize: 15, color: colors.ink },
   radio: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
   radioOn: { backgroundColor: colors.danger, borderColor: colors.danger },
-});
+}));

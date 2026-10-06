@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Text } from '@/components/ui';
 import { DRAFT_NOTE, legal, type LegalDoc, type LegalLang } from '@/constants/legal';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { getLanguage } from '@/lib/i18n';
 
 const isDoc = (v: unknown): v is LegalDoc => v === 'terms' || v === 'privacy';
@@ -41,7 +41,7 @@ export default function LegalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   scroll: { paddingHorizontal: 16, paddingBottom: 32, gap: 16 },
   note: { backgroundColor: colors.accentSoft, borderRadius: radius.card, padding: 14 },
@@ -49,4 +49,4 @@ const styles = StyleSheet.create({
   section: { gap: 8 },
   h: { fontFamily: fonts.bold, fontSize: 17, lineHeight: 23, color: colors.ink },
   p: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 22, color: colors.ink },
-});
+}));

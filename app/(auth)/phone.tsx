@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { sendCode } from '@/lib/auth';
 import { t } from '@/lib/i18n';
 
@@ -91,7 +91,7 @@ export default function PhoneScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   head: { gap: 6 },
   field: {
     height: 60,
@@ -111,4 +111,4 @@ const styles = StyleSheet.create({
   terms: { textAlign: 'center' },
   link: { color: colors.primary, textDecorationLine: 'underline' },
   error: { color: colors.danger },
-});
+}));

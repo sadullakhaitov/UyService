@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { Text } from './Text';
 
 const ACircle = Animated.createAnimatedComponent(Circle);
@@ -59,7 +59,7 @@ export function CountdownRing({ seconds, size = 132, label, onDone, color = colo
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   center: { alignItems: 'center', justifyContent: 'center' },
   num: { fontFamily: fonts.heavy, fontSize: 40, lineHeight: 50, color: colors.ink },
-});
+}));

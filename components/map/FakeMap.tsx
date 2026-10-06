@@ -3,7 +3,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { PanResponder, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { colors } from '@/constants/theme';
+import { colors, themed } from '@/constants/theme';
 import type { LatLng } from '@/lib/geo';
 import { ClientDot } from './ClientDot';
 import { MasterIcon, NearbyIcon } from './MasterIcon';
@@ -257,9 +257,8 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
   );
 });
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   marker: { position: 'absolute' },
   focal: { position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
-});
+}));
 
-export const MAP_BG = colors.map;

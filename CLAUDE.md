@@ -174,7 +174,7 @@ Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, 
 | Asosiy rang | `#0E5A4B` to'q yashil (ishonch), ustidagi matn oq |
 | Urg'u rangi | `#E8772E` to'q sariq (mehnat/asbob rangi) — mijoz nuqtasi, yulduzlar, aktivlik |
 | Matn | `#0B2A24` asosiy, `#4E625C` ikkinchi darajali |
-| Fon | `#F6F8F7` sahifa, `#FFFFFF` kartalar |
+| Fon | `#F6F8F7` sahifa, `#FFFFFF` kartalar (tungi: `#0E1513`, `#17211E`) |
 | Xarita foni | `#E9EEEB`, yo'llar oq |
 | Kategoriya ranglari | `constants/categories.ts` → `main/onMain/tint/ink`: santexnik — suv ko'k, elektrik — chaqmoq sariq, konditsioner — sovuq ko'k, mebel — yog'och, ta'mirlash — bo'yoq binafsha, maishiy texnika — po'lat. Shu kategoriyaga oid hamma narsa (tugma, chip, to'lqin, yo'l chizig'i, usta belgisi, ETA) o'z rangida |
 | Burchaklar | tugma 16, karta 18, panel 28 |
@@ -184,7 +184,8 @@ Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, 
 - Panellar pastdan chiqadi, yuqori burchaklari yumaloq, tepasida tortish chizig'i.
 - Hamma matn `locales/{uz,ru,en}.json`da, kodda `t('kalit')`; yangi kalit uchala faylga qo'shiladi.
 - `Text` komponenti `fontSize` berilib `lineHeight` berilmasa, uni o'zi hisoblaydi (harflar tepasi kesilmasligi uchun).
-- Tungi rejim MVP'da yo'q. Yandex ranglari/logotipi ishlatilmaydi.
+- **Kunduzgi va tungi rejim**: `constants/theme.ts` — ikki palitra (`light`, `dark`), `colors.x` har o'qilganda joriy rejim rangini beradi. Ekran uslublari `StyleSheet.create` emas, **`themed(() => ({ ... }))`** bilan yoziladi (har rejimga bir marta yaratiladi). Rangni modul darajasida o'zgarmasga saqlamang (funksiya qiling); qattiq hex o'rniga token qo'shing. Kategoriya ranglari ham ikki variantli (`pick(day, night)`). Tanlov: Profil/Sozlamalar → "Ko'rinish" (Avtomatik / Kunduzgi / Tungi, `useUser().themeMode`); almashganda ilova yangi ranglarda qayta chiziladi (`Stack key`). Xarita: Yandex 2.1 da tungi xarita yo'q — xarita qatlami CSS filtr bilan qorong'ilashtiriladi (`yandex/html.ts` → `applyDark`), belgilar o'z rangida.
+- Yandex ranglari/logotipi ishlatilmaydi.
 
 ## 9. Bosqichlar
 

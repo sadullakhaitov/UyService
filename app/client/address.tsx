@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Squish, Text } from '@/components/ui';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { searchAddress, type Place } from '@/lib/geocode';
 import { t } from '@/lib/i18n';
 import { getCurrentLocation, reverseGeocode } from '@/lib/location';
@@ -126,7 +126,7 @@ export default function AddressSearch() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 16, backgroundColor: colors.surface, borderRadius: radius.field, paddingHorizontal: 14, height: 54, borderWidth: 1.5, borderColor: colors.line },
@@ -136,4 +136,4 @@ const styles = StyleSheet.create({
   icon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: fonts.bold, fontSize: 15, color: colors.ink },
   empty: { textAlign: 'center', marginTop: 16 },
-});
+}));

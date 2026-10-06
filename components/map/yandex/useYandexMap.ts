@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { colors } from '@/constants/theme';
+import { colors, isDark } from '@/constants/theme';
 import { getLanguage } from '@/lib/i18n';
 import { YANDEX_KEY as API_KEY } from '@/lib/yandex';
 import { DEFAULT_ZOOM, MOVE_INTERVAL_MS, type MapBaseProps } from '../types';
@@ -12,7 +12,7 @@ export function useYandexMap(p: MapBaseProps) {
 
   // Sahifa bir marta quriladi — boshlang'ich kamera shu yerda
   const html = useMemo(
-    () => buildMapHtml({ apiKey: API_KEY, lang: getLanguage(), init: { center: p.center, zoom, flyFrom: p.flyFrom, insets }, colors: { ...colors } }),
+    () => buildMapHtml({ apiKey: API_KEY, lang: getLanguage(), init: { center: p.center, zoom, flyFrom: p.flyFrom, insets, dark: isDark() }, colors: { ...colors } }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );

@@ -10,7 +10,7 @@ const config: ExpoConfig = {
   version: '0.1.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
-  userInterfaceStyle: 'light',
+  userInterfaceStyle: 'automatic',
   backgroundColor: '#F6F8F7',
   ios: {
     bundleIdentifier: 'uz.uyservice.app',

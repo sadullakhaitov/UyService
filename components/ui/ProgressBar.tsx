@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
-import { colors } from '@/constants/theme';
+import { colors, themed } from '@/constants/theme';
 
 // Cheksiz yuguruvchi chiziq — qidiruv davom etayotganini bildiradi
 export function IndeterminateBar({ color = colors.primary }: { color?: string }) {
@@ -18,7 +18,7 @@ export function IndeterminateBar({ color = colors.primary }: { color?: string })
   );
 }
 
-const styles = StyleSheet.create({
-  track: { height: 6, borderRadius: 3, backgroundColor: '#E7EEEA', overflow: 'hidden' },
+const styles = themed(() => ({
+  track: { height: 6, borderRadius: 3, backgroundColor: colors.track, overflow: 'hidden' },
   bar: { width: '40%', height: 6, borderRadius: 3, backgroundColor: colors.primary },
-});
+}));

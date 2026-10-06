@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react-native';
 import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, fonts, radius, size } from '@/constants/theme';
+import { colors, fonts, radius, size, themed } from '@/constants/theme';
 import { Squish } from './Pressable';
 import { Text } from './Text';
 
@@ -19,16 +19,17 @@ type Props = {
   color?: { bg: string; fg: string };
 };
 
-const palette: Record<Kind, { bg: string; fg: string }> = {
+// Funksiya: ranglar joriy rejim (kunduzgi/tungi) bo'yicha olinadi
+const palette = (): Record<Kind, { bg: string; fg: string }> => ({
   primary: { bg: colors.primary, fg: colors.onPrimary },
   secondary: { bg: colors.field, fg: colors.ink },
   soft: { bg: colors.primarySoft, fg: colors.primary },
   danger: { bg: colors.dangerSoft, fg: colors.danger },
-};
+});
 
 // Har bir ekranda bitta asosiy (yashil) tugma, qolganlari och kulrang.
 export function Button({ title, onPress, kind = 'primary', icon: Icon, big, disabled, loading, style, color }: Props) {
-  const p = color ?? palette[kind];
+  const p = color ?? palette()[kind];
   return (
     <Squish
       accessibilityRole="button"
@@ -53,8 +54,8 @@ export function Button({ title, onPress, kind = 'primary', icon: Icon, big, disa
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   base: { borderRadius: radius.button, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   label: { fontFamily: fonts.heavy },
-});
+}));

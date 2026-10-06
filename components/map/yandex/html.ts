@@ -36,7 +36,8 @@ export type MapEvent =
   | { type: 'moveEnd'; center: LatLng }
   | { type: 'press' };
 
-export type MapInit = { center: LatLng; zoom: number; flyFrom?: LatLng; insets: MapInsets };
+/** dark — tungi rejim: xarita qatlami filtr bilan qorong'ilashtiriladi (Yandex 2.1 da tungi xarita yo'q) */
+export type MapInit = { center: LatLng; zoom: number; flyFrom?: LatLng; insets: MapInsets; dark?: boolean };
 
 // Yandex qo'llaydigan til kodlari (o'zbek tili 2.1 da yo'q — Toshkent ko'chalari rus tilida to'liqroq)
 const YANDEX_LANG: Record<string, string> = { uz: 'ru_RU', ru: 'ru_RU', en: 'en_US' };
@@ -105,6 +106,15 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
     map.setCenter(viewCenterFor(p, z), z, { duration: duration || 0, timingFunction: 'ease-in-out' });
   }
 
+  // Tungi rejim: faqat xarita qatlami (ko'chalar, binolar) qorong'ilashadi, belgilar o'z rangida qoladi
+  function applyDark(){
+    if (!init.dark) return;
+    try {
+      var el = map.panes.get('ground').getElement();
+      el.style.filter = 'invert(92%) hue-rotate(180deg) saturate(0.55) brightness(0.92) contrast(0.92)';
+    } catch (e) {}
+  }
+
   ymaps.ready(function(){
     try {
       var start = init.flyFrom || init.center, startZoom = init.flyFrom ? 12 : init.zoom;
@@ -118,6 +128,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
       map.behaviors.disable(['rightMouseButtonMagnifier', 'dblClickZoom']);
       moveTo(start, startZoom, 0);
       setup();
+      applyDark();
       send({type:'ready'});
       var queued = ys.pending; ys.pending = [];
       window.__rn = apply;

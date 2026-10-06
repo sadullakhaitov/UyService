@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Text } from '@/components/ui';
 import { PhotoTile } from '@/components/ui/PhotoTile';
-import { colors } from '@/constants/theme';
+import { colors, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { pickImages } from '@/lib/photos';
 import { useMaster } from '@/store';
@@ -40,8 +40,8 @@ export default function Works() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   scroll: { padding: 16, gap: 14 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-});
+}));

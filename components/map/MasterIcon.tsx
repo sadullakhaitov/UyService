@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { colors } from '@/constants/theme';
+import { colors, themed } from '@/constants/theme';
 
 // Usta belgisi: yashil doira ichida yo'nalish o'qi (yuqoriga qaragan; burilish tashqaridan beriladi)
 export function MasterIcon({ size = 38, color = colors.primary }: { size?: number; color?: string }) {
@@ -17,11 +17,11 @@ export function NearbyIcon() {
   return <View style={styles.nearby} />;
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   circle: {
     backgroundColor: colors.primary,
     borderWidth: 3,
-    borderColor: colors.surface,
+    borderColor: colors.markerRing,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.shadow,
@@ -36,6 +36,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: colors.primary,
     borderWidth: 2.5,
-    borderColor: colors.surface,
+    borderColor: colors.markerRing,
   },
-});
+}));

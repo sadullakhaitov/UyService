@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, fonts, radius, size } from '@/constants/theme';
+import { colors, fonts, radius, size, themed } from '@/constants/theme';
 import { Squish } from './Pressable';
 import { Text } from './Text';
 
@@ -18,7 +18,7 @@ export function Chip({ label, selected, onPress, color, onColor }: { label: stri
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   chip: {
     height: size.touch,
     paddingHorizontal: 16,
@@ -29,4 +29,4 @@ const styles = StyleSheet.create({
   on: { backgroundColor: colors.primary, borderColor: colors.primary },
   off: { backgroundColor: colors.surface, borderColor: colors.line },
   label: { fontSize: 14 },
-});
+}));

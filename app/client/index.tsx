@@ -9,7 +9,7 @@ import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, IconButton, Logo, RatingBadge, Squish, Text } from '@/components/ui';
 import { ActiveOrders } from '@/components/ui/ActiveOrders';
 import { categories, problems, type CategoryId } from '@/constants/categories';
-import { colors, fonts, radius, shadow } from '@/constants/theme';
+import { colors, fonts, radius, shadow, themed } from '@/constants/theme';
 import { blur, distanceKm, type LatLng } from '@/lib/geo';
 import { formatSchedule, t } from '@/lib/i18n';
 import { firstSlot } from '@/lib/schedule';
@@ -225,7 +225,7 @@ export default function ClientHome() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
   top: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -257,4 +257,4 @@ const styles = StyleSheet.create({
   favRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   favCall: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingVertical: 10, paddingLeft: 6 },
   favCallText: { fontFamily: fonts.heavy, fontSize: 14, color: colors.primary },
-});
+}));

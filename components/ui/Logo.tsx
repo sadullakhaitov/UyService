@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { Text } from './Text';
 
 // Vaqtinchalik belgi: uy tomi + kalit. Haqiqiy logotip tayyor bo'lgach shu fayl almashtiriladi.
@@ -22,13 +22,13 @@ export function Logo({ size = 16, light }: { size?: number; light?: boolean }) {
     <View style={styles.row}>
       <LogoMark size={size * 1.6} light={light} />
       <Text style={[styles.word, { fontSize: size, color: light ? colors.onPrimary : colors.ink }]}>
-        Uy<Text style={[styles.word, { fontSize: size, color: light ? '#FFD7B8' : colors.primary }]}>Service</Text>
+        Uy<Text style={[styles.word, { fontSize: size, color: light ? colors.logoAccent : colors.primary }]}>Service</Text>
       </Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   word: { fontFamily: fonts.logo, letterSpacing: -0.3 },
-});
+}));

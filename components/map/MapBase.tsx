@@ -3,7 +3,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Keyboard, Linking, StyleSheet, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
-import { colors } from '@/constants/theme';
+import { colors, themed } from '@/constants/theme';
 import { DEFAULT_ZOOM, type MapBaseProps, type MapHandle } from './types';
 import { MAP_BASE_URL, type MapCommand, type MapEvent } from './yandex/html';
 import { useYandexMap } from './yandex/useYandexMap';
@@ -104,7 +104,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(prop
   );
 });
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   fill: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: colors.map },
   focal: { position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
-});
+}));

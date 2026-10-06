@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { colors, radius } from '@/constants/theme';
+import { colors, radius, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { Logo } from './Logo';
 import { Text } from './Text';
@@ -78,7 +78,7 @@ function Pattern() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.primary },
   flex: { flex: 1 },
   hero: { paddingBottom: 64, overflow: 'hidden' },
@@ -90,4 +90,4 @@ const styles = StyleSheet.create({
   body: { flexGrow: 1 },
   bodyInner: { flexGrow: 1, padding: 24, gap: 18 },
   footer: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16, gap: 12, backgroundColor: colors.surface },
-});
+}));

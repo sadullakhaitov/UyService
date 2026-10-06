@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { t } from '@/lib/i18n';
 import { IconButton } from './IconButton';
 import { Text } from './Text';
+import { themed } from '@/constants/theme';
 
 export function ScreenHeader({ kicker, title, right, onBack }: { kicker?: string; title: string; right?: ReactNode; onBack?: () => void }) {
   return (
@@ -21,7 +22,7 @@ export function ScreenHeader({ kicker, title, right, onBack }: { kicker?: string
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
   titles: { flex: 1 },
-});
+}));

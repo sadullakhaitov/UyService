@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { LANGS, t } from '@/lib/i18n';
 import { useUser } from '@/store';
 import { Flag } from './Flag';
@@ -27,9 +27,9 @@ export function LanguagePicker() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   langs: { gap: 8 },
   lang: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.card, backgroundColor: colors.surface, borderWidth: 2, borderColor: 'transparent' },
   langOn: { borderColor: colors.primary },
   langText: { fontFamily: fonts.bold, fontSize: 16, color: colors.ink },
-});
+}));

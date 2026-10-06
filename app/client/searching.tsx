@@ -7,7 +7,7 @@ import { MapBase } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Card, IconButton, IndeterminateBar, Row, Text } from '@/components/ui';
 import { getCategory } from '@/constants/categories';
-import { colors } from '@/constants/theme';
+import { colors, themed } from '@/constants/theme';
 import { blur } from '@/lib/geo';
 import { formatSchedule, formatSum, t } from '@/lib/i18n';
 import { SCHEDULE_LEAD_MS, searchInfo, startSearch } from '@/lib/orderSimulator';
@@ -140,7 +140,7 @@ export default function Searching() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
   back: { position: 'absolute', left: 16 },
@@ -150,4 +150,4 @@ const styles = StyleSheet.create({
   none: { alignItems: 'center', gap: 8, paddingVertical: 4 },
   noneIcon: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   noneText: { textAlign: 'center' },
-});
+}));

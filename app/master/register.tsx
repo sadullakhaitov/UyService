@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Chip, ScreenHeader, Text } from '@/components/ui';
 import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import { PhotoTile } from '@/components/ui/PhotoTile';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { pickImages, takePhoto } from '@/lib/photos';
 import { useMaster, useUser } from '@/store';
@@ -178,7 +178,7 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   progress: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, marginBottom: 8 },
@@ -203,4 +203,4 @@ const styles = StyleSheet.create({
   note: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', padding: 12, borderRadius: radius.card, backgroundColor: colors.primarySoft },
   works: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   bottom: { padding: 16, gap: 8 },
-});
+}));

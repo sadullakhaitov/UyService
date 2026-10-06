@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { sendCode, verifyCode } from '@/lib/auth';
 import { t } from '@/lib/i18n';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -120,7 +120,7 @@ export default function CodeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   head: { gap: 6 },
   boxes: { flexDirection: 'row', gap: 8, justifyContent: 'space-between' },
   box: {
@@ -141,4 +141,4 @@ const styles = StyleSheet.create({
   link: { fontFamily: fonts.bold, fontSize: 14, color: colors.primary },
   demo: { color: colors.accentInk },
   error: { color: colors.danger },
-});
+}));

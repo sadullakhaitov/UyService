@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Squish, Text } from '@/components/ui';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 
 const TOPICS: { key: string; icon: LucideIcon }[] = [
@@ -54,7 +54,7 @@ export default function Learn() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   scroll: { padding: 16, gap: 10 },
   card: { backgroundColor: colors.surface, borderRadius: radius.card, padding: 14, gap: 12 },
@@ -65,4 +65,4 @@ const styles = StyleSheet.create({
   line: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   bullet: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.accent, marginTop: 8 },
   lineText: { flex: 1, color: colors.ink },
-});
+}));

@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react-native';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, shadow, size } from '@/constants/theme';
+import { colors, shadow, size, themed } from '@/constants/theme';
 import { Squish } from './Pressable';
 
 export function IconButton({
@@ -29,7 +29,7 @@ export function IconButton({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   btn: {
     width: size.touch,
     height: size.touch,
@@ -39,4 +39,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   flat: { borderWidth: 1.5, borderColor: colors.line },
-});
+}));

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
-import { colors } from '@/constants/theme';
+import { colors, themed } from '@/constants/theme';
 
 // Mijoz belgisi: to'q sariq doira, atrofida sekin "nafas oluvchi" halqa
 export function ClientDot({ breathing = true, size = 22 }: { breathing?: boolean; size?: number }) {
@@ -21,17 +21,17 @@ export function ClientDot({ breathing = true, size = 22 }: { breathing?: boolean
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   box: { alignItems: 'center', justifyContent: 'center' },
   halo: { position: 'absolute', backgroundColor: colors.accent },
   dot: {
     backgroundColor: colors.accent,
     borderWidth: 4,
-    borderColor: colors.surface,
+    borderColor: colors.markerRing,
     shadowColor: colors.shadow,
     shadowOpacity: 0.25,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 4,
   },
-});
+}));

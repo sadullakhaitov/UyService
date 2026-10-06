@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Squish, Text } from '@/components/ui';
 import { BILLING, type BillingPlan } from '@/constants/billing';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { useUser } from '@/store';
 
@@ -90,12 +90,12 @@ function PlanCard(p: { icon: LucideIcon; title: string; price: string; points: s
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { paddingHorizontal: 16, gap: 14, paddingBottom: 24 },
   card: { backgroundColor: colors.surface, borderRadius: radius.card, borderWidth: 2, borderColor: colors.line, padding: 16, gap: 14 },
-  cardOn: { borderColor: colors.primary, backgroundColor: '#F7FBF9' },
+  cardOn: { borderColor: colors.primary, backgroundColor: colors.primaryWash },
   cardTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   icon: { width: 48, height: 48, borderRadius: 14, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   price: { fontFamily: fonts.heavy, fontSize: 18, color: colors.primary, marginTop: 2 },
@@ -107,4 +107,4 @@ const styles = StyleSheet.create({
   point: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   pointText: { color: colors.ink, flex: 1 },
   bottom: { padding: 16 },
-});
+}));

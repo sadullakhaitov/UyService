@@ -9,6 +9,7 @@ import { startDispatch, type DispatchState } from '@/lib/dispatch';
 import { mockChats, mockClient, mockFavorites, mockHistory, mockMasterSelf, type HistoryItem } from '@/mocks';
 
 export type Role = 'client' | 'master';
+export type ThemeMode = 'system' | 'light' | 'dark';
 
 // TZ, 6-bo'lim: orders.status
 export type OrderStatus =
@@ -30,10 +31,13 @@ type UserState = {
   /** Mijozning ismi (ixtiyoriy) — usta buyurtmada shu ismni ko'radi */
   name: string;
   role: Role | null;
+  /** Ko'rinish: telefon sozlamasi bo'yicha, kunduzgi yoki tungi */
+  themeMode: ThemeMode;
   billingPlan: BillingPlan | null;
   favorites: string[];
   setLanguage: (lang: Lang) => void;
   setPhone: (phone: string) => void;
+  setThemeMode: (mode: ThemeMode) => void;
   setName: (name: string) => void;
   setRole: (role: Role) => void;
   setBillingPlan: (plan: BillingPlan) => void;
@@ -48,11 +52,13 @@ export const useUser = create<UserState>()(
   phone: '',
   name: '',
   role: null,
+  themeMode: 'system',
   billingPlan: null,
   favorites: mockFavorites,
   setLanguage: (language) => set({ language }),
   setPhone: (phone) => set({ phone }),
   setName: (name) => set({ name }),
+  setThemeMode: (themeMode) => set({ themeMode }),
   setRole: (role) => set({ role }),
   setBillingPlan: (billingPlan) => set({ billingPlan }),
   toggleFavorite: (id, on) =>

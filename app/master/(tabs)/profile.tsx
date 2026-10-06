@@ -18,7 +18,7 @@ import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Squish, Text } from '@/components/ui';
 import { BILLING } from '@/constants/billing';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
 import { useMaster, useUser } from '@/store';
@@ -187,7 +187,7 @@ function Row({ icon: Icon, label, value, onPress, badge, last }: { icon: LucideI
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { paddingBottom: 32, gap: 12 },
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   itemLabel: { fontFamily: fonts.medium, fontSize: 16, color: colors.ink, flex: 1 },
   itemValue: { maxWidth: '55%', textAlign: 'right' },
   section: { fontFamily: fonts.heavy, fontSize: 20, color: colors.ink, marginTop: 4 },
-  works: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: radius.card, backgroundColor: colors.field, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#9FB1AA' },
+  works: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: radius.card, backgroundColor: colors.field, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.dashed },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   rowIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.field, alignItems: 'center', justifyContent: 'center' },
   rowBody: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 60 },
@@ -222,4 +222,4 @@ const styles = StyleSheet.create({
   badge: { minWidth: 24, height: 24, borderRadius: 12, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
   badgeText: { fontFamily: fonts.heavy, fontSize: 12, color: colors.onPrimary },
   version: { paddingHorizontal: 16, gap: 2 },
-});
+}));

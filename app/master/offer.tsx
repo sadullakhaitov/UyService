@@ -7,7 +7,7 @@ import { Button, Card, Divider, Row, Text } from '@/components/ui';
 import { CountdownRing } from '@/components/ui/CountdownRing';
 import { getCategory, problems } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { formatRange, formatSum, t } from '@/lib/i18n';
 import { useMaster, useMasterWork } from '@/store';
 
@@ -104,7 +104,7 @@ function Meta({ icon, label }: { icon: React.ReactNode; label: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.surface },
   flex: { flex: 1 },
   head: { alignItems: 'center', paddingTop: 12 },
@@ -121,4 +121,4 @@ const styles = StyleSheet.create({
   card: { alignSelf: 'stretch', borderRadius: radius.card },
   addr: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bottom: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
-});
+}));

@@ -5,7 +5,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Squish, Text } from '@/components/ui';
 import { BALANCE_LIMIT, BILLING } from '@/constants/billing';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
 import { useMaster, useUser } from '@/store';
@@ -71,7 +71,7 @@ export default function Money() {
           {plan === 'commission' ? (
             <>
               <View style={[styles.limit, { backgroundColor: ok ? colors.successSoft : colors.dangerSoft }]}>
-                <View style={[styles.lockIcon, { backgroundColor: ok ? '#CDEBD9' : '#F6CFC7' }]}>
+                <View style={[styles.lockIcon, { backgroundColor: ok ? colors.successStrong : colors.dangerStrong }]}>
                   {ok ? <LockOpen size={20} color={colors.success} strokeWidth={2.4} /> : <Lock size={20} color={colors.danger} strokeWidth={2.4} />}
                 </View>
                 <View style={styles.flex}>
@@ -123,7 +123,7 @@ export default function Money() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { paddingBottom: 24, gap: 12 },
@@ -149,4 +149,4 @@ const styles = StyleSheet.create({
   balance: { backgroundColor: colors.surface, borderRadius: radius.card, padding: 16, gap: 10, borderWidth: 1.5, borderColor: colors.line },
   balanceValue: { fontFamily: fonts.heavy, fontSize: 26, color: colors.ink },
   change: { fontFamily: fonts.bold, fontSize: 13, color: colors.primary },
-});
+}));

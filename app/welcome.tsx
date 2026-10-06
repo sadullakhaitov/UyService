@@ -7,7 +7,7 @@ import { Squish, Text } from '@/components/ui';
 import { Flag } from '@/components/ui/Flag';
 import { LogoMark } from '@/components/ui/Logo';
 import { categories } from '@/constants/categories';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { LANGS, setLanguage, t, type Lang } from '@/lib/i18n';
 import { useUser } from '@/store';
 
@@ -77,7 +77,7 @@ function Bubble({ index, style, children }: { index: number; style: object; chil
   return <Animated.View style={[styles.bubble, style, anim]}>{children}</Animated.View>;
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.surface, paddingHorizontal: 20 },
   art: { width: 320, height: 300, alignSelf: 'center', marginTop: 24 },
   bubble: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
@@ -88,4 +88,4 @@ const styles = StyleSheet.create({
   list: { gap: 12, marginTop: 28 },
   item: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 76, paddingHorizontal: 20, borderRadius: radius.card, backgroundColor: colors.field },
   itemText: { fontFamily: fonts.bold, fontSize: 18, color: colors.ink },
-});
+}));

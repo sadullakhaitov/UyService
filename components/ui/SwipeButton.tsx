@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { Text } from './Text';
 
 const KNOB = 64;
@@ -60,7 +60,7 @@ export function SwipeButton({
     >
       <Animated.View style={[styles.labels, label]} pointerEvents="none">
         <Text style={[styles.title, { color: primary ? colors.onPrimary : disabled ? colors.muted : colors.ink }]}>{title}</Text>
-        {hint ? <Text style={[styles.hint, { color: primary ? '#CFE5DD' : colors.ink2 }]}>{hint}</Text> : null}
+        {hint ? <Text style={[styles.hint, { color: primary ? colors.onPrimaryMuted : colors.ink2 }]}>{hint}</Text> : null}
       </Animated.View>
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.knob, knob]}>
@@ -71,7 +71,7 @@ export function SwipeButton({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   track: { height: KNOB + PAD * 2, borderRadius: (KNOB + PAD * 2) / 2, padding: PAD, justifyContent: 'center' },
   labels: { position: 'absolute', left: KNOB + PAD * 2, right: 16, alignItems: 'center' },
   title: { fontFamily: fonts.heavy, fontSize: 18, textAlign: 'center' },
@@ -89,4 +89,4 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 4,
   },
-});
+}));

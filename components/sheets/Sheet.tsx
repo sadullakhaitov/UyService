@@ -2,7 +2,7 @@ import BottomSheet, { BottomSheetView, useBottomSheetSpringConfigs } from '@gorh
 import { useRef, type ReactNode } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, radius, shadow } from '@/constants/theme';
+import { colors, radius, shadow, themed } from '@/constants/theme';
 
 const HANDLE = 24;
 
@@ -67,8 +67,8 @@ export function Sheet({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   bg: { backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet },
   handle: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.handle },
   content: { paddingHorizontal: 16, paddingTop: 4, gap: 16 },
-});
+}));

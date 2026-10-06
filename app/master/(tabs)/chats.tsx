@@ -3,7 +3,7 @@ import { Headset, Megaphone } from 'lucide-react-native';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Squish, Text } from '@/components/ui';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useChats, type Chat } from '@/store';
 
@@ -67,7 +67,7 @@ function ChatRow({ chat }: { chat: Chat }) {
 }
 
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.surface },
   flex: { flex: 1 },
   title: { fontFamily: fonts.heavy, fontSize: 32, color: colors.ink, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 },
@@ -78,4 +78,4 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   badge: { minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   badgeText: { fontFamily: fonts.heavy, fontSize: 12, color: colors.onPrimary },
-});
+}));

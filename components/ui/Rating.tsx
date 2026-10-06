@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { Squish } from './Pressable';
 import { Text } from './Text';
@@ -31,7 +31,7 @@ export function RatingInput({ value, onChange }: { value: number; onChange: (n: 
             onPress={() => onChange(n)}
             style={styles.star}
           >
-            <Star size={38} color={on ? colors.accent : '#B8C6C0'} fill={on ? colors.accent : 'transparent'} strokeWidth={1.8} />
+            <Star size={38} color={on ? colors.accent : colors.starEmpty} fill={on ? colors.accent : 'transparent'} strokeWidth={1.8} />
           </Squish>
         );
       })}
@@ -39,9 +39,9 @@ export function RatingInput({ value, onChange }: { value: number; onChange: (n: 
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   badgeText: { fontFamily: fonts.heavy, fontSize: 13, color: colors.ink },
   row: { flexDirection: 'row', gap: 6, justifyContent: 'center' },
   star: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
-});
+}));

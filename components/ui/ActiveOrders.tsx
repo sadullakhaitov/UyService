@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { getCategory } from '@/constants/categories';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { formatSchedule, t } from '@/lib/i18n';
 import { etaMin } from '@/lib/orderSimulator';
 import { useOrders, type ActiveOrder } from '@/store';
@@ -59,11 +59,11 @@ function OrderCard({ order, single }: { order: ActiveOrder; single: boolean }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   row: { gap: 10 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, paddingRight: 12, borderRadius: radius.tile, borderWidth: 1.5, width: 240 },
   single: { width: undefined, minWidth: 320 },
   icon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   flex: { flex: 1 },
   title: { fontFamily: fonts.heavy, fontSize: 15 },
-});
+}));

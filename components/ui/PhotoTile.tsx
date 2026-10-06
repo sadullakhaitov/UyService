@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react-native';
 import { X } from 'lucide-react-native';
 import { Image, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { Squish } from './Pressable';
 import { Text } from './Text';
@@ -53,9 +53,9 @@ export function PhotoTile({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   tile: { borderRadius: 16, overflow: 'hidden', backgroundColor: colors.mapBlock },
-  add: { backgroundColor: colors.surface, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#9FB1AA', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 8 },
+  add: { backgroundColor: colors.surface, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.dashed, alignItems: 'center', justifyContent: 'center', gap: 6, padding: 8 },
   label: { fontFamily: fonts.bold, fontSize: 12, color: colors.primary, textAlign: 'center' },
-  remove: { position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(11,42,36,0.7)', alignItems: 'center', justifyContent: 'center' },
-});
+  remove: { position: 'absolute', top: 6, right: 6, width: 24, height: 24, borderRadius: 12, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' },
+}));

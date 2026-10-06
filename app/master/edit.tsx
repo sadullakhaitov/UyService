@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Chip, ScreenHeader, Text } from '@/components/ui';
 import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import type { CategoryId } from '@/constants/categories';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useMaster } from '@/store';
 
@@ -59,7 +59,7 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { padding: 16, gap: 14, paddingBottom: 32 },
@@ -77,4 +77,4 @@ const styles = StyleSheet.create({
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   bottom: { padding: 16 },
-});
+}));

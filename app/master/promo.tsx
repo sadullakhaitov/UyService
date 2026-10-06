@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { useMaster } from '@/store';
 
@@ -76,7 +76,7 @@ export default function Promo() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   scroll: { padding: 16, gap: 14 },
@@ -98,4 +98,4 @@ const styles = StyleSheet.create({
   result: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: radius.card },
   resultText: { flex: 1, fontFamily: fonts.bold, fontSize: 15 },
   bottom: { padding: 16 },
-});
+}));

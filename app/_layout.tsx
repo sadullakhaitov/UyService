@@ -8,10 +8,10 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { colors } from '@/constants/theme';
+import { colors, setScheme } from '@/constants/theme';
 import { setLanguage } from '@/lib/i18n';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { useMaster, useUser } from '@/store';
@@ -54,6 +54,11 @@ export default function RootLayout() {
   const hydrated = userReady && masterReady;
   const lang = useUser((s) => s.language) ?? 'uz';
   setLanguage(lang);
+  // Kunduzgi / tungi rejim: "Avtomatik" — telefon sozlamasiga qarab o'zi almashadi
+  const system = useColorScheme();
+  const mode = useUser((s) => s.themeMode) ?? 'system';
+  const scheme = mode === 'system' ? (system === 'dark' ? 'dark' : 'light') : mode;
+  setScheme(scheme);
 
   const ready = (loaded || !!error) && hydrated;
   useEffect(() => {
@@ -65,9 +70,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
-        {/* Til almashtirilganda hamma ekran yangi tilda qayta chiziladi */}
-        <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }} />
+        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        {/* Til yoki rejim almashtirilganda hamma ekran yangi tilda/ranglarda qayta chiziladi */}
+        <Stack key={`${lang}-${scheme}`} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }} />
         <OfflineBanner />
       </SafeAreaProvider>
     </GestureHandlerRootView>

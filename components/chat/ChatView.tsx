@@ -4,7 +4,7 @@ import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextIn
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Text } from '@/components/ui/Text';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useChats } from '@/store';
 
@@ -71,7 +71,7 @@ export function ChatView({ id, accent = colors.primary, onAccent = colors.onPrim
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   list: { padding: 16, gap: 8 },
@@ -94,4 +94,4 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-});
+}));

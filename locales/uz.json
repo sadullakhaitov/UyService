@@ -498,5 +498,11 @@
     "section": "Hujjatlar",
     "terms": "Foydalanish shartlari",
     "privacy": "Maxfiylik siyosati"
+  },
+  "theme": {
+    "section": "Ko'rinish",
+    "system": "Avtomatik",
+    "light": "Kunduzgi",
+    "dark": "Tungi"
   }
 }

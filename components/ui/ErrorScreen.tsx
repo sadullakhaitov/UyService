@@ -1,7 +1,7 @@
 import type { ErrorBoundaryProps } from 'expo-router';
 import { TriangleAlert } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
-import { colors, fonts } from '@/constants/theme';
+import { colors, fonts, themed } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { Button } from './Button';
 import { Text } from './Text';
@@ -29,10 +29,10 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24, backgroundColor: colors.bg },
   icon: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   center: { textAlign: 'center' },
   dev: { textAlign: 'center', fontFamily: fonts.medium, color: colors.danger },
   btn: { alignSelf: 'stretch', marginTop: 8 },
-});
+}));

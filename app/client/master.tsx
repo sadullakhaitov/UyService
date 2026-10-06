@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Text } from '@/components/ui';
 import { getCategory, type CategoryId } from '@/constants/categories';
-import { colors, fonts, radius } from '@/constants/theme';
+import { colors, fonts, radius, themed } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
 import { mockMasters, mockReviews } from '@/mocks';
 import { useHistory } from '@/store';
@@ -117,7 +117,7 @@ function Stat({ icon, value, label }: { icon: React.ReactNode; value: string; la
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   center: { textAlign: 'center' },
@@ -141,4 +141,4 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: { paddingHorizontal: 10, height: 26, borderRadius: 13, justifyContent: 'center' },
   chipText: { fontFamily: fonts.bold, fontSize: 12 },
-});
+}));
