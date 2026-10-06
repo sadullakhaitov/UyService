@@ -6,7 +6,7 @@ import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts } from '@/constants/theme';
 import { t } from '@/lib/i18n';
-import { useUser } from '@/store';
+import { useMaster, useUser } from '@/store';
 
 const LEN = 6;
 
@@ -32,7 +32,9 @@ export default function CodeScreen() {
       router.dismissTo({ pathname: '/client/order', params: { autoSubmit: '1' } });
     } else if (next === 'master') {
       setRole('master');
-      router.replace(billingPlan ? '/master' : '/master/plan');
+      // Birinchi marta — usta anketasi (ism, kategoriyalar, pasport, ish namunalari)
+      const registered = Boolean(useMaster.getState().profile.submittedAt);
+      router.replace(!registered ? '/master/register' : billingPlan ? '/master' : '/master/plan');
     } else {
       router.dismissTo('/client/account');
     }

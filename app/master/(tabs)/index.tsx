@@ -1,30 +1,37 @@
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { ChevronRight, Gauge, LocateFixed, Minus, Plus, Power, SlidersHorizontal, Wallet } from 'lucide-react-native';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase, type MapHandle } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Chip, IconButton, Squish, Text } from '@/components/ui';
 import { SwipeButton } from '@/components/ui/SwipeButton';
-import { BALANCE_LIMIT, BILLING } from '@/constants/billing';
+import { BILLING } from '@/constants/billing';
 import { categories } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { getCurrentLocation } from '@/lib/location';
+import { useBlocked } from '@/lib/masterFeed';
+import { askNotifications } from '@/lib/notify';
 import { useMyLocation } from '@/lib/useMyLocation';
 import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
-import { useMaster, useUser } from '@/store';
+import { useLocationLog, useMaster, useUser } from '@/store';
 
-// Soxta: onlayn bo'lgach 6 s da yangi buyurtma keladi
-const OFFER_AFTER_MS = 6000;
 const DAY = 86_400_000;
 
 export default function MasterOrders() {
   const insets = useSafeAreaInsets();
-  const { online, setOnline, verified, activity, balance, subscriptionUntil } = useMaster();
+  const { online, setOnline, activity, subscriptionUntil, todayIncome, todayJobs } = useMaster();
+  const sentAt = useLocationLog((s) => s.lastAt);
+  const [, setNow] = useState(0);
+  useEffect(() => {
+    if (!online) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [online]);
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const [sheetH, setSheetH] = useState(330);
   const [filters, setFilters] = useState(false);
@@ -36,13 +43,7 @@ export default function MasterOrders() {
   const pos = live ?? me ?? initial;
 
   // Nega buyurtmalar yopiq (Yandex Pro'dagi qizil banner kabi)
-  const blocked: null | 'verify' | 'balance' | 'subscription' = !verified
-    ? 'verify'
-    : plan === 'commission' && balance < BALANCE_LIMIT
-      ? 'balance'
-      : plan === 'subscription' && subscriptionUntil < Date.now()
-        ? 'subscription'
-        : null;
+  const blocked = useBlocked();
 
   useEffect(() => {
     if (blocked && online) setOnline(false);
@@ -56,14 +57,6 @@ export default function MasterOrders() {
     const here = (await getCurrentLocation()) ?? me;
     if (here) map.current?.flyTo(here, 16);
   };
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!online || blocked) return;
-      const id = setTimeout(() => router.push('/master/offer'), OFFER_AFTER_MS);
-      return () => clearTimeout(id);
-    }, [online, blocked]),
-  );
 
   const daysLeft = Math.max(0, Math.ceil((subscriptionUntil - Date.now()) / DAY));
   const topH = insets.top + (blocked ? 56 : 12);
@@ -83,7 +76,7 @@ export default function MasterOrders() {
       {blocked ? (
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.navigate(blocked === 'verify' ? '/master/profile' : '/master/money')}
+          onPress={() => router.navigate(blocked === 'verify' ? '/master/documents' : '/master/money')}
           style={[styles.banner, { paddingTop: insets.top + 8 }]}
         >
           <Text style={styles.bannerText}>
@@ -133,9 +126,9 @@ export default function MasterOrders() {
               <Wallet size={22} color={colors.primary} strokeWidth={2.2} />
             </View>
             <View style={styles.flex}>
-              <Text variant="caption">{t('mOrders.todayOrders', { count: mockMasterSelf.todayJobs })}</Text>
+              <Text variant="caption">{t('mOrders.todayOrders', { count: todayJobs })}</Text>
               <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
-                {formatSum(mockMasterSelf.todayIncome)}
+                {formatSum(todayIncome)}
               </Text>
             </View>
           </Squish>
@@ -156,7 +149,12 @@ export default function MasterOrders() {
         {online ? (
           <View style={styles.onlineRow}>
             <View style={[styles.dot, { backgroundColor: colors.success }]} />
-            <Text variant="small">{t('mOrders.onlineNow')}</Text>
+            <View>
+              <Text variant="small">{t('mOrders.onlineNow')}</Text>
+              {sentAt ? (
+                <Text variant="caption">{t('mOrders.gpsSent', { sec: Math.max(0, Math.round((Date.now() - sentAt) / 1000)) })}</Text>
+              ) : null}
+            </View>
           </View>
         ) : null}
 
@@ -165,7 +163,14 @@ export default function MasterOrders() {
         ) : online ? (
           <SwipeButton title={t('mOrders.swipeOffline')} tone="muted" icon={Power} onComplete={() => setOnline(false)} />
         ) : (
-          <SwipeButton title={t('mOrders.swipeOnline')} hint={t('mOrders.swipeOnlineHint')} onComplete={() => setOnline(true)} />
+          <SwipeButton
+            title={t('mOrders.swipeOnline')}
+            hint={t('mOrders.swipeOnlineHint')}
+            onComplete={() => {
+              askNotifications();
+              setOnline(true);
+            }}
+          />
         )}
       </Sheet>
 

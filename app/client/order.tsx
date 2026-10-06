@@ -1,19 +1,21 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
-import { Camera, MapPin, ShieldCheck, X } from 'lucide-react-native';
+import { CalendarClock, Camera, MapPin, ShieldCheck, X } from 'lucide-react-native';
 import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Divider, Row, ScreenHeader, Squish, Text } from '@/components/ui';
 import { getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
-import { formatRange, formatSum, t } from '@/lib/i18n';
+import { formatDay, formatRange, formatSchedule, formatSum, formatTime, t } from '@/lib/i18n';
+import { askNotifications } from '@/lib/notify';
+import { DAYS_AHEAD, dayOffsetOf, slotsFor } from '@/lib/schedule';
 import { useOrder, useOrders, useUser } from '@/store';
 
 const MAX_PHOTOS = 3;
 
 export default function OrderScreen() {
-  const { categoryId, problemId, description, photos, address, setDraft } = useOrder();
+  const { categoryId, problemId, description, photos, address, setDraft, scheduledAt } = useOrder();
   const create = useOrders((s) => s.create);
   const phone = useUser((s) => s.phone);
   const { autoSubmit } = useLocalSearchParams<{ autoSubmit?: string }>();
@@ -33,7 +35,9 @@ export default function OrderScreen() {
       router.push('/phone?next=order');
       return;
     }
+    askNotifications();
     const id = create();
+    if (scheduledAt !== null) setDraft({ scheduledAt: null }); // keyingi buyurtma yana "Hozir kerak"
     router.replace(`/client/searching?id=${id}`);
   };
 
@@ -55,6 +59,8 @@ export default function OrderScreen() {
       />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+          {scheduledAt !== null ? <SchedulePicker value={scheduledAt} onChange={(v) => setDraft({ scheduledAt: v })} color={category.main} onColor={category.onMain} /> : null}
+
           <View style={styles.section}>
             <Text variant="h3">{t('order.problemTitle')}</Text>
             <View style={styles.chips}>
@@ -118,16 +124,50 @@ export default function OrderScreen() {
         <View style={styles.where}>
           <MapPin size={16} color={colors.accent} strokeWidth={2.4} />
           <Text variant="small" numberOfLines={1} style={styles.flex}>
-            {address} · {t('common.cash')}
+            {address} · {scheduledAt !== null ? `${formatSchedule(scheduledAt)} · ` : ''}{t('common.cash')}
           </Text>
         </View>
-        <Button title={t('order.submit')} big color={{ bg: category.main, fg: category.onMain }} onPress={submit} />
+        <Button title={scheduledAt !== null ? t('schedule.submit') : t('order.submit')} big color={{ bg: category.main, fg: category.onMain }} onPress={submit} />
       </SafeAreaView>
     </SafeAreaView>
   );
 }
 
+// Kun va soat tanlash (usta shu vaqtda keladi)
+function SchedulePicker({ value, onChange, color, onColor }: { value: number; onChange: (v: number) => void; color: string; onColor: string }) {
+  const day = Math.max(0, dayOffsetOf(value));
+  const days = Array.from({ length: DAYS_AHEAD }, (_, d) => d).filter((d) => slotsFor(d).length);
+  const slots = slotsFor(day);
+  const pickDay = (d: number) => {
+    const s = slotsFor(d);
+    // Shu soat yangi kunda ham bo'lsa — saqlaymiz
+    const same = s.find((x) => new Date(x).getHours() === new Date(value).getHours());
+    onChange(same ?? s[0]);
+  };
+  return (
+    <View style={styles.section}>
+      <View style={styles.whenHead}>
+        <CalendarClock size={20} color={color} strokeWidth={2.2} />
+        <Text variant="h3">{t('schedule.when')}</Text>
+      </View>
+      <View style={styles.chips}>
+        {days.map((d) => (
+          <Chip key={d} label={formatDay(slotsFor(d)[0])} selected={d === day} onPress={() => pickDay(d)} color={color} onColor={onColor} />
+        ))}
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slots}>
+        {slots.map((s) => (
+          <Chip key={s} label={formatTime(s)} selected={s === value} onPress={() => onChange(s)} color={color} onColor={onColor} />
+        ))}
+      </ScrollView>
+      <Text variant="caption">{t('schedule.hint')}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  whenHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  slots: { gap: 8 },
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   catBadge: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },

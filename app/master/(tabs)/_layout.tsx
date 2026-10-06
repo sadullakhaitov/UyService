@@ -6,11 +6,14 @@ import { Text } from '@/components/ui';
 import { colors, fonts } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
-import { useChats } from '@/store';
+import { useChats, useMaster } from '@/store';
 
 // Usta ilovasi: 4 bo'lim — Buyurtmalar, Pul, Chatlar, Profil (Yandex Pro tuzilmasi)
 export default function MasterTabs() {
-  const unread = useChats((s) => s.chats.reduce((n, c) => n + c.unread, 0));
+  // Mijoz rejimidagi chatlar (kind 'master') usta ilovasida ko'rinmaydi
+  const unread = useChats((s) => s.chats.reduce((n, c) => n + (c.kind === 'master' ? 0 : c.unread), 0));
+  const profile = useMaster((s) => s.profile);
+  const initials = profile.firstName ? `${profile.firstName[0]}${profile.lastName[0] ?? ''}`.toUpperCase() : mockMasterSelf.initials;
   const insets = useSafeAreaInsets();
   return (
     <Tabs
@@ -51,7 +54,7 @@ export default function MasterTabs() {
           tabBarLabel: ({ color }) => <Label text={t('tabs.profile')} color={color} />,
           tabBarIcon: ({ focused }) => (
             <View style={[styles.avatar, focused && styles.avatarOn]}>
-              <Text style={[styles.avatarText, focused && { color: colors.onPrimary }]}>{mockMasterSelf.initials}</Text>
+              <Text style={[styles.avatarText, focused && { color: colors.onPrimary }]}>{initials}</Text>
             </View>
           ),
         }}

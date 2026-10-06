@@ -1,6 +1,6 @@
-import { router } from 'expo-router';
-import { ChevronRight, LocateFixed, MapPin, ReceiptText, Search, User } from 'lucide-react-native';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { CalendarClock, ChevronRight, LocateFixed, MapPin, ReceiptText, Search, User } from 'lucide-react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Keyboard, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,7 +11,8 @@ import { ActiveOrders } from '@/components/ui/ActiveOrders';
 import { categories, problems, type CategoryId } from '@/constants/categories';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { blur, distanceKm, type LatLng } from '@/lib/geo';
-import { t } from '@/lib/i18n';
+import { formatSchedule, t } from '@/lib/i18n';
+import { firstSlot } from '@/lib/schedule';
 import { getCurrentLocation, reverseGeocode } from '@/lib/location';
 import { estimateEtaMin } from '@/lib/routes';
 import { useMyLocation } from '@/lib/useMyLocation';
@@ -23,7 +24,8 @@ export default function ClientHome() {
   const [sheetH, setSheetH] = useState(520);
   const [moving, setMoving] = useState(false);
   const [query, setQuery] = useState('');
-  const { address, location, setAddress, setDraft, reset } = useOrder();
+  const { address, location, setAddress, setDraft, reset, scheduledAt } = useOrder();
+  const later = scheduledAt !== null;
   const favorites = useUser((s) => s.favorites);
   const [initial] = useState<LatLng>(location);
   const map = useRef<MapHandle>(null);
@@ -37,7 +39,21 @@ export default function ClientHome() {
     ? t('client.etaBubble', { min: Math.min(...around.map((m) => estimateEtaMin(m.location, location))) })
     : undefined;
 
+  // Xarita hozir ko'rsatayotgan joy — manzil qidiruvdan tanlansa, xarita o'sha yerga uchadi
+  const shownAt = useRef<LatLng>(location);
+  useFocusEffect(
+    useCallback(() => {
+      const p = useOrder.getState().location;
+      if (distanceKm(p, shownAt.current) > 0.02) {
+        userMoved.current = true;
+        shownAt.current = p;
+        map.current?.flyTo(p, 16);
+      }
+    }, []),
+  );
+
   const goTo = async (p: LatLng) => {
+    shownAt.current = p;
     map.current?.flyTo(p, 16);
     const name = await reverseGeocode(p);
     setAddress(name ?? t('client.myLocation'), p);
@@ -69,6 +85,7 @@ export default function ClientHome() {
 
   const onMoveEnd = async (c: LatLng) => {
     setMoving(false);
+    shownAt.current = c;
     const name = await reverseGeocode(c);
     setAddress(name ?? address, c);
   };
@@ -119,7 +136,7 @@ export default function ClientHome() {
 
       <Sheet onHeight={setSheetH}>
         <ActiveOrders />
-        <View style={styles.address}>
+        <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/client/address')} style={styles.address}>
           <View style={styles.addrIcon}>
             <MapPin size={18} color={colors.accent} strokeWidth={2.4} />
           </View>
@@ -133,7 +150,7 @@ export default function ClientHome() {
             <View style={styles.onlineDot} />
             <Text style={styles.onlineText}>{t('client.nearbyOnline', { count: nearby.length })}</Text>
           </View>
-        </View>
+        </Squish>
 
         <View style={styles.search}>
           <Search size={20} color={colors.ink2} strokeWidth={2.2} />
@@ -148,15 +165,25 @@ export default function ClientHome() {
         </View>
 
         <View style={styles.modes}>
-          <View style={[styles.mode, styles.modeOn]}>
-            <Text style={[styles.modeText, { color: colors.onPrimary }]}>{t('client.modeNow')}</Text>
-          </View>
-          <View style={styles.mode} accessibilityState={{ disabled: true }}>
-            <Text style={[styles.modeText, { color: colors.ink2 }]}>{t('client.modeLater')}</Text>
-            <View style={styles.soon}>
-              <Text style={styles.soonText}>{t('common.soon')}</Text>
-            </View>
-          </View>
+          <Squish
+            accessibilityRole="radio"
+            accessibilityState={{ selected: !later }}
+            onPress={() => setDraft({ scheduledAt: null })}
+            style={[styles.mode, !later && styles.modeOn]}
+          >
+            <Text style={[styles.modeText, { color: !later ? colors.onPrimary : colors.ink2 }]}>{t('client.modeNow')}</Text>
+          </Squish>
+          <Squish
+            accessibilityRole="radio"
+            accessibilityState={{ selected: later }}
+            onPress={() => setDraft({ scheduledAt: scheduledAt ?? firstSlot() })}
+            style={[styles.mode, later && styles.modeOn]}
+          >
+            <CalendarClock size={16} color={later ? colors.onPrimary : colors.ink2} strokeWidth={2.4} />
+            <Text style={[styles.modeText, { color: later ? colors.onPrimary : colors.ink2 }]} numberOfLines={1}>
+              {later ? formatSchedule(scheduledAt) : t('client.modeLater')}
+            </Text>
+          </Squish>
         </View>
 
         <View style={styles.grid}>
@@ -216,8 +243,6 @@ const styles = StyleSheet.create({
   mode: { flex: 1, height: 44, borderRadius: 11, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 },
   modeOn: { backgroundColor: colors.primary },
   modeText: { fontFamily: fonts.bold, fontSize: 14 },
-  soon: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, backgroundColor: colors.accentSoft },
-  soonText: { fontFamily: fonts.bold, fontSize: 10, color: colors.accentInk },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   tile: {
     width: '31.4%',

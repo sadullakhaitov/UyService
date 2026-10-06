@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import Constants from 'expo-constants';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Squish, Text } from '@/components/ui';
 import { BILLING } from '@/constants/billing';
@@ -23,11 +23,12 @@ import { t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
 import { useMaster, useUser } from '@/store';
 
-const soon = () => Alert.alert(t('profile.soon'), t('profile.soonText'));
 
 export default function Profile() {
   const m = mockMasterSelf;
-  const { activity, categories, verified } = useMaster();
+  const { activity, categories, profile, priorityPoints, setOnline } = useMaster();
+  const name = profile.firstName || m.name.split(' ')[0];
+  const initials = profile.firstName ? `${profile.firstName[0]}${profile.lastName[0] ?? ''}`.toUpperCase() : m.initials;
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const logout = useUser((s) => s.logout);
   const setRole = useUser((s) => s.setRole);
@@ -35,10 +36,10 @@ export default function Profile() {
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Squish accessibilityRole="button" scaleTo={0.98} onPress={soon} style={styles.head}>
-          <Avatar initials={m.initials} size={64} solid />
+        <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/master/edit')} style={styles.head}>
+          <Avatar initials={initials} size={64} solid />
           <Text style={styles.name} numberOfLines={1}>
-            {m.name.split(' ')[0]}
+            {name}
           </Text>
           <ChevronRight size={26} color={colors.ink} strokeWidth={2.6} />
         </Squish>
@@ -60,50 +61,68 @@ export default function Profile() {
           <View style={styles.tiles}>
             <Tile value={m.rating.toFixed(2)} label={t('profile.rating')} icon={<Star size={40} color={colors.accent} fill={colors.accent} />} />
             <Tile value={String(activity)} label={t('profile.points')} />
-            <Tile value="+15" label={t('profile.priority')} />
+            <Tile value={`+${priorityPoints}`} label={t('profile.priority')} />
           </View>
 
           <View style={styles.group}>
             <Item
               label={t('profile.categories')}
               value={categories.map((c) => t(`categories.${c}`)).join(', ')}
-              onPress={soon}
+              onPress={() => router.push('/master/edit')}
             />
             <Item
               label={t('profile.plan')}
               value={plan === 'subscription' ? t('plan.subscription') : `${t('plan.commission')} ${BILLING.commission.commissionPercent}%`}
               onPress={() => router.push('/master/plan')}
             />
-            <Item label={t('profile.payment')} value={t('profile.cash')} onPress={soon} last />
+            <Item label={t('profile.payment')} value={t('profile.cash')} onPress={() => Alert.alert(t('profile.payment'), t('profile.cashOnly'))} last />
           </View>
 
           <Text style={styles.section}>{t('profile.works')}</Text>
-          <Squish accessibilityRole="button" scaleTo={0.98} onPress={soon} style={styles.works}>
-            <ImagePlus size={24} color={colors.primary} strokeWidth={2.2} />
-            <View style={styles.flex}>
-              <Text variant="bodyBold">{t('profile.addWorks')}</Text>
-              <Text variant="small">{t('profile.worksHint')}</Text>
-            </View>
-          </Squish>
+          {profile.works.length ? (
+            <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/master/works')} style={styles.worksRow}>
+              {profile.works.slice(0, 3).map((uri) => (
+                <Image key={uri} source={{ uri }} style={styles.workImg} />
+              ))}
+              <View style={[styles.workImg, styles.workMore]}>
+                <Text style={styles.workMoreText}>{profile.works.length > 3 ? `+${profile.works.length - 3}` : '+'}</Text>
+              </View>
+            </Squish>
+          ) : (
+            <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/master/works')} style={styles.works}>
+              <ImagePlus size={24} color={colors.primary} strokeWidth={2.2} />
+              <View style={styles.flex}>
+                <Text variant="bodyBold">{t('profile.addWorks')}</Text>
+                <Text variant="small">{t('profile.worksHint')}</Text>
+              </View>
+            </Squish>
+          )}
         </View>
 
         <View style={styles.block}>
-          <Row icon={FileText} label={t('profile.documents')} badge={verified ? undefined : 1} onPress={soon} />
-          <Row icon={ScanFace} label={t('profile.verifyPhoto')} onPress={soon} last />
+          <Row
+            icon={FileText}
+            label={t('profile.documents')}
+            value={t(`docs.${profile.status}`)}
+            badge={profile.status === 'approved' ? undefined : 1}
+            onPress={() => router.push('/master/documents')}
+          />
+          <Row icon={ScanFace} label={t('profile.verifyPhoto')} value={profile.selfie ? '✓' : undefined} onPress={() => router.push('/master/documents')} last />
         </View>
 
         <View style={styles.block}>
-          <Row icon={Ticket} label={t('profile.promo')} onPress={soon} />
-          <Row icon={UserPlus} label={t('profile.invite')} onPress={soon} last />
+          <Row icon={Ticket} label={t('profile.promo')} onPress={() => router.push('/master/promo')} />
+          <Row icon={UserPlus} label={t('profile.invite')} onPress={() => router.push('/master/invite')} last />
         </View>
 
         <View style={styles.block}>
-          <Row icon={GraduationCap} label={t('profile.learn')} onPress={soon} />
-          <Row icon={Settings} label={t('profile.settings')} onPress={soon} />
+          <Row icon={GraduationCap} label={t('profile.learn')} onPress={() => router.push('/master/learn')} />
+          <Row icon={Settings} label={t('profile.settings')} onPress={() => router.push('/master/settings')} />
           <Row
             icon={LogOut}
             label={t('profile.logout')}
             onPress={() => {
+              setOnline(false);
               logout();
               router.replace('/client');
             }}
@@ -144,7 +163,7 @@ function Item({ label, value, onPress, last }: { label: string; value: string; o
   );
 }
 
-function Row({ icon: Icon, label, onPress, badge, last }: { icon: LucideIcon; label: string; onPress: () => void; badge?: number; last?: boolean }) {
+function Row({ icon: Icon, label, value, onPress, badge, last }: { icon: LucideIcon; label: string; value?: string; onPress: () => void; badge?: number; last?: boolean }) {
   return (
     <Squish accessibilityRole="button" scaleTo={0.99} onPress={onPress} style={styles.row}>
       <View style={styles.rowIcon}>
@@ -152,6 +171,11 @@ function Row({ icon: Icon, label, onPress, badge, last }: { icon: LucideIcon; la
       </View>
       <View style={[styles.rowBody, !last && styles.itemLine]}>
         <Text style={styles.rowLabel}>{label}</Text>
+        {value ? (
+          <Text variant="small" numberOfLines={1} style={styles.rowValue}>
+            {value}
+          </Text>
+        ) : null}
         {badge ? (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{badge}</Text>
@@ -190,6 +214,11 @@ const styles = StyleSheet.create({
   rowIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.field, alignItems: 'center', justifyContent: 'center' },
   rowBody: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 60 },
   rowLabel: { flex: 1, fontFamily: fonts.medium, fontSize: 16, color: colors.ink },
+  rowValue: { maxWidth: '45%' },
+  worksRow: { flexDirection: 'row', gap: 8 },
+  workImg: { flex: 1, aspectRatio: 1, borderRadius: 14, backgroundColor: colors.mapBlock },
+  workMore: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft },
+  workMoreText: { fontFamily: fonts.heavy, fontSize: 18, color: colors.primary },
   badge: { minWidth: 24, height: 24, borderRadius: 12, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
   badgeText: { fontFamily: fonts.heavy, fontSize: 12, color: colors.onPrimary },
   version: { paddingHorizontal: 16, gap: 2 },

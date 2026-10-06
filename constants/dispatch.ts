@@ -10,7 +10,9 @@ export const DISPATCH = {
   radiiKm: [3, 6, 10],
   routesTopN: 10, // Google Routes faqat eng yaqin 10 ta uchun so'raladi
   offerTimeoutSec: 60, // usta buyurtma ma'lumotlarini o'qib ulgurishi uchun
+  radiusWaitSec: 10, // radiusda bo'sh usta bo'lmasa, kengaytirishdan oldin shuncha kutiladi (yangi usta onlayn bo'lishi mumkin)
   giveUpAfterSec: 180,
+  preferredBonus: 1000, // "Mening ustalarim"dan tanlangan usta — taklif birinchi unga
 
   activity: {
     min: 0,

@@ -47,3 +47,19 @@ const MONTHS: Record<Lang, string[]> = {
 };
 export const formatDate = (d: Date) =>
   current === 'uz' ? `${d.getDate()}-${MONTHS.uz[d.getMonth()]}` : current === 'ru' ? `${d.getDate()} ${MONTHS.ru[d.getMonth()]}` : `${MONTHS.en[d.getMonth()]} ${d.getDate()}`;
+
+const pad = (n: number) => String(n).padStart(2, '0');
+export const formatTime = (ms: number) => {
+  const d = new Date(ms);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+/** "Bugun, 14:00" / "Ertaga, 09:00" / "12-oktabr, 18:00" */
+export function formatDay(ms: number) {
+  const d = new Date(ms);
+  const today = new Date();
+  const diff = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) / 86_400_000);
+  if (diff === 0) return t('schedule.today');
+  if (diff === 1) return t('schedule.tomorrow');
+  return formatDate(d);
+}
+export const formatSchedule = (ms: number) => `${formatDay(ms)}, ${formatTime(ms)}`;

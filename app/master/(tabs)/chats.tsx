@@ -19,7 +19,7 @@ export default function Chats() {
     <SafeAreaView edges={['top']} style={styles.root}>
       <Text style={styles.title}>{t('chats.title')}</Text>
       <FlatList
-        data={chats}
+        data={chats.filter((c) => c.kind !== 'master')}
         keyExtractor={(c) => c.id}
         contentContainerStyle={styles.list}
         ItemSeparatorComponent={() => <View style={styles.sep} />}

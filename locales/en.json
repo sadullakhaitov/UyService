@@ -16,7 +16,8 @@
     "demoNext": "Next (demo)",
     "soon": "Soon",
     "profile": "Profile",
-    "close": "Close"
+    "close": "Close",
+    "remove": "Remove"
   },
   "auth": {
     "phoneTitle": "Your phone number",
@@ -109,7 +110,10 @@
     "fee": "Call-out",
     "noneTitle": "No free handymen right now",
     "noneText": "Everyone nearby is busy. Please try again in a few minutes.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "nextMaster": "That handyman is busy — sending to the next best match",
+    "radius": "Search radius",
+    "offered": "Handymen offered"
   },
   "active": {
     "searching": "Finding a handyman…",
@@ -186,7 +190,10 @@
     "accept": "Accept",
     "decline": "Decline",
     "seconds": "seconds",
-    "declineNote": "Declining lowers your activity by 5 points"
+    "declineNote": "Declining lowers your activity by 5 points",
+    "note1": "The problem started yesterday, the sooner the better.",
+    "note2": "We're home all day, entrance code 45#.",
+    "note3": "Photo attached, please bring the needed part."
   },
   "job": {
     "toClient": "Route to client",
@@ -203,7 +210,8 @@
     "stepWork": "Working",
     "stepDone": "Done",
     "platformCut": "Platform share",
-    "yourIncome": "You keep"
+    "yourIncome": "You keep",
+    "chatClient": "Message the client"
   },
   "earnings": {
     "title": "Earnings",
@@ -259,7 +267,8 @@
     "done": "Done",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
-    "days": "{{days}} days"
+    "days": "{{days}} days",
+    "gpsSent": "Location sent · {{sec}} s ago"
   },
   "money": {
     "title": "Money",
@@ -286,7 +295,9 @@
     "send": "Send",
     "autoReply": "Thanks! An operator will reply shortly.",
     "empty": "No messages yet",
-    "you": "You: "
+    "you": "You: ",
+    "clientReply": "Thanks, we're waiting!",
+    "masterReply": "Hello! I'm on my way, see you soon."
   },
   "profile": {
     "role": "Handyman",
@@ -310,7 +321,8 @@
     "logout": "Log out",
     "version": "App version",
     "soon": "Soon",
-    "soonText": "This section comes in a later stage"
+    "soonText": "This section comes in a later stage",
+    "cashOnly": "For now clients pay cash only. Click and Payme come later."
   },
   "welcome": {
     "title": "Welcome to UyService!",
@@ -330,5 +342,110 @@
     "beMasterHint": "Get orders and earn",
     "language": "Language",
     "logout": "Log out"
+  },
+  "address": {
+    "title": "Find address",
+    "placeholder": "Street, house or place",
+    "myLocation": "My location",
+    "hint": "Type at least 3 letters. You can also pick on the map",
+    "empty": "Nothing found. Try another spelling or pick on the map"
+  },
+  "schedule": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "when": "When should the handyman come?",
+    "hint": "The search starts automatically 30 minutes before the time",
+    "submit": "Schedule the order",
+    "searchStarts": "The search starts {{min}} min before",
+    "searchNow": "Search now"
+  },
+  "notify": {
+    "foundTitle": "Handyman found",
+    "foundBody": "{{name}} is on the way, ~{{min}} min",
+    "arrivedTitle": "Handyman has arrived",
+    "arrivedBody": "{{category}} is at your door",
+    "noneTitle": "No free handymen right now",
+    "offerTitle": "New order"
+  },
+  "register": {
+    "step": "Step {{n}} of {{total}}",
+    "nameTitle": "Name and experience",
+    "nameHint": "Clients will see this name. Write it as in your passport.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "experience": "Experience",
+    "years": "{{n}} yr",
+    "years10": "10+ yrs",
+    "catTitle": "What work do you do?",
+    "catHint": "You can pick several. You will only get orders in these categories.",
+    "passTitle": "Identity check",
+    "passHint": "Upload a photo of your passport (or ID card). Orders start after an admin checks it.",
+    "passport": "Passport photo",
+    "selfie": "Selfie",
+    "selfieOptional": "Selfie (optional)",
+    "privacy": "Your documents are used only for verification and are never shown to clients.",
+    "worksTitle": "Work samples",
+    "worksHint": "Add photos of your work — clients trust you more. You can also do it later.",
+    "addWork": "Add photo",
+    "submit": "Submit application",
+    "submitSkip": "Submit without photos",
+    "reviewNote": "An admin usually reviews within 24 hours"
+  },
+  "docs": {
+    "none": "No documents uploaded",
+    "noneHint": "Upload a passport photo — orders open after the check",
+    "pending": "Under review",
+    "pendingHint": "Sent on {{date}}. Review usually takes up to 24 hours",
+    "approved": "Verified",
+    "approvedHint": "Your profile is verified, orders are open",
+    "rejected": "Rejected",
+    "rejectedHint": "The photo is unclear. Upload again and we will re-check",
+    "passport": "Passport and selfie",
+    "why": "For clients' safety, every handyman's identity is checked. Replacing a document sends it for review again.",
+    "demoNote": "Demo: in the real app an admin approves in the Supabase dashboard",
+    "demoApprove": "Demo: admin approved"
+  },
+  "works": {
+    "count": "{{n}} / {{max}} photos"
+  },
+  "edit": {
+    "title": "Edit profile"
+  },
+  "promo": {
+    "hint": "A promo code gives priority points or a balance bonus. Higher priority means orders reach you first.",
+    "placeholder": "PROMO CODE",
+    "apply": "Apply",
+    "invalid": "No such promo code",
+    "used": "This code was already used",
+    "gotPriority": "+{{n}} priority points",
+    "gotBonus": "+{{sum}} to balance",
+    "history": "Used"
+  },
+  "invite": {
+    "title": "{{sum}} per friend",
+    "hint": "Invite handymen you know to UyService",
+    "yourCode": "Your code",
+    "step1": "Send the link to a friend",
+    "step2": "They sign up and enter your code",
+    "step3": "After their 5th job you get {{sum}} on your balance",
+    "share": "Share link",
+    "copyLink": "Link only",
+    "message": "Work as a handyman on UyService — orders come to you. My code: {{code}}\n{{link}}"
+  },
+  "learn": {
+    "dispatchTitle": "How do orders reach me?",
+    "dispatchBody": "The system looks within 3 km, then 6 and 10 km|The closest handyman with high rating and activity gets the offer first|You have 60 seconds to decide|Clients who added you to \"My handymen\" send you the offer first",
+    "activityTitle": "What is activity?",
+    "activityBody": "Accept +2, decline or no answer −5, cancel −10|Activity ranges 0 to 100|Higher activity means more orders",
+    "ratingTitle": "How to raise my rating?",
+    "ratingBody": "Arrive on time; message the client if late|Agree the price before starting|Leave the place clean|Add photos of your work",
+    "moneyTitle": "How does money work?",
+    "moneyBody": "The client pays the call-out and labour in cash|On commission, the platform share is taken from your balance|If the balance drops below the limit, orders pause|On subscription there is no percentage — pay once a month",
+    "safetyTitle": "Safety",
+    "safetyBody": "Take orders only through the app|If something feels wrong, message support|Follow safety rules with electricity and gas"
+  },
+  "settings": {
+    "notifications": "Notifications",
+    "notificationsHint": "Your phone will alert you about new orders"
   }
 }

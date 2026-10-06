@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { MapPin, Phone } from 'lucide-react-native';
+import { MapPin, MessageCircle, Phone } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Linking, StyleSheet, View } from 'react-native';
@@ -14,22 +14,33 @@ import { formatSum, t } from '@/lib/i18n';
 import { bboxCorners, distanceKm, type LatLng } from '@/lib/geo';
 import { remainingEtaMin, useRoute } from '@/lib/routes';
 import { useWatchLocation } from '@/lib/useWatchLocation';
-import { mockClient, mockMasters, mockOffer } from '@/mocks';
-import { useMaster, useUser } from '@/store';
+import { mockMasterSelf } from '@/mocks';
+import { useChats, useMaster, useMasterWork, useUser, type MasterOrder } from '@/store';
 
 type Step = 'on_the_way' | 'arrived' | 'in_progress' | 'finishing' | 'completed';
 const STEPS: Step[] = ['on_the_way', 'arrived', 'in_progress', 'completed'];
 
 export default function Job() {
+  const job = useMasterWork((s) => s.job);
+  useEffect(() => {
+    if (!job) router.replace('/master');
+  }, [job]);
+  return job ? <JobView job={job} /> : null;
+}
+
+function JobView({ job }: { job: MasterOrder }) {
   const insets = useSafeAreaInsets();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
-  const charge = useMaster((s) => s.charge);
+  const { charge, addIncome } = useMaster();
+  const finishJob = useMasterWork((s) => s.finishJob);
+  const ensureChat = useChats((s) => s.ensure);
+  const chatId = `job-${job.id}`;
   const [step, setStep] = useState<Step>('on_the_way');
   const [sheetH, setSheetH] = useState(360);
   const [work, setWork] = useState('70000');
   const [parts, setParts] = useState('45000');
-  const fee = getCategory(mockOffer.categoryId).callFee;
-  const cat = getCategory(mockOffer.categoryId);
+  const cat = getCategory(job.categoryId);
+  const fee = cat.callFee;
 
   // Usta belgisi — telefonning JONLI joylashuvi: usta yursa yuradi, tursa turadi (soxta harakat yo'q)
   const live = useWatchLocation();
@@ -37,16 +48,9 @@ export default function Job() {
   useEffect(() => {
     if (live && !start) setStart(live);
   }, [live, start]);
-  const origin0 = start ?? mockMasters[0].location;
+  const origin0 = start ?? mockMasterSelf.location;
   const here = live ?? origin0;
-  // Soxta mijoz — ustaning birinchi joyidan ~1,5 km narida (5-bosqichda haqiqiy buyurtma manzili)
-  const client = useMemo(
-    () => ({
-      latitude: origin0.latitude + (mockClient.location.latitude - mockMasters[0].location.latitude),
-      longitude: origin0.longitude + (mockClient.location.longitude - mockMasters[0].location.longitude),
-    }),
-    [origin0.latitude, origin0.longitude], // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  const client = job.location;
 
   // Yo'l: usta 150 m dan ko'p siljisa yoki yo'ldan chiqsa — yangi joydan qayta hisoblanadi
   const [routeFrom, setRouteFrom] = useState<LatLng>(origin0);
@@ -106,17 +110,25 @@ export default function Job() {
           <View style={styles.flex}>
             <Text variant="caption">{t('job.client')}</Text>
             <Text variant="h3">
-              {mockClient.name} · {t(`problems.${mockOffer.problemId}`)}
+              {job.clientName} · {t(`problems.${job.problemId}`)}
             </Text>
             <View style={styles.addr}>
               <MapPin size={14} color={colors.accent} strokeWidth={2.4} />
               <Text variant="small" numberOfLines={1}>
-                {mockOffer.address}
+                {job.address}
                 {step === 'on_the_way' ? ` · ${t('common.min', { value: eta })}` : ''}
               </Text>
             </View>
           </View>
-          <IconButton icon={Phone} label={t('job.callClient')} onPress={() => Linking.openURL(`tel:${mockClient.phone.replace(/\s/g, '')}`)} />
+          <IconButton
+            icon={MessageCircle}
+            label={t('job.chatClient')}
+            onPress={() => {
+              ensureChat({ id: chatId, title: `${job.clientName} · ${t(`problems.${job.problemId}`)}`, subtitle: job.address, kind: 'client' });
+              router.push(`/master/chat/${chatId}`);
+            }}
+          />
+          <IconButton icon={Phone} label={t('job.callClient')} onPress={() => Linking.openURL(`tel:${job.clientPhone.replace(/\s/g, '')}`)} />
         </View>
 
         {step === 'finishing' || step === 'completed' ? (
@@ -144,9 +156,10 @@ export default function Job() {
         {step === 'in_progress' ? <Button title={t('job.finishBtn')} big onPress={() => setStep('finishing')} /> : null}
         {step === 'finishing' ? <Button title={t('job.confirm')} big onPress={() => {
               if (cut) charge(cut); // komissiya balansdan yechiladi
+              addIncome(total - cut);
               setStep('completed');
             }} /> : null}
-        {step === 'completed' ? <Button title={t('common.continue')} big onPress={() => router.replace('/master')} /> : null}
+        {step === 'completed' ? <Button title={t('common.continue')} big onPress={finishJob} /> : null}
       </Sheet>
     </View>
   );

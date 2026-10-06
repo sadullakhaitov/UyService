@@ -13,7 +13,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '@/constants/theme';
 import { setLanguage } from '@/lib/i18n';
-import { useUser } from '@/store';
+import { useMaster, useUser } from '@/store';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -34,8 +34,20 @@ export default function RootLayout() {
   });
 
   // Saqlangan sozlamalar (til, raqam, rol) telefondan o'qilguncha kutamiz
-  const [hydrated, setHydrated] = useState(useUser.persist.hasHydrated());
-  useEffect(() => useUser.persist.onFinishHydration(() => setHydrated(true)), []);
+  const [userReady, setUserReady] = useState(useUser.persist.hasHydrated());
+  const [masterReady, setMasterReady] = useState(useMaster.persist.hasHydrated());
+  useEffect(() => {
+    const a = useUser.persist.onFinishHydration(() => setUserReady(true));
+    const b = useMaster.persist.onFinishHydration(() => setMasterReady(true));
+    // Kuzatuv ulanguncha o'qib bo'lingan bo'lishi mumkin
+    if (useUser.persist.hasHydrated()) setUserReady(true);
+    if (useMaster.persist.hasHydrated()) setMasterReady(true);
+    return () => {
+      a();
+      b();
+    };
+  }, []);
+  const hydrated = userReady && masterReady;
   const lang = useUser((s) => s.language) ?? 'uz';
   setLanguage(lang);
 

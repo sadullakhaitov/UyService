@@ -20,7 +20,7 @@ UyService — Toshkentda uyga usta chaqirish ilovasi: mijoz kategoriyani tanlayd
 
 **MVP ichida bor:** bitta mobil ilova, ikki rejim (Mijoz / Usta, kirishda tanlanadi); 6 ta kategoriya: Santexnik, Elektrik, Konditsioner, Mebel, Ta'mirlash, Maishiy texnika; "Hozir kerak" rejimi (real vaqtda qidirish va xaritada kuzatish); telefon raqam + SMS kod; baholash va "Mening ustalarim"; faqat naqd to'lov; ustaning tarif tanlovi (obuna / komissiya).
 
-**MVP ichida yo'q (keyingi bosqichlar):** "Vaqtni tanlash" (ilovada "Tez kunda" belgisi bilan turibdi), karta orqali to'lov (Click/Payme), veb-sayt, alohida admin panel. (Uch til — o'zbek, rus, ingliz — qo'shildi.)
+**MVP ichida yo'q (keyingi bosqichlar):** karta orqali to'lov (Click/Payme), veb-sayt, alohida admin panel. (Qo'shildi: uch til — o'zbek, rus, ingliz; "Vaqtni tanlash" — rejalashtirilgan buyurtma; mijoz ↔ usta chati; manzilni yozib qidirish.)
 
 ## 2. Texnologiyalar
 
@@ -54,9 +54,11 @@ app/                      ← ekranlar (Expo Router)
   (auth)/phone.tsx        ← telefon raqam (/phone?next=order|master)
   (auth)/code.tsx         ← SMS kod
   client/account.tsx      ← mijoz profili: mehmon/kirgan, "Usta bo'lib ishlash", til
-  client/index.tsx        ← bosh sahifa: xarita + kategoriyalar (/client)
-  client/order.tsx        ← muammo, tavsif, rasm, narx
-  client/searching.tsx    ← usta qidirilmoqda (to'lqinlar)
+  client/index.tsx        ← bosh sahifa: xarita + kategoriyalar, "Hozir kerak" / "Vaqtni tanlash" (/client)
+  client/address.tsx      ← manzilni yozib qidirish (lib/geocode.ts)
+  client/order.tsx        ← muammo, tavsif, rasm, narx; rejalashtirishda kun va soat
+  client/searching.tsx    ← usta qidirilmoqda (to'lqinlar, radius, takliflar) yoki rejalashtirilgan buyurtma
+  client/chat.tsx         ← mijoz ↔ usta chati (buyurtma bo'yicha)
   client/tracking.tsx     ← usta yo'lda
   client/rate.tsx         ← ish tugadi, baholash
   client/history.tsx      ← buyurtmalar tarixi
@@ -65,10 +67,13 @@ app/                      ← ekranlar (Expo Router)
     money.tsx             ← Pul: kunlik daromad, balans va limit / obuna, tarif
     chats.tsx             ← Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar
     profile.tsx           ← Profil: reyting, aktivlik, kategoriyalar, tarif, hujjatlar, chiqish
-  master/chat/[id].tsx    ← chat oynasi
+  master/chat/[id].tsx    ← chat oynasi (components/chat/ChatView.tsx)
+  master/register.tsx     ← usta anketasi, 4 qadam: ism+tajriba, kategoriyalar, pasport (+selfi), ish namunalari
   master/plan.tsx         ← tarif tanlash: obuna yoki komissiya
-  master/offer.tsx        ← yangi buyurtma, 60 soniya taymer
-  master/job.tsx          ← mijozga borish, ishni boshlash/tugatish
+  master/offer.tsx        ← yangi buyurtma (useMasterWork.offer), 60 soniya taymer
+  master/job.tsx          ← mijozga borish, ishni boshlash/tugatish (useMasterWork.job)
+  master/documents.tsx    ← hujjatlar, shaxsni tasdiqlash, admin tekshiruvi holati (+ demo tasdiqlash)
+  master/works.tsx, edit.tsx, promo.tsx, invite.tsx, learn.tsx, settings.tsx  ← profil bo'limlari
 components/
   map/                    ← xarita bilan bog'liq hamma narsa
     MapBase.tsx           ← Yandex xaritasi WebView ichida (Android/iOS)
@@ -80,6 +85,13 @@ components/
   ui/                     ← Button, Card, Chip, Rating, Logo, ...
   sheets/Sheet.tsx        ← pastdan chiqadigan panel
 lib/                      ← i18n, geo, location, routes, supabase
+  dispatch.ts             ← usta qidirish algoritmi (TZ 7-bo'lim), toza funksiyalar — 7-bosqichda Edge Function'ga ko'chadi
+  orderSimulator.ts       ← mijoz buyurtmalari uchun soxta "server": dispatch + soxta ustalar javobi va harakati
+  masterFeed.ts           ← usta tomoni: takliflar oqimi, joylashuvni har 5 s yuborish, useBlocked
+  backend.ts              ← serverga yoziladigan hamma narsa (hozir mahalliy, 5-bosqichda Supabase)
+  notify.ts               ← bildirishnomalar (mahalliy; ilova orqa fonda bo'lsa chiqadi)
+  geocode.ts              ← manzil qidirish (hozir OSM Nominatim, keyin Yandex Geocoder)
+  schedule.ts, photos.ts  ← rejalashtirish vaqtlari; rasm tanlash/suratga olish
 store/                    ← Zustand (foydalanuvchi, buyurtma, usta)
 constants/                ← theme, categories (+ CALL_FEE), dispatch, billing
 locales/uz.json           ← ilovadagi barcha matnlar
@@ -98,10 +110,14 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 - Buyurtmalar: to'liq xarita, filtr (kategoriya, radius), zoom ±, joylashuv; panelda aktivlik va bugungi daromad, tarif kartasi, "surib ishga chiqish" tugmasi. Buyurtma yopiq bo'lsa tepada qizil banner (profil tekshirilmoqda / balans limitdan past / obuna tugagan).
 - Pul: kunlik daromad + 7 kunlik tanlov, komissiya tarifida balans va limit (`BALANCE_LIMIT`, platforma ulushi ish yakunida balansdan yechiladi), obuna tarifida obuna muddati; "Yordam" → qo'llab-quvvatlash chati.
 - Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar bilan yozishmalar (hozircha mahalliy, 5-bosqichda Realtime).
-- Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; sozlamalar, chiqish.
+- Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; o'qish (qo'llanma); sozlamalar (bildirishnomalar, til), chiqish. Demo promokodlar: `UYSERVICE` (+10 prioritet), `BIRINCHI` (+20 000 balans), `USTA2026`. Do'st uchun bonus `INVITE_BONUS` = 30 000 (⚠️ tasdiqlanmagan).
 - Tarif tanlash (birinchi kirishda) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → Ishni boshladim → Tugatdim + yakuniy narx, platforma ulushi tarifga qarab).
 
-**Kirish (mehmon birinchi):** ilova ochilganda — til tanlash, keyin darhol mijoz bosh sahifasi. Ro'yxatdan o'tish (telefon → SMS kod) faqat mijoz hamma narsani tanlab "Usta chaqirish"ni bosganda so'raladi; tasdiqlangach buyurtma avtomatik yuboriladi. Usta bo'lish — Profil → "Usta bo'lib ishlash" (raqam tasdiqlanadi → tarif). Til, raqam, rol telefonda saqlanadi (AsyncStorage). Usta ro'yxatdan o'tganda ism, kategoriyalar, pasport rasmi va ish namunalarini yuklaydi; admin tasdiqlamaguncha buyurtma olmaydi (`useMaster().verified`).
+**Rejalashtirish ("Vaqtni tanlash"):** bugun/ertaga/indinga, 08:00–21:00 har soat, eng erta — hozirdan 1,5 soat keyin. Buyurtma `scheduled` holatida turadi, usta qidirish belgilangan vaqtdan 30 daqiqa oldin avtomatik boshlanadi (`SCHEDULE_LEAD_MS`).
+
+**Bildirishnomalar:** mijozga "Usta topildi", "Usta yetib keldi", "Bo'sh usta yo'q"; ustaga "Yangi buyurtma" (Sozlamalarda o'chirish mumkin). Ilova ekranda ochiq bo'lsa chiqmaydi.
+
+**Kirish (mehmon birinchi):** ilova ochilganda — til tanlash, keyin darhol mijoz bosh sahifasi. Ro'yxatdan o'tish (telefon → SMS kod) faqat mijoz hamma narsani tanlab "Usta chaqirish"ni bosganda so'raladi; tasdiqlangach buyurtma avtomatik yuboriladi. Usta bo'lish — Profil → "Usta bo'lib ishlash" (raqam tasdiqlanadi → tarif). Til, raqam, rol telefonda saqlanadi (AsyncStorage). Usta ro'yxatdan o'tganda (`master/register`) ism, tajriba, kategoriyalar, pasport rasmi (+ ixtiyoriy selfi) va ish namunalarini yuklaydi; admin tasdiqlamaguncha buyurtma olmaydi (`useMaster().verified`, `profile.status`: none → pending → approved/rejected). Usta ma'lumotlari telefonda saqlanadi (`uyservice-master`), "onlayn" holati saqlanmaydi.
 
 ## 5. Xarita va animatsiyalar
 
@@ -129,7 +145,7 @@ Qo'shimcha (tarif qarori uchun):
 
 `categories.call_fee` = 50 000 (hammasi uchun).
 
-Buyurtma holatlari: `searching → assigned → on_the_way → arrived → in_progress → completed`, istalgan joyda `cancelled`.
+Buyurtma holatlari: `scheduled → searching → assigned → on_the_way → arrived → in_progress → completed`, istalgan joyda `cancelled`. `orders.scheduled_at` — rejalashtirilgan vaqt (null — "Hozir kerak").
 
 ## 7. Usta qidirish algoritmi
 
@@ -137,7 +153,9 @@ Koeffitsientlar: `constants/dispatch.ts`. Filtr (kategoriya, onlayn, tasdiqlanga
 
 `ball = 100 − (yetib kelish daqiqasi × 3) + (reyting − 4) × 20 + aktivlik × 0,2 + prioritet ballari`
 
-Eng yuqori ballga taklif, 60 s taymer (usta ma'lumotlarni o'qib ulgurishi uchun). Rad/vaqt o'tdi → aktivlik −5, keyingi ustaga. 3 radiusdan keyin ham topilmasa (≈3 daqiqa) — "Hozir bo'sh usta yo'q" + "Qayta urinish". Aktivlik: qabul +2, rad −5, bekor −10; 0–100. "Mening ustalarim"dan tanlansa — taklif birinchi unga.
+Eng yuqori ballga taklif, 60 s taymer (usta ma'lumotlarni o'qib ulgurishi uchun). Rad/vaqt o'tdi → aktivlik −5, keyingi ustaga. Radiusda hech kim bo'lmasa `radiusWaitSec` (10 s) kutib, keyingi radiusga. 3 radiusdan keyin ham topilmasa yoki `giveUpAfterSec` (3 daqiqa) o'tsa — "Hozir bo'sh usta yo'q" + "Qayta urinish". Aktivlik: qabul +2, rad −5, bekor −10; 0–100. "Mening ustalarim"dan tanlansa — taklif birinchi unga (10 km ichida bo'lsa, radiusdan qat'i nazar).
+
+Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, `applyActivity`) — tashqi holatsiz, hozir `lib/orderSimulator.ts` ishlatadi, 7-bosqichda shu fayl `supabase/functions/dispatch`ga ko'chadi. Yetib kelish vaqti hozir taxminiy (`estimateEtaMin`), keyin Google Routes / Yandex.
 
 ## 8. Dizayn qoidalari
 
@@ -165,8 +183,8 @@ Eng yuqori ballga taklif, 60 s taymer (usta ma'lumotlarni o'qib ulgurishi uchun)
 3. ✅ Mijoz ekranlari (soxta ma'lumot bilan).
 4. ✅ Animatsiyalar (to'lqinlar, miltillash, zoom, silliq usta belgisi, oqib turuvchi yo'l) — telefonda sinab ko'rish kerak.
 5. ⏳ Supabase: migratsiyalar, PostGIS, RLS, telefon + SMS (Eskiz.uz) kirish.
-6. 🟡 Usta ilovasi — ekranlar tayyor (soxta), joylashuvni har 5 s `master_locations`ga yozish qoladi.
-7. ⏳ Taqsimlash: `supabase/functions/dispatch`, `offer-timeout`, Realtime.
+6. 🟡 Usta ilovasi — ekranlar, anketa, profil bo'limlari tayyor; joylashuv har 5 s `lib/backend.ts` → `publishMasterLocation` orqali yuboriladi (hozir mahalliy, 5-bosqichda `master_locations`).
+7. 🟡 Taqsimlash: algoritm tayyor (`lib/dispatch.ts`, soxta ustalar bilan ishlaydi); `supabase/functions/dispatch`, `offer-timeout`, Realtime qoladi.
 8. ⏳ Sayqal: push, xatolar, internet yo'qligi, ikki telefonda sinov.
 
 ## 10. Ishga tushirish

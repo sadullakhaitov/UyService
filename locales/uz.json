@@ -16,7 +16,8 @@
     "demoNext": "Keyingisi (demo)",
     "soon": "Tez kunda",
     "profile": "Profil",
-    "close": "Yopish"
+    "close": "Yopish",
+    "remove": "O'chirish"
   },
   "auth": {
     "phoneTitle": "Telefon raqamingiz",
@@ -109,7 +110,10 @@
     "fee": "Chaqiruv",
     "noneTitle": "Hozir bo'sh usta yo'q",
     "noneText": "Barcha yaqin ustalar band. Bir necha daqiqadan keyin qayta urinib ko'ring.",
-    "retry": "Qayta urinish"
+    "retry": "Qayta urinish",
+    "nextMaster": "Usta band ekan — keyingi eng mos ustaga yuborilmoqda",
+    "radius": "Qidiruv radiusi",
+    "offered": "Taklif yuborilgan ustalar"
   },
   "active": {
     "searching": "Usta qidirilmoqda…",
@@ -186,7 +190,10 @@
     "accept": "Qabul qilish",
     "decline": "Rad etish",
     "seconds": "soniya",
-    "declineNote": "Rad etsangiz aktivlik 5 ballga tushadi"
+    "declineNote": "Rad etsangiz aktivlik 5 ballga tushadi",
+    "note1": "Muammo kecha paydo bo'ldi, tezroq kelsangiz yaxshi bo'lardi.",
+    "note2": "Uyda kun bo'yi bormiz, podyezd kodi 45#.",
+    "note3": "Rasm ilova qildim, kerakli ehtiyot qismni olib keling."
   },
   "job": {
     "toClient": "Mijozga yo'l",
@@ -203,7 +210,8 @@
     "stepWork": "Ish jarayoni",
     "stepDone": "Tugadi",
     "platformCut": "Platforma ulushi",
-    "yourIncome": "Sizga qoladi"
+    "yourIncome": "Sizga qoladi",
+    "chatClient": "Mijozga yozish"
   },
   "earnings": {
     "title": "Daromad",
@@ -259,7 +267,8 @@
     "done": "Tayyor",
     "zoomIn": "Yaqinlashtirish",
     "zoomOut": "Uzoqlashtirish",
-    "days": "{{days}} kun"
+    "days": "{{days}} kun",
+    "gpsSent": "Joylashuv yuborildi · {{sec}} s oldin"
   },
   "money": {
     "title": "Pul",
@@ -286,7 +295,9 @@
     "send": "Yuborish",
     "autoReply": "Rahmat! Operator tez orada javob beradi.",
     "empty": "Hozircha xabar yo'q",
-    "you": "Siz: "
+    "you": "Siz: ",
+    "clientReply": "Rahmat, kutyapmiz!",
+    "masterReply": "Assalomu alaykum! Yo'ldaman, tez orada yetib boraman."
   },
   "profile": {
     "role": "Usta",
@@ -310,7 +321,8 @@
     "logout": "Chiqish",
     "version": "Ilova versiyasi",
     "soon": "Tez kunda",
-    "soonText": "Bu bo'lim keyingi bosqichlarda qo'shiladi"
+    "soonText": "Bu bo'lim keyingi bosqichlarda qo'shiladi",
+    "cashOnly": "Hozircha mijozlar faqat naqd to'laydi. Click va Payme keyingi bosqichda."
   },
   "welcome": {
     "title": "UyService'ga xush kelibsiz!",
@@ -330,5 +342,110 @@
     "beMasterHint": "Buyurtma oling va daromad qiling",
     "language": "Til",
     "logout": "Chiqish"
+  },
+  "address": {
+    "title": "Manzilni qidirish",
+    "placeholder": "Ko'cha, uy yoki joy nomi",
+    "myLocation": "Mening joylashuvim",
+    "hint": "Kamida 3 ta harf yozing. Xaritani surib ham tanlash mumkin",
+    "empty": "Hech narsa topilmadi. Boshqacha yozib ko'ring yoki xaritadan tanlang"
+  },
+  "schedule": {
+    "today": "Bugun",
+    "tomorrow": "Ertaga",
+    "when": "Usta qachon kelsin?",
+    "hint": "Usta qidirish belgilangan vaqtdan 30 daqiqa oldin avtomatik boshlanadi",
+    "submit": "Buyurtmani rejalashtirish",
+    "searchStarts": "Usta qidirish {{min}} daqiqa oldin boshlanadi",
+    "searchNow": "Hozir qidirish"
+  },
+  "notify": {
+    "foundTitle": "Usta topildi",
+    "foundBody": "{{name}} yo'lga chiqdi, ~{{min}} daqiqada yetib keladi",
+    "arrivedTitle": "Usta yetib keldi",
+    "arrivedBody": "{{category}} eshigingiz oldida",
+    "noneTitle": "Hozir bo'sh usta yo'q",
+    "offerTitle": "Yangi buyurtma"
+  },
+  "register": {
+    "step": "{{n}}/{{total}}-qadam",
+    "nameTitle": "Ism va tajriba",
+    "nameHint": "Mijozlar sizni shu ism bilan ko'radi. Pasportdagidek yozing.",
+    "firstName": "Ism",
+    "lastName": "Familiya",
+    "experience": "Ish tajribasi",
+    "years": "{{n}} yil",
+    "years10": "10+ yil",
+    "catTitle": "Qaysi ishlarni qilasiz?",
+    "catHint": "Bir nechtasini tanlash mumkin. Buyurtmalar faqat shu kategoriyalar bo'yicha keladi.",
+    "passTitle": "Shaxsni tasdiqlash",
+    "passHint": "Pasport (yoki ID-karta) rasmini yuklang. Admin tekshirgach buyurtmalar kela boshlaydi.",
+    "passport": "Pasport rasmi",
+    "selfie": "Selfi",
+    "selfieOptional": "Selfi (ixtiyoriy)",
+    "privacy": "Hujjatlaringiz faqat tekshirish uchun ishlatiladi va mijozlarga ko'rsatilmaydi.",
+    "worksTitle": "Ish namunalari",
+    "worksHint": "Qilgan ishlaringiz rasmini qo'shing — mijozlar ko'proq ishonadi. Keyin ham qo'shish mumkin.",
+    "addWork": "Rasm qo'shish",
+    "submit": "Arizani yuborish",
+    "submitSkip": "Hozircha rasmsiz yuborish",
+    "reviewNote": "Admin odatda 24 soat ichida tekshiradi"
+  },
+  "docs": {
+    "none": "Hujjatlar yuklanmagan",
+    "noneHint": "Pasport rasmini yuklang — tekshiruvdan keyin buyurtmalar ochiladi",
+    "pending": "Tekshirilmoqda",
+    "pendingHint": "{{date}} kuni yuborildi. Admin odatda 24 soat ichida tekshiradi",
+    "approved": "Tasdiqlangan",
+    "approvedHint": "Profilingiz tasdiqlandi, buyurtmalar ochiq",
+    "rejected": "Rad etildi",
+    "rejectedHint": "Rasm aniq emas. Qayta yuklang — yana tekshiramiz",
+    "passport": "Pasport va selfi",
+    "why": "Mijozlar xavfsizligi uchun har bir usta shaxsi tasdiqlanadi. Hujjatni almashtirsangiz, qayta tekshiruvga yuboriladi.",
+    "demoNote": "Demo: haqiqiy ilovada admin Supabase panelidan tasdiqlaydi",
+    "demoApprove": "Demo: admin tasdiqladi"
+  },
+  "works": {
+    "count": "{{n}} / {{max}} ta rasm"
+  },
+  "edit": {
+    "title": "Profilni tahrirlash"
+  },
+  "promo": {
+    "hint": "Promokod prioritet ballari yoki balansga bonus beradi. Prioritet yuqori bo'lsa, buyurtma sizga birinchi keladi.",
+    "placeholder": "PROMOKOD",
+    "apply": "Qo'llash",
+    "invalid": "Bunday promokod yo'q",
+    "used": "Bu promokod allaqachon ishlatilgan",
+    "gotPriority": "+{{n}} prioritet ball",
+    "gotBonus": "Balansga +{{sum}}",
+    "history": "Ishlatilgan"
+  },
+  "invite": {
+    "title": "Do'st uchun {{sum}}",
+    "hint": "Tanish ustalaringizni UyService'ga taklif qiling",
+    "yourCode": "Sizning kodingiz",
+    "step1": "Havolani do'stingizga yuboring",
+    "step2": "U ro'yxatdan o'tib, kodingizni kiritadi",
+    "step3": "U 5 ta ishni bajargach, balansingizga {{sum}} tushadi",
+    "share": "Havolani yuborish",
+    "copyLink": "Faqat havola",
+    "message": "UyService'da usta bo'lib ishlang — buyurtmalar o'zi keladi. Kodim: {{code}}\n{{link}}"
+  },
+  "learn": {
+    "dispatchTitle": "Buyurtma qanday keladi?",
+    "dispatchBody": "Tizim 3 km, keyin 6 va 10 km radiusda mos ustalarni qidiradi|Eng yaqin, reytingi va aktivligi yuqori ustaga birinchi taklif yuboriladi|Taklifni ko'rib chiqish uchun 60 soniya bor|\"Mening ustalarim\"ga qo'shgan mijozlar sizga birinchi taklif yuboradi",
+    "activityTitle": "Aktivlik nima?",
+    "activityBody": "Qabul qilish +2, rad etish yoki javob bermaslik −5, bekor qilish −10|Aktivlik 0 dan 100 gacha|Aktivlik yuqori bo'lsa, buyurtmalar ko'proq keladi",
+    "ratingTitle": "Reytingni qanday oshirish mumkin?",
+    "ratingBody": "Vaqtida keling va kech qolsangiz mijozga yozing|Narxni ish boshlanishidan oldin kelishib oling|Ishdan keyin joyni toza qoldiring|Ish namunalari rasmini qo'shing",
+    "moneyTitle": "Pul qanday hisoblanadi?",
+    "moneyBody": "Mijoz chaqiruv narxi va ish haqini naqd to'laydi|Komissiya tarifida platforma ulushi balansingizdan yechiladi|Balans limitdan past bo'lsa, buyurtmalar vaqtincha yopiladi|Obuna tarifida foiz yo'q — oyiga bir marta to'lanadi",
+    "safetyTitle": "Xavfsizlik",
+    "safetyBody": "Buyurtmani faqat ilova orqali qabul qiling|Mijozga noqulay vaziyatda qo'llab-quvvatlashga yozing|Elektr va gaz bilan ishlashda xavfsizlik qoidalariga rioya qiling"
+  },
+  "settings": {
+    "notifications": "Bildirishnomalar",
+    "notificationsHint": "Yangi buyurtma kelganda telefon xabar beradi"
   }
 }

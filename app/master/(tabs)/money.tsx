@@ -15,14 +15,15 @@ const DAY = 86_400_000;
 // So'nggi 7 kun: sana raqami va o'sha kungi daromad (soxta)
 const days = Array.from({ length: 7 }, (_, i) => {
   const d = new Date(Date.now() - (6 - i) * DAY);
-  return { date: d, label: String(d.getDate()), income: i === 6 ? mockMasterSelf.todayIncome : (mockMasterSelf.week[i] ?? 0) };
+  return { date: d, label: String(d.getDate()), income: mockMasterSelf.week[i] ?? 0 };
 });
 
 export default function Money() {
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
-  const { balance, subscriptionUntil } = useMaster();
+  const { balance, subscriptionUntil, todayIncome } = useMaster();
   const [sel, setSel] = useState(6);
-  const day = days[sel];
+  // Bugungi kun — haqiqiy (yakunlangan ishlardan), oldingilari soxta
+  const day = sel === 6 ? { ...days[6], income: todayIncome } : days[sel];
   const ok = balance >= BALANCE_LIMIT;
   const subActive = subscriptionUntil > Date.now();
   const soon = () => Alert.alert(t('profile.soon'), t('money.topUpSoon'));

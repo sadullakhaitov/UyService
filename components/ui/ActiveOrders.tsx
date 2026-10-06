@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react-native';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { getCategory } from '@/constants/categories';
 import { colors, fonts, radius } from '@/constants/theme';
-import { t } from '@/lib/i18n';
+import { formatSchedule, t } from '@/lib/i18n';
 import { etaMin } from '@/lib/orderSimulator';
 import { useOrders, type ActiveOrder } from '@/store';
 import { Squish } from './Pressable';
@@ -28,7 +28,9 @@ function OrderCard({ order, single }: { order: ActiveOrder; single: boolean }) {
   const cat = getCategory(order.categoryId);
   const Icon = cat.icon;
   const status =
-    order.status === 'searching'
+    order.status === 'scheduled'
+      ? formatSchedule(order.scheduledAt ?? Date.now())
+      : order.status === 'searching'
       ? order.none
         ? t('searching.noneTitle')
         : t('active.searching')
@@ -37,7 +39,8 @@ function OrderCard({ order, single }: { order: ActiveOrder; single: boolean }) {
         : order.status === 'arrived'
           ? t('tracking.arrived')
           : t('tracking.inProgress');
-  const go = () => router.push(order.status === 'searching' ? `/client/searching?id=${order.id}` : `/client/tracking?id=${order.id}`);
+  const go = () =>
+    router.push(order.status === 'searching' || order.status === 'scheduled' ? `/client/searching?id=${order.id}` : `/client/tracking?id=${order.id}`);
   return (
     <Squish accessibilityRole="button" onPress={go} style={[styles.card, { backgroundColor: cat.tint, borderColor: cat.main }, single && styles.single]}>
       <View style={[styles.icon, { backgroundColor: cat.main }]}>

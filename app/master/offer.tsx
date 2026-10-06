@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { Clock, MapPin, Navigation } from 'lucide-react-native';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Divider, Row, Text } from '@/components/ui';
@@ -8,22 +9,36 @@ import { getCategory, problems } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius } from '@/constants/theme';
 import { formatRange, formatSum, t } from '@/lib/i18n';
-import { mockOffer } from '@/mocks';
-import { useMaster } from '@/store';
+import { useMaster, useMasterWork } from '@/store';
 
 export default function Offer() {
   const bump = useMaster((s) => s.bumpActivity);
-  const cat = getCategory(mockOffer.categoryId);
-  const problem = problems.find((p) => p.id === mockOffer.problemId);
+  const offer = useMasterWork((s) => s.offer);
+  const { setOffer, acceptOffer } = useMasterWork();
+  // Taymer taklif yuborilgan paytdan hisoblanadi (bildirishnoma orqali kech ochilsa ham)
+  const [left] = useState(() => (offer ? Math.max(1, DISPATCH.offerTimeoutSec - Math.floor((Date.now() - offer.sentAt) / 1000)) : 0));
+
+  // Taklif yopildi (rad etildi / vaqt o'tdi) — ekran yopiladi. Qabul qilinganda esa ish ekraniga o'tamiz
+  const accepted = useRef(false);
+  useEffect(() => {
+    if (!offer && !accepted.current) router.canGoBack() ? router.back() : router.replace('/master');
+  }, [offer]);
+  if (!offer) return null;
+
+  const cat = getCategory(offer.categoryId);
+  const problem = problems.find((p) => p.id === offer.problemId);
   const Icon = cat.icon;
 
   const accept = () => {
+    accepted.current = true;
     bump(DISPATCH.activity.accepted);
+    acceptOffer();
     router.replace('/master/job');
   };
+  // Rad etish yoki 60 s o'tib ketishi — aktivlik −5, taklif keyingi ustaga o'tadi
   const decline = () => {
     bump(DISPATCH.activity.declinedOrExpired);
-    router.back();
+    setOffer(null);
   };
 
   return (
@@ -36,30 +51,31 @@ export default function Offer() {
       </View>
 
       <View style={styles.body}>
-        <CountdownRing seconds={DISPATCH.offerTimeoutSec} label={t('offer.seconds')} onDone={decline} color={cat.main} />
+        <CountdownRing seconds={left} label={t('offer.seconds')} onDone={decline} color={cat.main} />
 
         <View style={styles.what}>
           <View style={[styles.icon, { backgroundColor: cat.tint }]}>
             <Icon size={30} color={cat.ink} strokeWidth={2} />
           </View>
           <Text variant="h1" style={styles.centerText}>
-            {t(`problems.${mockOffer.problemId}`)}
+            {t(`problems.${offer.problemId}`)}
           </Text>
           <Text variant="small" style={styles.centerText}>
-            {t(`categories.${mockOffer.categoryId}`)} · {mockOffer.description}
+            {t(`categories.${offer.categoryId}`)} · {offer.description}
           </Text>
         </View>
 
         <View style={styles.chips}>
-          <Meta icon={<Navigation size={16} color={colors.primary} strokeWidth={2.4} />} label={t('common.km', { value: mockOffer.distanceKm })} />
-          <Meta icon={<Clock size={16} color={colors.primary} strokeWidth={2.4} />} label={t('common.min', { value: mockOffer.etaMin })} />
+          <Meta icon={<Navigation size={16} color={colors.primary} strokeWidth={2.4} />} label={t('common.km', { value: offer.distanceKm })} />
+          <Meta icon={<Clock size={16} color={colors.primary} strokeWidth={2.4} />} label={t('common.min', { value: offer.etaMin })} />
         </View>
 
         <Card style={styles.card}>
+          <Row label={t('job.client')} value={offer.clientName} />
           <View style={styles.addr}>
             <MapPin size={18} color={colors.accent} strokeWidth={2.4} />
             <Text variant="bodyBold" style={styles.flex}>
-              {mockOffer.address}
+              {offer.address}
             </Text>
           </View>
           <Divider />

@@ -1,0 +1,104 @@
+// Usta tomoni (7-bosqichgacha soxta "server"):
+// 1) onlayn bo'lsa — filtrga mos soxta buyurtmalar taklif sifatida keladi (60 s taymer bilan);
+// 2) onlayn yoki ishda bo'lsa — joylashuv har 5 s "serverga" yoziladi (master_locations).
+import { router, usePathname } from 'expo-router';
+import { useEffect, useRef } from 'react';
+import { BALANCE_LIMIT } from '@/constants/billing';
+import { problemsOf, type CategoryId } from '@/constants/categories';
+import { MASTER_LOCATION_INTERVAL_MS } from '@/constants/dispatch';
+import { publishMasterLocation } from '@/lib/backend';
+import { distanceKm, type LatLng } from '@/lib/geo';
+import { t } from '@/lib/i18n';
+import { notify } from '@/lib/notify';
+import { estimateEtaMin } from '@/lib/routes';
+import { useWatchLocation } from '@/lib/useWatchLocation';
+import { mockMasterSelf } from '@/mocks';
+import { useMaster, useMasterWork, useUser, type MasterOrder } from '@/store';
+
+export type Blocked = null | 'verify' | 'balance' | 'subscription';
+
+/** Nega buyurtmalar yopiq (Yandex Pro'dagi qizil banner kabi) */
+export function useBlocked(): Blocked {
+  const { verified, balance, subscriptionUntil } = useMaster();
+  const plan = useUser((s) => s.billingPlan) ?? 'commission';
+  if (!verified) return 'verify';
+  if (plan === 'commission' && balance < BALANCE_LIMIT) return 'balance';
+  if (plan === 'subscription' && subscriptionUntil < Date.now()) return 'subscription';
+  return null;
+}
+
+// Yangi buyurtma onlayn bo'lgandan keyin 8–20 s ichida keladi (demo uchun tez)
+const nextDelay = () => 8000 + Math.random() * 12_000;
+
+const CLIENTS = [
+  { name: 'Dilnoza', phone: '+998 90 123 45 67' },
+  { name: 'Aziz', phone: '+998 93 210 44 18' },
+  { name: 'Malika', phone: '+998 97 765 02 91' },
+  { name: 'Shoxrux', phone: '+998 99 480 31 55' },
+];
+const STREETS = ['Chilonzor 9-kvartal, 14-uy', "Bunyodkor ko'chasi, 21", "Qatortol ko'chasi, 7", "Muqimiy ko'chasi, 45", "Lutfiy ko'chasi, 12"];
+const NOTES = ['offer.note1', 'offer.note2', 'offer.note3'];
+
+const pick = <T,>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)];
+
+/** Ustaning filtriga (kategoriya, radius) mos soxta buyurtma */
+export function makeMockOrder(here: LatLng, categories: CategoryId[], radiusKm: number): MasterOrder {
+  const categoryId = pick(categories.length ? categories : (['plumber'] as CategoryId[]));
+  const problem = pick(problemsOf(categoryId));
+  // Mijoz 0,6 km dan radiusgacha (ko'pi bilan 3 km) uzoqlikda
+  const km = 0.6 + Math.random() * (Math.min(radiusKm, 3) - 0.6);
+  const angle = Math.random() * 2 * Math.PI;
+  const location = {
+    latitude: here.latitude + (km / 111) * Math.cos(angle),
+    longitude: here.longitude + (km / (111 * Math.cos((here.latitude * Math.PI) / 180))) * Math.sin(angle),
+  };
+  const client = pick(CLIENTS);
+  return {
+    id: `mo${Date.now()}`,
+    categoryId,
+    problemId: problem.id,
+    description: t(pick(NOTES)),
+    address: pick(STREETS),
+    location,
+    clientName: client.name,
+    clientPhone: client.phone,
+    distanceKm: Math.round(distanceKm(here, location) * 10) / 10,
+    etaMin: estimateEtaMin(here, location),
+    sentAt: Date.now(),
+  };
+}
+
+/** master/_layout'da bir marta ulanadi */
+export function useMasterFeed() {
+  const online = useMaster((s) => s.online);
+  const { categories, radiusKm, notifications } = useMaster();
+  const blocked = useBlocked();
+  const offer = useMasterWork((s) => s.offer);
+  const job = useMasterWork((s) => s.job);
+  const path = usePathname();
+  const live = useWatchLocation();
+  const here = useRef<LatLng>(mockMasterSelf.location);
+  if (live) here.current = live;
+
+  // Takliflar: onlayn, buyurtmalar ochiq, qo'lda taklif ham, ish ham yo'q, tarif ekranida emas
+  const canReceive = online && !blocked && !offer && !job && !path.includes('/plan') && !path.includes('/register');
+  useEffect(() => {
+    if (!canReceive) return;
+    const id = setTimeout(() => {
+      const o = makeMockOrder(here.current, categories, radiusKm);
+      useMasterWork.getState().setOffer(o);
+      router.push('/master/offer');
+      if (notifications) notify(t('notify.offerTitle'), `${t(`problems.${o.problemId}`)} · ${t('common.km', { value: o.distanceKm })}`);
+    }, nextDelay());
+    return () => clearTimeout(id);
+  }, [canReceive, categories, radiusKm, notifications]);
+
+  // Joylashuv: onlayn yoki ishda bo'lsa — har 5 s
+  const sharing = online || Boolean(job);
+  useEffect(() => {
+    if (!sharing) return;
+    publishMasterLocation(here.current);
+    const id = setInterval(() => publishMasterLocation(here.current), MASTER_LOCATION_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [sharing]);
+}

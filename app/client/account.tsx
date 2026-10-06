@@ -3,21 +3,22 @@ import { ChevronRight, Globe, LogIn, LogOut, ReceiptText, Wrench } from 'lucide-
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Squish, Text } from '@/components/ui';
-import { Flag } from '@/components/ui/Flag';
+import { LanguagePicker } from '@/components/ui/LanguagePicker';
 import { colors, fonts, radius } from '@/constants/theme';
-import { LANGS, t } from '@/lib/i18n';
-import { useUser } from '@/store';
+import { t } from '@/lib/i18n';
+import { useMaster, useUser } from '@/store';
 
 // Mijoz profili: ro'yxatdan o'tmagan bo'lsa ham ochiladi (mehmon)
 export default function Account() {
-  const { phone, language, setLanguage, logout, setRole, billingPlan } = useUser();
+  const { phone, logout, setRole, billingPlan } = useUser();
+  const registered = useMaster((s) => Boolean(s.profile.submittedAt));
   const guest = !phone;
 
   const beMaster = () => {
     if (guest) router.push('/phone?next=master');
     else {
       setRole('master');
-      router.replace(billingPlan ? '/master' : '/master/plan');
+      router.replace(!registered ? '/master/register' : billingPlan ? '/master' : '/master/plan');
     }
   };
 
@@ -38,20 +39,7 @@ export default function Account() {
         <Row icon={Wrench} label={t('account.beMaster')} hint={t('account.beMasterHint')} onPress={beMaster} />
 
         <Text style={styles.section}>{t('account.language')}</Text>
-        <View style={styles.langs}>
-          {LANGS.map((l) => (
-            <Squish
-              key={l}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: l === language }}
-              onPress={() => setLanguage(l)}
-              style={[styles.lang, l === language && styles.langOn]}
-            >
-              <Flag lang={l} size={36} />
-              <Text style={styles.langText}>{t(`lang.${l}`)}</Text>
-            </Squish>
-          ))}
-        </View>
+        <LanguagePicker />
 
         {!guest ? <Row icon={LogOut} label={t('account.logout')} onPress={logout} /> : null}
       </ScrollView>
@@ -83,8 +71,4 @@ const styles = StyleSheet.create({
   rowIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.field, alignItems: 'center', justifyContent: 'center' },
   rowLabel: { fontFamily: fonts.bold, fontSize: 16, color: colors.ink },
   section: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink, marginTop: 8 },
-  langs: { gap: 8 },
-  lang: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.card, backgroundColor: colors.surface, borderWidth: 2, borderColor: 'transparent' },
-  langOn: { borderColor: colors.primary },
-  langText: { fontFamily: fonts.bold, fontSize: 16, color: colors.ink },
 });

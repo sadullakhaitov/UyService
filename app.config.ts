@@ -51,8 +51,12 @@ const config: ExpoConfig = {
     ],
     [
       'expo-image-picker',
-      { photosPermission: 'Muammo rasmini ustaga yuborish uchun galereyaga ruxsat kerak.' },
+      {
+        photosPermission: 'Muammo rasmini ustaga yuborish uchun galereyaga ruxsat kerak.',
+        cameraPermission: 'Pasport, selfi va ish namunalarini suratga olish uchun kameraga ruxsat kerak.',
+      },
     ],
+    ['expo-notifications', { color: '#0E5A4B' }],
   ],
   experiments: { typedRoutes: false },
 };

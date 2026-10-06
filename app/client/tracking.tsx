@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { BadgeCheck, ChevronLeft, Image as ImageIcon, Phone, Plus, Share2 } from 'lucide-react-native';
+import { BadgeCheck, ChevronLeft, Image as ImageIcon, MessageCircle, Phone, Plus, Share2 } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { Linking, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,7 +12,7 @@ import { bboxCorners } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { etaMin } from '@/lib/orderSimulator';
 import { mastersAround } from '@/mocks';
-import { useActiveOrder, useOrders } from '@/store';
+import { useActiveOrder, useChats, useOrders } from '@/store';
 
 export default function Tracking() {
   const insets = useSafeAreaInsets();
@@ -20,6 +20,8 @@ export default function Tracking() {
   const order = useActiveOrder(id);
   const remove = useOrders((s) => s.remove);
   const update = useOrders((s) => s.update);
+  const ensureChat = useChats((s) => s.ensure);
+  const unread = useChats((s) => s.chats.find((c) => c.id === `order-${id}`)?.unread ?? 0);
   const [sheetH, setSheetH] = useState(460);
 
   const location = order?.location;
@@ -125,6 +127,15 @@ export default function Tracking() {
 
         <View style={styles.actions}>
           <Action icon={<Phone size={20} color={cat.ink} strokeWidth={2.2} />} tint={cat.tint} label={t('tracking.callBtn')} onPress={() => Linking.openURL(`tel:${master.phone.replace(/\s/g, '')}`)} />
+          <Action
+            icon={<MessageCircle size={20} color={cat.ink} strokeWidth={2.2} />}
+            tint={cat.tint}
+            label={unread ? `${t('tracking.chatBtn')} · ${unread}` : t('tracking.chatBtn')}
+            onPress={() => {
+              ensureChat({ id: `order-${order.id}`, title: master.name, subtitle: t(`categories.${order.categoryId}`), kind: 'master' });
+              router.push(`/client/chat?id=order-${order.id}&cat=${order.categoryId}`);
+            }}
+          />
           <Action
             icon={<Share2 size={20} color={cat.ink} strokeWidth={2.2} />}
             tint={cat.tint}

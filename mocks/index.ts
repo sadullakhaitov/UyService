@@ -22,6 +22,13 @@ export type MockMaster = {
   onTimePercent: number;
   phone: string;
   location: LatLng;
+  /** Taqsimlash uchun (TZ, 7-bo'lim) */
+  online: boolean;
+  verified: boolean;
+  activity: number;
+  priorityPoints: number;
+  /** Soxta: taklifni qabul qilish ehtimoli */
+  acceptRate: number;
 };
 
 export const mockMasters: MockMaster[] = [
@@ -36,6 +43,11 @@ export const mockMasters: MockMaster[] = [
     onTimePercent: 98,
     phone: '+998 93 555 12 12',
     location: { latitude: 41.2961, longitude: 69.2142 },
+    online: true,
+    verified: true,
+    activity: 92,
+    priorityPoints: 15,
+    acceptRate: 0.8,
   },
   {
     id: 'm2',
@@ -48,6 +60,11 @@ export const mockMasters: MockMaster[] = [
     onTimePercent: 95,
     phone: '+998 97 444 22 33',
     location: { latitude: 41.2898, longitude: 69.1932 },
+    online: true,
+    verified: true,
+    activity: 85,
+    priorityPoints: 0,
+    acceptRate: 0.75,
   },
   {
     id: 'm3',
@@ -60,6 +77,11 @@ export const mockMasters: MockMaster[] = [
     onTimePercent: 93,
     phone: '+998 99 111 00 77',
     location: { latitude: 41.2789, longitude: 69.2121 },
+    online: true,
+    verified: true,
+    activity: 78,
+    priorityPoints: 5,
+    acceptRate: 0.7,
   },
   {
     id: 'm4',
@@ -72,6 +94,11 @@ export const mockMasters: MockMaster[] = [
     onTimePercent: 97,
     phone: '+998 90 777 66 55',
     location: { latitude: 41.2812, longitude: 69.1951 },
+    online: true,
+    verified: true,
+    activity: 90,
+    priorityPoints: 10,
+    acceptRate: 0.8,
   },
   {
     id: 'm5',
@@ -84,6 +111,11 @@ export const mockMasters: MockMaster[] = [
     onTimePercent: 91,
     phone: '+998 91 333 44 55',
     location: { latitude: 41.3005, longitude: 69.1905 },
+    online: true,
+    verified: true,
+    activity: 70,
+    priorityPoints: 0,
+    acceptRate: 0.85,
   },
 ];
 

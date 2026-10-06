@@ -21,3 +21,6 @@ export const BALANCE_LIMIT = 20_000;
 export function platformCut(plan: BillingPlan, finalPrice: number) {
   return Math.round((finalPrice * BILLING[plan].commissionPercent) / 100);
 }
+
+// Do'st (boshqa usta) taklif qilgani uchun bonus, so'm (⚠️ hali tasdiqlanmagan)
+export const INVITE_BONUS = 30_000;
