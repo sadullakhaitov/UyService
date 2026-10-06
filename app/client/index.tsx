@@ -1,11 +1,10 @@
 import { router, useFocusEffect } from 'expo-router';
 import { CalendarClock, ChevronRight, LocateFixed, MapPin, ReceiptText, Search, User } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Keyboard, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CenterPin, MapBase, type MapHandle } from '@/components/map';
-import { Sheet } from '@/components/sheets/Sheet';
+import { Sheet, SheetInput } from '@/components/sheets/Sheet';
 import { Avatar, IconButton, Logo, RatingBadge, Squish, Text } from '@/components/ui';
 import { ActiveOrders } from '@/components/ui/ActiveOrders';
 import { categories, problems, type CategoryId } from '@/constants/categories';
@@ -13,10 +12,10 @@ import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/th
 import { blur, distanceKm, type LatLng } from '@/lib/geo';
 import { formatSchedule, t } from '@/lib/i18n';
 import { firstSlot } from '@/lib/schedule';
-import { getCurrentLocation, reverseGeocode } from '@/lib/location';
+import { reverseGeocode } from '@/lib/location';
 import { estimateEtaMin } from '@/lib/routes';
-import { useMyLocation } from '@/lib/useMyLocation';
-import { mastersAround, mockMasters, TASHKENT_CENTER } from '@/mocks';
+import { locateMe, useLocStatus, useMyLocation } from '@/lib/useMyLocation';
+import { mastersAround, mockMasters } from '@/mocks';
 import { useOrder, useUser } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 
@@ -29,9 +28,13 @@ export default function ClientHome() {
   const { address, location, setAddress, setDraft, reset, scheduledAt } = useOrder();
   const later = scheduledAt !== null;
   const favorites = useUser((s) => s.favorites);
+  // Xarita darhol oxirgi ma'lum joydan boshlanadi; birinchi ochilishda — Toshkent umumiy ko'rinishi, GPS kelishi bilan uchib boradi
   const [initial] = useState<LatLng>(location);
+  const [initialZoom] = useState(address ? 16 : 12);
   const map = useRef<MapHandle>(null);
   const me = useMyLocation();
+  const locStatus = useLocStatus();
+  const setLastLocation = useUser((s) => s.setLastLocation);
   const userMoved = useRef(false);
 
   const around = useMemo(() => mastersAround(location).filter((m) => distanceKm(m.location, location) < 3), [location]);
@@ -57,9 +60,18 @@ export default function ClientHome() {
   const goTo = async (p: LatLng) => {
     shownAt.current = p;
     map.current?.flyTo(p, 16);
+    setAddress(useOrder.getState().address, p);
     const name = await reverseGeocode(p);
     setAddress(name ?? t('client.myLocation'), p);
+    if (name) setLastLocation(p, name);
   };
+
+  // Ruxsat berilmasa — xarita markazidagi joyning manzili (foydalanuvchi xaritani surib tanlaydi)
+  useEffect(() => {
+    if ((locStatus === 'denied' || locStatus === 'failed') && !useOrder.getState().address) {
+      reverseGeocode(shownAt.current).then((name) => !useOrder.getState().address && setAddress(name ?? t('client.mapPoint'), shownAt.current));
+    }
+  }, [locStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Ilova ochilganda — telefonning haqiqiy joyiga uchib boradi (foydalanuvchi o'zi surmagan bo'lsa)
   useEffect(() => {
@@ -89,12 +101,12 @@ export default function ClientHome() {
     setMoving(false);
     shownAt.current = c;
     const name = await reverseGeocode(c);
-    setAddress(name ?? address, c);
+    setAddress(name ?? (useOrder.getState().address || t('client.mapPoint')), c);
   };
 
   // "Mening joyim" tugmasi: har bosilganda GPS qayta olinadi va kamera aniq joyga qaytadi
   const locate = async () => {
-    const here = (await getCurrentLocation()) ?? me;
+    const here = (await locateMe()) ?? me;
     if (here) goTo(here);
   };
 
@@ -105,8 +117,8 @@ export default function ClientHome() {
       <MapBase
         ref={map}
         center={initial}
+        zoom={initialZoom}
         userLocation={me}
-        flyFrom={TASHKENT_CENTER}
         insets={{ top: topH, bottom: sheetH }}
         nearby={nearby}
         onMoveStart={() => {
@@ -119,10 +131,13 @@ export default function ClientHome() {
       />
 
       <View style={[styles.top, { paddingTop: insets.top + 12 }]} pointerEvents="box-none">
-        <View style={[styles.logoPill, shadow.float]}>
+        {/* Logotip bosilsa — "Biz haqimizda" */}
+        <Squish accessibilityRole="button" accessibilityLabel={t('about.title')} scaleTo={0.95} onPress={() => router.push('/about')} style={[styles.logoPill, shadow.float]}>
           <GlassBg radius={14} />
-          <Logo size={15} />
-        </View>
+          <View style={styles.onGlass}>
+            <Logo size={15} />
+          </View>
+        </Squish>
         <View style={styles.topRight}>
           <IconButton icon={ReceiptText} label={t('client.history')} floating onPress={() => router.push('/client/history')} />
           <IconButton icon={User} label={t('common.profile')} floating onPress={() => router.push('/client/account')} />
@@ -137,16 +152,18 @@ export default function ClientHome() {
         style={[styles.locate, { bottom: sheetH + 12 }]}
       />
 
-      <Sheet onHeight={setSheetH}>
+      <Sheet onHeight={setSheetH} top={topH}>
         <ActiveOrders />
         <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/client/address')} style={styles.address}>
           <View style={styles.addrIcon}>
             <MapPin size={18} color={colors.accent} strokeWidth={2.4} />
           </View>
           <View style={styles.flex}>
-            <Text variant="caption">{t('client.address')}</Text>
+            <Text variant="caption" style={locStatus === 'denied' ? styles.locWarn : undefined} numberOfLines={1}>
+              {locStatus === 'denied' ? t('client.locDenied') : t('client.address')}
+            </Text>
             <Text variant="bodyBold" numberOfLines={1}>
-              {moving ? t('client.addressMoving') : address}
+              {moving ? t('client.addressMoving') : address || (locStatus === 'locating' || locStatus === 'idle' ? t('client.locating') : t('client.pickOnMap'))}
             </Text>
           </View>
           <View style={styles.online}>
@@ -157,7 +174,7 @@ export default function ClientHome() {
 
         <View style={styles.search}>
           <Search size={20} color={colors.ink2} strokeWidth={2.2} />
-          <BottomSheetTextInput
+          <SheetInput
             value={query}
             onChangeText={setQuery}
             placeholder={t('client.searchPlaceholder')}
@@ -235,6 +252,8 @@ const styles = themed(() => ({
   topRight: { flexDirection: 'row', gap: 10 },
   logoPill: { paddingHorizontal: 14, height: 44, borderRadius: 14, justifyContent: 'center' },
   locate: { position: 'absolute', right: 16 },
+  locWarn: { color: colors.accentInk },
+  onGlass: { position: 'relative' },
   address: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   addrIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   online: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 30, borderRadius: 15, backgroundColor: colors.primarySoft },

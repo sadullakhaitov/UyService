@@ -64,6 +64,7 @@ app/                      ← ekranlar (Expo Router)
   client/master.tsx       ← usta haqida: reyting, maqtovlar, sharhlar
   client/rate.tsx         ← ish tugadi, baholash
   client/history.tsx      ← buyurtmalar tarixi (useHistory, telefonda saqlanadi: baho, izoh, bekor sababi)
+  about.tsx               ← "Biz haqimizda": logotip bosilganda ochiladi (missiya, qanday ishlaydi, kafolatlar, aloqa — constants/company.ts, ⚠️ Telegram/ish vaqti tasdiqlanmagan)
   legal/[doc].tsx         ← foydalanish shartlari va maxfiylik siyosati (constants/legal.ts, 3 tilda, ⚠️ QORALAMA — yurist tekshirishi kerak)
   master/(tabs)/          ← usta ilovasi, pastki menyu 4 bo'lim (Yandex Pro tuzilmasi)
     index.tsx             ← Buyurtmalar: xarita, filtr, zoom, aktivlik, "surib ishga chiqish"
@@ -86,7 +87,9 @@ components/
     FakeMap.tsx           ← zaxira soxta xarita (faqat dizayn/demo)
     ClientDot.tsx, CenterPin.tsx, MasterIcon.tsx, usePulse.ts, useBlink.ts
   ui/                     ← Button, Card, Chip, Rating, Logo, ...
-  sheets/Sheet.tsx        ← pastdan chiqadigan panel
+  sheets/Sheet.tsx        ← pastdan chiqadigan panel (kompyuterda — chapda suzuvchi oyna); ichidagi matn maydoni — `SheetInput`
+  sheets/ModalSheet.tsx   ← oyna ustidagi panel (bekor qilish, filtr): telefonda pastdan, kompyuterda o'rtada dialog
+  ui/PageFrame.tsx        ← kompyuter brauzeri: oddiy sahifalar o'rtada ustun (navigator `screenLayout`)
 lib/                      ← i18n, geo, location, routes, supabase
   dispatch.ts             ← usta qidirish algoritmi (TZ 7-bo'lim), toza funksiyalar — 7-bosqichda Edge Function'ga ko'chadi
   orderSimulator.ts       ← mijoz buyurtmalari uchun soxta "server": dispatch + soxta ustalar javobi va harakati
@@ -96,6 +99,8 @@ lib/                      ← i18n, geo, location, routes, supabase
   geocode.ts              ← manzil qidirish (hozir OSM Nominatim, keyin Yandex Geocoder)
   schedule.ts, photos.ts  ← rejalashtirish vaqtlari; rasm tanlash/suratga olish
   yandex.ts               ← Yandex kaliti + HTTP Geocoder (qidiruv, koordinatadan manzil); kalit bo'lmasa — Nominatim / telefon xizmati
+  useLayout.ts            ← `useWide()` — kompyuter brauzeri (≥ 900 px): yon panel, o'rtadagi ustun, chap menyu
+  useMyLocation.ts        ← telefon joyi (bitta, butun ilova uchun): avval oxirgi ma'lum joy, keyin aniq GPS; `useLocStatus`
   useOnline.ts            ← internet bormi (NetInfo); yo'q bo'lsa tepada banner (components/ui/OfflineBanner.tsx)
   supabase.ts, auth.ts, api.ts ← Supabase mijozi (faqat .env'da kalit bo'lsa), SMS kod bilan kirish, server chaqiruvlari
 store/                    ← Zustand (foydalanuvchi, buyurtma, usta)
@@ -108,6 +113,7 @@ supabase/                 ← server (tayyor, hali joylanmagan): README.md — j
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
   functions/{dispatch,offer-respond,offer-timeout,send-sms} ← Edge Functions (send-sms — Eskiz.uz orqali SMS)
   tests/                  ← supabase_stub.sql + rls_test.sql (mahalliy Postgres+PostGIS'da 35 ta tekshiruv)
+public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 eas.json                  ← do'kon uchun build: preview (APK), production
 ```
 
@@ -134,12 +140,12 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 - Xarita har doim to'liq orqa fonda, panellar ustidan chiqadi; 60 fps.
 - Yandex xaritasi (standart Yandex uslubi), boshqaruv tugmalari va "Yandex Kartada ochish" bloki o'chirilgan; POI bosilmaydi. Hamma belgilar — xarita sahifasining o'zida (`yandex/html.ts`), React faqat holat yuboradi.
-- Ochilganda kamera telefonning haqiqiy joyiga (GPS) 16-zoom bilan uchib keladi; ko'k nuqta — foydalanuvchi joyi; "joylashuv" tugmasi har bosilganda GPS'ni qayta oladi.
+- Ochilganda kamera telefonning haqiqiy joyiga (GPS) 16-zoom bilan uchib keladi: avval oxirgi ma'lum joy (darhol), keyin aniq GPS. Oxirgi joy va manzil telefonda saqlanadi (`useUser().lastLocation`) — keyingi ochilishda xarita darhol shu yerdan boshlanadi; birinchi ochilishda — Toshkent umumiy ko'rinishi va "Joylashuv aniqlanmoqda…". Ruxsat berilmasa — manzil kartasida ogohlantirish, xaritani surib tanlanadi. Xarita yuklanmasdan oldin kelgan GPS ham yo'qolmaydi (MapBase navbatga qo'yadi). Manzil nomi: Yandex → telefon xizmati → OpenStreetMap. Ko'k nuqta — foydalanuvchi joyi; "joylashuv" tugmasi har bosilganda GPS'ni qayta oladi.
 - Pin ustida pufakcha: eng yaqin ustagacha taxminiy vaqt ("3 daq"), Yandex'dagidek.
 - Mijoz belgisi: to'q sariq doira + "nafas oluvchi" halqa. Manzil xaritani surish bilan tanlanadi: markazdagi pin surilganda ko'tariladi, to'xtaganda tushadi.
 - Atrofdagi ustalar ~100 m aniqlikda (`lib/geo.ts` → `blur`).
 - Qidiruv: 3 ta to'lqin (4 s, 1,33 s farq, cheksiz, yumshoq paydo bo'lib so'nadi) — xaritaning o'zida metrda chiziladi (`usePulse` + `Circle`), xarita surilsa nuqtadan ajralmaydi; usta belgilari 0,35 ↔ 1 miltillaydi; kamera 16 → 14.
-- Usta yo'lda: yo'l ko'chalar bo'ylab (OSRM), soxta GPS har 5 s da yo'l bo'ylab ~60 m; nuqtalar orasida 5 s silliq interpolatsiya + burilish; "N daqiqa" qolgan yo'l uzunligidan; yo'l chizig'i yaxlit (miltillamaydi); kamera ikkalasini `fitToCoordinates`.
+- Usta yo'lda: yo'l ko'chalar bo'ylab (OSRM: routing.openstreetmap.de, javob bermasa router.project-osrm.org, bir marta qayta urinish). Haqiqiy yo'l kelguncha chiziq chizilmaydi va usta joyida turadi; 15 s ichida kelmasa (`ROUTE_WAIT_MS`) — taxminiy yo'l. `resample` yo'lning hamma burilish nuqtalarini saqlaydi (chiziq va belgi burchakni kesmaydi), qadam ≤ 12 m, har 1 s (`STEP_MS`); "N daqiqa" qolgan yo'l uzunligidan; yo'l chizig'i joyida yangilanadi (miltillamaydi); kamera har ~20 s da ikkalasini sig'diradi.
 - Tugmalar bosilganda biroz kichrayadi (`components/ui/Pressable.tsx`), panellar prujina bilan chiqadi.
 - Usta ilovasi: SVG aylana taymer 60 → 0, oxirgi 5 soniyada tebranish.
 - Usta tomonida belgi telefonning jonli GPS'i bo'yicha (`useWatchLocation`): usta yursa — yuradi, tursa — turadi; yo'l 150 m siljiganda qayta hisoblanadi.
@@ -186,6 +192,7 @@ Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, 
 - Hamma matn `locales/{uz,ru,en}.json`da, kodda `t('kalit')`; yangi kalit uchala faylga qo'shiladi.
 - `Text` komponenti `fontSize` berilib `lineHeight` berilmasa, uni o'zi hisoblaydi (harflar tepasi kesilmasligi uchun).
 - **Kunduzgi va tungi rejim**: `constants/theme.ts` — ikki palitra (`light`, `dark`), `colors.x` har o'qilganda joriy rejim rangini beradi. Ekran uslublari `StyleSheet.create` emas, **`themed(() => ({ ... }))`** bilan yoziladi (har rejimga bir marta yaratiladi). Rangni modul darajasida o'zgarmasga saqlamang (funksiya qiling); qattiq hex o'rniga token qo'shing. Kategoriya ranglari ham ikki variantli (`pick(day, night)`). Tanlov: Profil/Sozlamalar → "Ko'rinish" (Avtomatik / Kunduzgi / Tungi, `useUser().themeMode`). Almashganda **ekranlar yopilmaydi** — rangli har bir komponent boshida `useScheme()` chaqiradi va joyida qayta chiziladi; yangi komponent yozsangiz, uni ham qo'shing. Telegram'dagidek animatsiya: yangi rejim bosilgan joydan doira bo'lib ochiladi (`components/ui/ThemeReveal.tsx`, react-native-view-shot; brauzerda animatsiyasiz). Xarita: Yandex 2.1 da tungi xarita yo'q — xarita qatlami CSS filtr bilan qorong'ilashtiriladi (`yandex/html.ts` → `applyDark`), belgilar o'z rangida.
+- **Kompyuter brauzeri** (`useWide()`, ≥ 900 px): xaritali ekranlarda panel chapda suzuvchi shisha oyna (420 px), xarita fokus nuqtasi o'ng tomondagi bo'sh joy markazida (`MapInsets.left`); oddiy sahifalar o'rtada 600 px ustun (`PageFrame`, yonida logotip va brend foni); usta menyusi — chapda vertikal (`SideRail`); oynalar — o'rtada dialog. Telefon brauzerida — mobil ko'rinish (`public/index.html`: viewport-fit, 100dvh, kattalashmaydi). Brauzerda matn maydonlari klaviatura yopuvchi `Pressable` ichida bo'lmasin (bosilganda fokus yo'qoladi) — `AuthShell`dagi `DismissArea`ga qarang; matn maydoni shrifti ≥ 16.
 - **Liquid Glass**: xarita/kontent ustidagi tugmalar, pastki panel (Sheet), usta menyusi, oynalar — `components/ui/Glass.tsx` (`GlassBg` — ota element orqasidagi shisha qatlam, `strong` — ko'p matnli panellar uchun). iOS 26+ — tizimning haqiqiy Liquid Glass'i (expo-glass-effect), eski iOS va brauzer — xiralashtirish (expo-blur), Android — yarim shaffof shisha tus. Shisha ustidagi ikonka/kontent `position: relative` bo'lishi kerak (brauzerda absolute qatlam ustidan chiziladi). Uslub — minimalizm: kam chiziq, ko'p havo, shisha faqat suzuvchi elementlarda.
 - Yandex ranglari/logotipi ishlatilmaydi.
 

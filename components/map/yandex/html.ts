@@ -95,13 +95,14 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
 
   // --- Fokus nuqtasi: panellar orasidagi bo'sh joy markazi (pin shu yerda turadi) ---
   function focalShift(){ return (insets.top - insets.bottom) / 2; }
+  function focalShiftX(){ return (insets.left || 0) / 2; }
   function viewCenterFor(p, z){
     var g = proj.toGlobalPixels(ll(p), z);
-    return proj.fromGlobalPixels([g[0], g[1] - focalShift()], z);
+    return proj.fromGlobalPixels([g[0] - focalShiftX(), g[1] - focalShift()], z);
   }
   function focalCenter(){
     var z = map.getZoom(), g = proj.toGlobalPixels(map.getCenter(), z);
-    var c = proj.fromGlobalPixels([g[0], g[1] + focalShift()], z);
+    var c = proj.fromGlobalPixels([g[0] + focalShiftX(), g[1] + focalShift()], z);
     return { latitude: c[0], longitude: c[1] };
   }
   var target = null; // oxirgi kamera manzili (animatsiya davomida panel balandligi o'zgarsa kerak)
@@ -285,12 +286,18 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
 
       // Yo'l chizig'i: och hoshiya + yaxlit chiziq
       if (!prev || !same(prev.route, s.route) || prev.accent !== s.accent) {
+        // Usta yurganda faqat koordinatalar yangilanadi (chiziq qayta yaratilmaydi — miltillamaydi)
+        if (routeHalo && s.route.length > 1 && prev && prev.accent === s.accent) {
+          var upd = s.route.map(ll);
+          routeHalo.geometry.setCoordinates(upd); routeLine.geometry.setCoordinates(upd);
+        } else {
         if (routeHalo) { map.geoObjects.remove(routeHalo); map.geoObjects.remove(routeLine); routeHalo = routeLine = null; }
         if (s.route.length > 1) {
           var pts = s.route.map(ll);
           routeHalo = new ymaps.Polyline(pts, {}, { strokeColor: s.accent, strokeOpacity: 0.25, strokeWidth: 10, interactivityModel: 'default#transparent', zIndex: 60 });
           routeLine = new ymaps.Polyline(pts, {}, { strokeColor: s.accent, strokeOpacity: 1, strokeWidth: 6, interactivityModel: 'default#transparent', zIndex: 61 });
           map.geoObjects.add(routeHalo); map.geoObjects.add(routeLine);
+        }
         }
       }
 
@@ -330,7 +337,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
   }
 
   function fit(s){
-    var m = [s.insets.top + 80, 60, s.insets.bottom + 60, 60];
+    var m = [s.insets.top + 80, 60, s.insets.bottom + 60, (s.insets.left || 0) + 60];
     if (s.fitTo.length === 1) return moveTo(s.fitTo[0], 16, 800);
     var lats = s.fitTo.map(function(p){ return p.latitude; }), lngs = s.fitTo.map(function(p){ return p.longitude; });
     var b = [[Math.min.apply(null, lats), Math.min.apply(null, lngs)], [Math.max.apply(null, lats), Math.max.apply(null, lngs)]];

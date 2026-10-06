@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ChevronRight, FileText, Globe, LogIn, LogOut, ReceiptText, Shield, Wrench } from 'lucide-react-native';
+import { ChevronRight, FileText, Globe, Info, LogIn, LogOut, ReceiptText, Shield, Wrench } from 'lucide-react-native';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -69,6 +69,7 @@ export default function Account() {
         <ThemePicker />
 
         <Text style={styles.section}>{t('legal.section')}</Text>
+        <Row icon={Info} label={t('about.title')} onPress={() => router.push('/about')} />
         <Row icon={FileText} label={t('legal.terms')} onPress={() => router.push('/legal/terms')} />
         <Row icon={Shield} label={t('legal.privacy')} onPress={() => router.push('/legal/privacy')} />
 

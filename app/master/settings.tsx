@@ -46,6 +46,10 @@ export default function Settings() {
         <ThemePicker />
 
         <Text style={styles.section}>{t('legal.section')}</Text>
+        <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/about')} style={styles.row}>
+          <Text style={[styles.label, styles.flex]}>{t('about.title')}</Text>
+          <ChevronRight size={20} color={colors.ink} />
+        </Squish>
         <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/legal/terms')} style={styles.row}>
           <Text style={[styles.label, styles.flex]}>{t('legal.terms')}</Text>
           <ChevronRight size={20} color={colors.ink} />

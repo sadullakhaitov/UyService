@@ -7,9 +7,13 @@ import { FakeMap } from './FakeMap';
 import { DEFAULT_ZOOM, type MapBaseProps, type MapHandle } from './types';
 import type { MapCommand, MapEvent } from './yandex/html';
 import { useYandexMap } from './yandex/useYandexMap';
+import { SIDE_INSET, useWide } from '@/lib/useLayout';
 
-export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(props, handle) {
+export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(raw, handle) {
   useScheme();
+  // Kompyuterda panel chapda turadi — fokus nuqtasi (pin, kamera) o'ng tomondagi bo'sh joy markazida
+  const wide = useWide();
+  const props = wide ? { ...raw, insets: { top: raw.insets?.top ?? 0, bottom: 0, left: SIDE_INSET } } : raw;
   const [mode, setMode] = useState<'loading' | 'yandex' | 'fake'>('loading');
   if (mode === 'fake') return <FakeMap ref={handle} {...props} />;
   return <YandexFrame {...props} handle={handle} ready={mode === 'yandex'} onMode={setMode} />;
@@ -30,8 +34,11 @@ function YandexFrame({ handle, ready, onMode, ...props }: FrameProps) {
   const latest = useRef(json);
   latest.current = json;
 
+  // Sahifa yuklanmasdan oldingi kamera buyrug'i (masalan, GPS juda tez keldi) — yuklangach yuboriladi
+  const early = useRef<MapCommand | null>(null);
   const post = (cmd: MapCommand) => {
     if (booted.current) frame.current?.contentWindow?.postMessage({ __ysmapCmd: true, cmd }, '*');
+    else if (cmd.type === 'flyTo') early.current = cmd;
   };
   const sendState = () => post({ type: 'state', state: JSON.parse(latest.current) });
 
@@ -55,6 +62,8 @@ function YandexFrame({ handle, ready, onMode, ...props }: FrameProps) {
       if (m.type === 'boot') {
         booted.current = true;
         sendState();
+        if (early.current) post(early.current);
+        early.current = null;
       } else if (m.type === 'ready') {
         clearTimeout(timer);
         cb.current.onMode('yandex');
@@ -81,7 +90,7 @@ function YandexFrame({ handle, ready, onMode, ...props }: FrameProps) {
       })}
       {ready ? null : <View pointerEvents="none" style={styles.fill} />}
       {overlay ? (
-        <View pointerEvents="none" style={[styles.focal, { top: insets.top, bottom: insets.bottom }]}>
+        <View pointerEvents="none" style={[styles.focal, { top: insets.top, bottom: insets.bottom, left: insets.left ?? 0 }]}>
           {overlay}
         </View>
       ) : null}

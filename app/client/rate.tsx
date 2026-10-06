@@ -142,7 +142,7 @@ const styles = themed(() => ({
   tag: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 38, paddingHorizontal: 14, borderRadius: 19, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.line },
   tagOn: { backgroundColor: colors.primarySoft, borderColor: colors.primaryTint },
   tagText: { fontFamily: fonts.bold, fontSize: 13, color: colors.ink },
-  comment: { alignSelf: 'stretch', height: 50, borderRadius: 14, borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.surface, paddingHorizontal: 14, fontFamily: fonts.regular, fontSize: 15, color: colors.ink },
+  comment: { alignSelf: 'stretch', height: 50, borderRadius: 14, borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.surface, paddingHorizontal: 14, fontFamily: fonts.regular, fontSize: 16, color: colors.ink },
   fav: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, backgroundColor: colors.surface, borderRadius: radius.tile, borderWidth: 1.5, borderColor: colors.line },
   box: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
   boxOn: { backgroundColor: colors.primary, borderColor: colors.primary },

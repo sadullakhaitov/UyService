@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import { ChevronRight, Gauge, LocateFixed, Minus, Plus, Power, SlidersHorizontal, Wallet } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase, type MapHandle } from '@/components/map';
+import { ModalSheet } from '@/components/sheets/ModalSheet';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Chip, IconButton, Squish, Text } from '@/components/ui';
 import { SwipeButton } from '@/components/ui/SwipeButton';
@@ -12,10 +13,9 @@ import { categories } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
-import { getCurrentLocation } from '@/lib/location';
 import { useBlocked } from '@/lib/masterFeed';
 import { askNotifications } from '@/lib/notify';
-import { useMyLocation } from '@/lib/useMyLocation';
+import { locateMe, useMyLocation } from '@/lib/useMyLocation';
 import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
 import { useLocationLog, useMaster, useUser } from '@/store';
@@ -39,7 +39,8 @@ export default function MasterOrders() {
   const [filters, setFilters] = useState(false);
   const map = useRef<MapHandle>(null);
   const me = useMyLocation();
-  const [initial] = useState(mockMasterSelf.location);
+  // Xarita oxirgi ma'lum haqiqiy joydan boshlanadi, GPS kelishi bilan aniqlanadi
+  const [initial] = useState(() => useUser.getState().lastLocation ?? mockMasterSelf.location);
   // Belgi faqat usta haqiqatan yurganda siljiydi
   const live = useWatchLocation();
   const pos = live ?? me ?? initial;
@@ -57,7 +58,7 @@ export default function MasterOrders() {
   }, [me]);
 
   const locate = async () => {
-    const here = (await getCurrentLocation()) ?? me;
+    const here = (await locateMe()) ?? me;
     if (here) map.current?.flyTo(here, 16);
   };
 
@@ -126,7 +127,7 @@ export default function MasterOrders() {
         <IconButton icon={LocateFixed} label={t('client.myLocation')} floating onPress={locate} style={styles.round} />
       </View>
 
-      <Sheet onHeight={setSheetH} bottomInset={0} peek={70}>
+      <Sheet onHeight={setSheetH} bottomInset={0} peek={70} top={topH + 60}>
         <View style={styles.stats}>
           <View style={styles.stat}>
             <View style={[styles.statIcon, { backgroundColor: colors.accentSoft }]}>
@@ -198,32 +199,26 @@ export default function MasterOrders() {
 
 function FilterModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   useScheme();
-  const insets = useSafeAreaInsets();
   const { categories: mine, radiusKm, setFilter } = useMaster();
   const toggle = (id: (typeof mine)[number]) =>
     setFilter({ categories: mine.includes(id) ? mine.filter((x) => x !== id) : [...mine, id] });
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('common.close')} />
-      <View style={[styles.modal, { paddingBottom: insets.bottom + 16 }]}>
-        <GlassBg radius={{ tl: radius.sheet, tr: radius.sheet, bl: 0, br: 0 }} strong />
-        <View style={styles.handle} />
-        <Text variant="h2">{t('mOrders.filters')}</Text>
-        <Text variant="bodyBold">{t('mOrders.filterCategories')}</Text>
-        <View style={styles.chips}>
-          {categories.map((c) => (
-            <Chip key={c.id} label={t(`categories.${c.id}`)} selected={mine.includes(c.id)} onPress={() => toggle(c.id)} />
-          ))}
-        </View>
-        <Text variant="bodyBold">{t('mOrders.filterRadius')}</Text>
-        <View style={styles.chips}>
-          {DISPATCH.radiiKm.map((km) => (
-            <Chip key={km} label={t('common.km', { value: km })} selected={radiusKm === km} onPress={() => setFilter({ radiusKm: km })} />
-          ))}
-        </View>
-        <Button title={t('mOrders.done')} big onPress={onClose} />
+    <ModalSheet visible={visible} onClose={onClose}>
+      <Text variant="h2">{t('mOrders.filters')}</Text>
+      <Text variant="bodyBold">{t('mOrders.filterCategories')}</Text>
+      <View style={styles.chips}>
+        {categories.map((c) => (
+          <Chip key={c.id} label={t(`categories.${c.id}`)} selected={mine.includes(c.id)} onPress={() => toggle(c.id)} />
+        ))}
       </View>
-    </Modal>
+      <Text variant="bodyBold">{t('mOrders.filterRadius')}</Text>
+      <View style={styles.chips}>
+        {DISPATCH.radiiKm.map((km) => (
+          <Chip key={km} label={t('common.km', { value: km })} selected={radiusKm === km} onPress={() => setFilter({ radiusKm: km })} />
+        ))}
+      </View>
+      <Button title={t('mOrders.done')} big onPress={onClose} />
+    </ModalSheet>
   );
 }
 
@@ -264,8 +259,5 @@ const styles = themed(() => ({
   promoSub: { color: colors.accentInk },
   promoPrice: { fontFamily: fonts.heavy, fontSize: 16, color: colors.accent },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
-  backdrop: { flex: 1, backgroundColor: colors.backdrop },
-  modal: { borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, padding: 20, gap: 14 },
-  handle: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.handle, alignSelf: 'center', marginBottom: 4 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 }));

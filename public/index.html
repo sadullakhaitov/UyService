@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="uz">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Telefon brauzeri: kesik (notch) ostigacha, matn maydoniga bosilganda sahifa kattalashib ketmaydi -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#F6F8F7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0E1513" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="UyService — Toshkentda uyga usta chaqirish: santexnik, elektrik, konditsioner, mebel, ta'mirlash, maishiy texnika. Usta kelayotganini xaritada kuzating." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta property="og:title" content="UyService — uyingizga ishonchli usta" />
+    <meta property="og:description" content="Toshkentda uyga usta chaqirish. Usta kelayotganini xaritada kuzating." />
+    <meta property="og:site_name" content="UyService" />
+    <title>UyService</title>
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+        /* Telefon brauzerida manzil satri yashirinsa ham to'liq balandlik */
+        height: 100dvh;
+      }
+      body {
+        overflow: hidden;
+        margin: 0;
+        /* Tortib yangilash va "rezina" chetlari yo'q — ilovadagidek */
+        overscroll-behavior: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        background: #F6F8F7;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background: #0E1513; }
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+      input, textarea { outline: none; }
+    </style>
+  </head>
+
+  <body>
+    <noscript>UyService ishlashi uchun JavaScript yoqilgan bo'lishi kerak.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

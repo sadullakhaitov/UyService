@@ -87,7 +87,7 @@ export default function Searching() {
         style={[styles.back, { top: insets.top + 12 }]}
       />
 
-      <Sheet onHeight={setSheetH}>
+      <Sheet onHeight={setSheetH} top={insets.top + 72}>
         {scheduled ? (
           <View style={styles.head}>
             <View style={[styles.catIcon, { backgroundColor: cat.tint }]}>

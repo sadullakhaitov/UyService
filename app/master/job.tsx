@@ -1,18 +1,17 @@
 import { router } from 'expo-router';
 import { MapPin, MessageCircle, Phone } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
-import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Linking, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase } from '@/components/map';
-import { Sheet } from '@/components/sheets/Sheet';
+import { Sheet, SheetInput } from '@/components/sheets/Sheet';
 import { Button, Card, Divider, IconButton, Row, Text } from '@/components/ui';
 import { feePercent, platformCut } from '@/constants/billing';
 import { getCategory } from '@/constants/categories';
 import { colors, fonts, shadow, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { bboxCorners, distanceKm, type LatLng } from '@/lib/geo';
-import { remainingEtaMin, useRoute } from '@/lib/routes';
+import { estimateEtaMin, remainingEtaMin, useRoute } from '@/lib/routes';
 import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
 import { CancelSheet, MASTER_REASONS } from '@/components/sheets/CancelSheet';
@@ -80,10 +79,11 @@ function JobView({ job }: { job: MasterOrder }) {
     });
     return best;
   }, [route, here.latitude, here.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
-  const remaining = useMemo(() => (route ? [here, ...route.path.slice(nearest + 1)] : [here, client]), [route, nearest, here, client]);
-  const eta = route ? remainingEtaMin(route, remaining) : 1;
+  // Yo'l kelguncha chiziq chizilmaydi (to'g'ri chiziq ko'chadan chiqib ketgandek ko'rinadi)
+  const remaining = useMemo(() => (route ? [here, ...route.path.slice(nearest + 1)] : null), [route, nearest, here]);
+  const eta = route && remaining ? remainingEtaMin(route, remaining) : estimateEtaMin(here, client);
   const fitKey = Math.floor(nearest / 6);
-  const fitTo = useMemo(() => bboxCorners([...remaining, client]), [fitKey, route]); // eslint-disable-line react-hooks/exhaustive-deps
+  const fitTo = useMemo(() => bboxCorners([...(remaining ?? [here]), client]), [fitKey, route]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const total = fee + (Number(work) || 0) + (Number(parts) || 0);
   const verified = useMaster((s) => s.verified);
@@ -96,7 +96,7 @@ function JobView({ job }: { job: MasterOrder }) {
       <MapBase
         center={client}
         insets={{ top: insets.top + 80, bottom: sheetH }}
-        route={step === 'on_the_way' ? remaining : undefined}
+        route={step === 'on_the_way' && remaining ? remaining : undefined}
         master={here}
         moveDuration={1000}
         accent={cat.main}
@@ -114,7 +114,7 @@ function JobView({ job }: { job: MasterOrder }) {
         ))}
       </View>
 
-      <Sheet onHeight={setSheetH}>
+      <Sheet onHeight={setSheetH} top={insets.top + 80}>
         <View style={styles.client}>
           <View style={styles.flex}>
             <Text variant="caption">{t('job.client')}</Text>
@@ -197,7 +197,7 @@ function PriceInput({ label, value, onChange }: { label: string; value: string; 
       <Text variant="small" style={styles.flex}>
         {label}
       </Text>
-      <BottomSheetTextInput
+      <SheetInput
         accessibilityLabel={label}
         value={value}
         onChangeText={(v) => onChange(v.replace(/\D/g, ''))}

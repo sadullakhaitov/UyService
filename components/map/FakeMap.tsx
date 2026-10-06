@@ -96,7 +96,7 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
     const lats = fitTo.map((p) => p.latitude);
     const lngs = fitTo.map((p) => p.longitude);
     const [minLat, maxLat, minLng, maxLng] = [Math.min(...lats), Math.max(...lats), Math.min(...lngs), Math.max(...lngs)];
-    const availW = size.w - 120;
+    const availW = size.w - (insets.left ?? 0) - 120;
     const availH = size.h - insets.top - insets.bottom - 140;
     const zx = Math.log2((availW / Math.max(maxLng - minLng, 1e-4)) * (360 / 256));
     const zy = Math.log2(((availH * COS) / Math.max(maxLat - minLat, 1e-4)) * (360 / 256));
@@ -105,7 +105,7 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
   }, [fitKey, size.w, size.h, insets.top, insets.bottom]);
 
   // Fokus nuqtasi (panellar orasidagi bo'shliq markazi)
-  const fx = size.w / 2;
+  const fx = (insets.left ?? 0) + (size.w - (insets.left ?? 0)) / 2;
   const fy = insets.top + (size.h - insets.top - insets.bottom) / 2;
   const k = pxPerDeg(cam.zoom);
   const project = (p: LatLng) => ({ x: fx + (p.longitude - cam.lng) * k, y: fy - ((p.latitude - cam.lat) * k) / COS });
@@ -250,7 +250,7 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
       ) : null}
 
       {overlay ? (
-        <View pointerEvents="none" style={[styles.focal, { top: insets.top, bottom: insets.bottom }]}>
+        <View pointerEvents="none" style={[styles.focal, { top: insets.top, bottom: insets.bottom, left: insets.left ?? 0 }]}>
           {overlay}
         </View>
       ) : null}

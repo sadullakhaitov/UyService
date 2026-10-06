@@ -8,13 +8,14 @@ import { advanceDispatch, applyActivity, respondDispatch, startDispatch, type Di
 import { distanceKm } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { notify } from '@/lib/notify';
-import { fallbackRoute, fetchRoute, resample } from '@/lib/routes';
+import { estimateEtaMin, fallbackRoute, fetchRoute, resample, ROUTE_WAIT_MS } from '@/lib/routes';
 import { mastersAround, mockMasters } from '@/mocks';
 import { useOrders, type ActiveOrder } from '@/store';
 
 const TICK_MS = 500;
-const STEP_MS = 5000; // usta GPS'i har 5 s
-const STEP_M = 60; // har 5 s da ~60 m
+/** Usta belgisi har qadamda shuncha vaqt silliq siljiydi (tracking ekrani ham shuni ishlatadi) */
+export const STEP_MS = 1000;
+const STEP_M = 12; // har qadam ≤ 12 m (~43 km/soat), burilishlar saqlanadi
 const ARRIVED_TO_WORK_MS = 4000;
 /** Rejalashtirilgan buyurtmada qidiruv shuncha oldin boshlanadi */
 export const SCHEDULE_LEAD_MS = 30 * 60_000;
@@ -42,7 +43,13 @@ function tick(now: number) {
     } else if (o.status === 'searching') {
       if (!o.none) searchTick(o, now, busy);
     } else if (o.status === 'on_the_way') {
-      if (now - o.phaseAt >= STEP_MS) {
+      // Haqiqiy yo'l kelguncha usta joyida turadi; juda uzoq kelmasa — taxminiy yo'l
+      if (!o.routeReady) {
+        if (now - o.phaseAt >= ROUTE_WAIT_MS) {
+          const fb = fallbackRoute(o.path[0], o.location);
+          update(o.id, { path: resample(fb.path, STEP_M), step: 0, routeReady: true, phaseAt: now });
+        }
+      } else if (now - o.phaseAt >= STEP_MS) {
         if (o.step < o.path.length - 1) update(o.id, { step: o.step + 1, phaseAt: now });
         else {
           update(o.id, { status: 'arrived', phaseAt: now });
@@ -108,21 +115,23 @@ function assign(o: ActiveOrder, dispatch: ActiveOrder['dispatch'], now: number) 
   const masterId = acc && 'masterId' in acc ? acc.masterId : o.dispatch.offer?.masterId ?? '';
   const m = mastersAround(o.location).find((x) => x.id === masterId)!;
   const fb = fallbackRoute(m.location, o.location);
+  // Usta joyida turadi, yo'l chizig'i haqiqiy ko'chalar bo'ylab yo'l kelganda paydo bo'ladi
   useOrders.getState().update(o.id, {
     dispatch,
     status: 'on_the_way',
     masterId,
-    path: resample(fb.path, STEP_M),
+    path: [m.location],
     step: 0,
+    routeReady: false,
     speed: fb.distanceM / fb.durationS,
     phaseAt: now,
   });
-  notify(t('notify.foundTitle'), t('notify.foundBody', { name: m.name.split(' ')[0], min: Math.round(fb.durationS / 60) }));
-  // Haqiqiy ko'chalar bo'ylab yo'l kelganda almashtiramiz (usta hali deyarli yurmagan bo'lsa)
+  notify(t('notify.foundTitle'), t('notify.foundBody', { name: m.name.split(' ')[0], min: estimateEtaMin(m.location, o.location) }));
   fetchRoute(m.location, o.location).then((r) => {
     const cur = useOrders.getState().orders.find((x) => x.id === o.id);
-    if (r && cur && cur.status === 'on_the_way' && cur.step < 2) {
-      useOrders.getState().update(o.id, { path: resample(r.path, STEP_M), step: 0, speed: r.distanceM / Math.max(1, r.durationS), phaseAt: Date.now() });
+    if (r && cur && cur.status === 'on_the_way' && !cur.routeReady) {
+      // Belgi shu tezlikda yuradi: qadam ≤ 12 m har soniyada
+      useOrders.getState().update(o.id, { path: resample(r.path, STEP_M), step: 0, routeReady: true, speed: STEP_M / (STEP_MS / 1000), phaseAt: Date.now() });
     }
   });
 }
@@ -140,7 +149,8 @@ export function searchInfo(o: ActiveOrder, now = Date.now()) {
 }
 
 // Qolgan yo'l bo'yicha daqiqa
-export function etaMin(o: { path: { latitude: number; longitude: number }[]; step: number; speed: number }) {
+export function etaMin(o: Pick<ActiveOrder, 'path' | 'step' | 'speed' | 'location' | 'routeReady'>) {
+  if (!o.routeReady && o.path[0]) return estimateEtaMin(o.path[0], o.location);
   let m = 0;
   for (let i = o.step + 1; i < o.path.length; i++) m += distanceKm(o.path[i - 1], o.path[i]) * 1000;
   return Math.max(1, Math.round(m / Math.max(1, o.speed) / 60));

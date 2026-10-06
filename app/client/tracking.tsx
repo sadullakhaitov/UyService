@@ -10,7 +10,10 @@ import { getCategory } from '@/constants/categories';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { bboxCorners } from '@/lib/geo';
 import { t } from '@/lib/i18n';
-import { etaMin } from '@/lib/orderSimulator';
+import { etaMin, STEP_MS } from '@/lib/orderSimulator';
+
+// Kamera har shuncha qadamda (≈ soniyada) qayta moslanadi — tez-tez sakramasligi uchun
+const FIT_EVERY = 20;
 import { mastersAround } from '@/mocks';
 import { CancelSheet, CLIENT_REASONS } from '@/components/sheets/CancelSheet';
 import { useActiveOrder, useChats, useHistory, useOrders } from '@/store';
@@ -32,10 +35,11 @@ export default function Tracking() {
   const masters = useMemo(() => (location ? mastersAround(location) : []), [location]);
   const i = order?.step ?? 0;
   const path = order?.path ?? [];
-  // Kamera usta, qolgan yo'l va mijozni birga ko'rsatadi (har 4 qadamda qayta moslanadi)
+  // Kamera usta, qolgan yo'l va mijozni birga ko'rsatadi (har ~20 soniyada qayta moslanadi)
+  const fitStep = Math.floor(i / FIT_EVERY) * FIT_EVERY;
   const fitTo = useMemo(
-    () => (location && path.length ? bboxCorners([...path.slice(Math.floor(i / 4) * 4), location]) : undefined),
-    [Math.floor(i / 4), path, location], // eslint-disable-line react-hooks/exhaustive-deps
+    () => (location && path.length ? bboxCorners([...path.slice(fitStep), location]) : undefined),
+    [fitStep, path, location],
   );
 
   if (!order || !location) return null;
@@ -79,8 +83,9 @@ export default function Tracking() {
       <MapBase
         center={location}
         insets={{ top: insets.top + 90, bottom: sheetH }}
-        route={onWay ? remaining : undefined}
+        route={onWay && order.routeReady ? remaining : undefined}
         master={path[i]}
+        moveDuration={STEP_MS}
         clientMarker={location}
         fitTo={fitTo}
         accent={cat.main}
@@ -104,7 +109,7 @@ export default function Tracking() {
         )}
       </View>
 
-      <Sheet onHeight={setSheetH}>
+      <Sheet onHeight={setSheetH} top={insets.top + 90}>
         <View style={styles.status}>
           <View style={[styles.dot, { backgroundColor: s.color }]} />
           <Text style={[styles.statusText, { color: s.color }]}>{s.text}</Text>

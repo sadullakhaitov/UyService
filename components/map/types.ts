@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import type { LatLng } from '@/lib/geo';
 
-export type MapInsets = { top: number; bottom: number };
+/** left — kompyuterda chapdagi panel kengligi (fokus nuqtasi o'ngga suriladi) */
+export type MapInsets = { top: number; bottom: number; left?: number };
 
 export type MapBaseProps = {
   /** Kamera markazi (odatda mijoz nuqtasi) */

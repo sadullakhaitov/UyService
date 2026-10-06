@@ -16,8 +16,13 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(prop
   const booted = useRef(false);
   const [ready, setReady] = useState(false);
 
+  // Sahifa yuklanmasdan oldingi kamera buyrug'i (masalan, GPS juda tez keldi) — yuklangach yuboriladi
+  const early = useRef<MapCommand | null>(null);
   const post = (cmd: MapCommand) => {
-    if (!booted.current) return;
+    if (!booted.current) {
+      if (cmd.type === 'flyTo') early.current = cmd;
+      return;
+    }
     web.current?.injectJavaScript(`window.__rn(${JSON.stringify(cmd)});true;`);
   };
   const latest = useRef(json);
@@ -55,6 +60,8 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(prop
     if (m.type === 'boot') {
       booted.current = true;
       sendState();
+      if (early.current) post(early.current);
+      early.current = null;
       clearTimeout(retry.current);
       // 20 s ichida xarita chiqmasa — qayta yuklaymiz
       retry.current = setTimeout(reload, 20_000);

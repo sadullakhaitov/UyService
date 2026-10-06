@@ -67,6 +67,9 @@ const light = {
   glassSolid: 'rgba(255,255,255,0.88)',
   glassBorder: 'rgba(255,255,255,0.85)',
   glassEdge: 'rgba(11,42,36,0.08)',
+
+  /** Kompyuter brauzeri: o'rtadagi sahifa ustuni atrofidagi fon */
+  webBackdrop: '#E2EAE6',
 };
 
 export type Palette = typeof light;
@@ -126,6 +129,8 @@ const dark: Palette = {
   glassSolid: 'rgba(25,36,32,0.9)',
   glassBorder: 'rgba(255,255,255,0.12)',
   glassEdge: 'rgba(0,0,0,0.35)',
+
+  webBackdrop: '#09100D',
 };
 
 export type Scheme = 'light' | 'dark';

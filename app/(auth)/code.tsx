@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
@@ -70,32 +70,35 @@ export default function CodeScreen() {
         <Text variant="small">{t('auth.codeHint', { phone: phone || '+998' })}</Text>
       </View>
 
-      <Pressable accessibilityLabel={t('auth.codeLabel')} onPress={() => input.current?.focus()} style={styles.boxes}>
-        {Array.from({ length: LEN }, (_, i) => {
-          const active = i === code.length;
-          return (
-            <View key={i} style={[styles.box, code[i] ? styles.boxFilled : null, active ? styles.boxActive : null]}>
-              <Text style={styles.digit}>{code[i] ?? ''}</Text>
-            </View>
-          );
-        })}
-      </Pressable>
-      <TextInput
-        ref={input}
-        autoFocus
-        value={code}
-        onChangeText={(v) => {
-          const c = v.replace(/\D/g, '').slice(0, LEN);
-          setCode(c);
-          if (c) setError(null);
-          if (c.length === LEN) verify(c);
-        }}
-        keyboardType="number-pad"
-        textContentType="oneTimeCode"
-        autoComplete="sms-otp"
-        maxLength={LEN}
-        style={styles.hidden}
-      />
+      <View style={styles.codeWrap}>
+        <Pressable accessibilityLabel={t('auth.codeLabel')} onPress={() => input.current?.focus()} style={styles.boxes}>
+          {Array.from({ length: LEN }, (_, i) => {
+            const active = i === code.length;
+            return (
+              <View key={i} style={[styles.box, code[i] ? styles.boxFilled : null, active ? styles.boxActive : null]}>
+                <Text style={styles.digit}>{code[i] ?? ''}</Text>
+              </View>
+            );
+          })}
+        </Pressable>
+        <TextInput
+          ref={input}
+          autoFocus
+          value={code}
+          onChangeText={(v) => {
+            const c = v.replace(/\D/g, '').slice(0, LEN);
+            setCode(c);
+            if (c) setError(null);
+            if (c.length === LEN) verify(c);
+          }}
+          keyboardType="number-pad"
+          textContentType="oneTimeCode"
+          autoComplete="sms-otp"
+          maxLength={LEN}
+          // Brauzerda ko'rinmas maydon kataklar ustida turadi — sichqoncha bilan bosish to'g'ridan-to'g'ri unga tushadi
+          style={Platform.OS === 'web' ? styles.overlay : styles.hidden}
+        />
+      </View>
 
       {error ? (
         <Text variant="small" style={styles.error}>
@@ -137,7 +140,9 @@ const styles = themed(() => ({
   boxFilled: { backgroundColor: colors.surface, borderColor: colors.primaryTint },
   boxActive: { borderColor: colors.primary, backgroundColor: colors.surface },
   digit: { fontFamily: fonts.heavy, fontSize: 22, color: colors.ink },
+  codeWrap: { position: 'relative' },
   hidden: { position: 'absolute', opacity: 0, width: 1, height: 1 },
+  overlay: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, opacity: 0, fontSize: 16 },
   meta: { gap: 8 },
   link: { fontFamily: fonts.bold, fontSize: 14, color: colors.primary },
   demo: { color: colors.accentInk },

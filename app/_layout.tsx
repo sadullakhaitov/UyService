@@ -14,11 +14,15 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors, setScheme, useScheme } from '@/constants/theme';
 import { setLanguage } from '@/lib/i18n';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { pageLayout } from '@/components/ui/PageFrame';
 import { ThemeRevealProvider } from '@/components/ui/ThemeReveal';
 import { useMaster, useUser } from '@/store';
 
 // Kutilmagan xato bo'lsa — oq ekran o'rniga tushunarli xabar va "Qayta urinish"
 export { ErrorBoundary } from '@/components/ui/ErrorScreen';
+
+// Butun oyna bo'ylab: yo'naltirish va ichki bo'limlar (ular o'z ekranlarini o'zi joylaydi)
+const rootLayout = pageLayout(['index', 'client', 'master']);
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -81,7 +85,12 @@ export default function RootLayout() {
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
         {/* Til almashtirilganda hamma ekran yangi tilda qayta chiziladi. Rejim almashganda esa ekranlar joyida qoladi */}
         <ThemeRevealProvider>
-          <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }} />
+          <Stack
+            key={lang}
+            screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}
+            // Kompyuterda: oddiy sahifalar o'rtada ustun, ichki bo'limlar (client, master) o'zi hal qiladi
+            screenLayout={rootLayout}
+          />
           <OfflineBanner />
         </ThemeRevealProvider>
       </SafeAreaProvider>

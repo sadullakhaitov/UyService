@@ -91,7 +91,7 @@ const styles = themed(() => ({
     paddingTop: 12,
     paddingBottom: 12,
     fontFamily: fonts.regular,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.ink,
   },
   send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },

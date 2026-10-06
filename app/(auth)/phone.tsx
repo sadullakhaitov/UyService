@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
@@ -20,6 +20,7 @@ export default function PhoneScreen() {
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
   const ready = digits.length === 9;
+  const input = useRef<TextInput>(null);
 
   // SMS kod yuboriladi (Supabase sozlanmagan bo'lsa — soxta), keyin kod ekrani
   const submit = async () => {
@@ -63,10 +64,12 @@ export default function PhoneScreen() {
           {next === 'order' ? t('auth.loginToOrder') : next === 'master' ? t('auth.loginToMaster') : t('auth.phoneHint')}
         </Text>
       </View>
-      <View style={[styles.field, focused && styles.fieldFocus]}>
+      {/* Maydonning istalgan joyiga bosilsa (+998 ustiga ham) — yozish boshlanadi */}
+      <Pressable accessible={false} onPress={() => input.current?.focus()} style={[styles.field, focused && styles.fieldFocus]}>
         <Text style={styles.prefix}>+998</Text>
         <View style={styles.sep} />
         <TextInput
+          ref={input}
           accessibilityLabel={t('auth.phoneLabel')}
           autoFocus
           keyboardType="phone-pad"
@@ -82,7 +85,7 @@ export default function PhoneScreen() {
           onSubmitEditing={submit}
           style={styles.input}
         />
-      </View>
+      </Pressable>
       {failed ? (
         <Text variant="small" style={styles.error}>
           {t('auth.sendFailed')}
@@ -108,7 +111,7 @@ const styles = themed(() => ({
   fieldFocus: { borderColor: colors.primary, backgroundColor: colors.surface },
   prefix: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink },
   sep: { width: 1.5, height: 24, backgroundColor: colors.line },
-  input: { flex: 1, fontFamily: fonts.bold, fontSize: 18, color: colors.ink, letterSpacing: 0.5, height: '100%' },
+  input: { flex: 1, fontFamily: fonts.bold, fontSize: 18, color: colors.ink, letterSpacing: 0.5, height: '100%', minWidth: 0 },
   terms: { textAlign: 'center' },
   link: { color: colors.primary, textDecorationLine: 'underline' },
   error: { color: colors.danger },

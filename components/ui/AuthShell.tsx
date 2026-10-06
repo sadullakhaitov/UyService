@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { colors, radius, themed, useScheme } from '@/constants/theme';
@@ -21,6 +21,17 @@ function useKeyboardOpen() {
   return open;
 }
 
+// Bo'sh joyga bosish klaviaturani yopadi (faqat telefonda). Brauzerda oddiy View: aks holda
+// sichqoncha bosilganda Keyboard.dismiss maydondan fokusni darhol olib qo'yadi va yozib bo'lmaydi
+function DismissArea({ style, children }: { style: StyleProp<ViewStyle>; children: ReactNode }) {
+  if (Platform.OS === 'web') return <View style={style}>{children}</View>;
+  return (
+    <Pressable accessible={false} onPress={Keyboard.dismiss} style={style}>
+      {children}
+    </Pressable>
+  );
+}
+
 // Kirish ekranlari uchun umumiy qobiq: yuqorida yashil brend qismi, pastda oq panel.
 // Klaviatura ochilganda brend qismi kichrayadi, tugma klaviatura ustida turadi;
 // bo'sh joyga bosilsa yoki pastga tortilsa klaviatura yopiladi.
@@ -30,7 +41,7 @@ export function AuthShell({ children, footer, compact }: { children: ReactNode; 
   const small = compact || keyboard;
   return (
     <View style={styles.root}>
-      <Pressable accessible={false} onPress={Keyboard.dismiss} style={[styles.hero, small && styles.heroSmall]}>
+      <DismissArea style={[styles.hero, small && styles.heroSmall]}>
         <Pattern />
         <SafeAreaView edges={['top']} style={styles.heroInner}>
           <Logo size={20} light />
@@ -40,7 +51,7 @@ export function AuthShell({ children, footer, compact }: { children: ReactNode; 
             </Text>
           ) : null}
         </SafeAreaView>
-      </Pressable>
+      </DismissArea>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.panelWrap}>
         <View style={styles.panel}>
           <ScrollView
@@ -51,9 +62,7 @@ export function AuthShell({ children, footer, compact }: { children: ReactNode; 
             bounces={false}
           >
             {/* Bo'sh joyga bosish klaviaturani yopadi */}
-            <Pressable accessible={false} onPress={Keyboard.dismiss} style={styles.bodyInner}>
-              {children}
-            </Pressable>
+            <DismissArea style={styles.bodyInner}>{children}</DismissArea>
           </ScrollView>
           {footer ? (
             <SafeAreaView edges={keyboard ? [] : ['bottom']} style={styles.footer}>

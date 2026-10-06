@@ -6,7 +6,7 @@ import type { BillingPlan } from '@/constants/billing';
 import type { CategoryId } from '@/constants/categories';
 import type { LatLng } from '@/lib/geo';
 import { startDispatch, type DispatchState } from '@/lib/dispatch';
-import { mockChats, mockClient, mockFavorites, mockHistory, mockMasterSelf, type HistoryItem } from '@/mocks';
+import { mockChats, mockFavorites, mockHistory, mockMasterSelf, TASHKENT_CENTER, type HistoryItem } from '@/mocks';
 
 export type Role = 'client' | 'master';
 export type ThemeMode = 'system' | 'light' | 'dark';
@@ -35,6 +35,10 @@ type UserState = {
   themeMode: ThemeMode;
   billingPlan: BillingPlan | null;
   favorites: string[];
+  /** Oxirgi aniqlangan haqiqiy joy — keyingi ochilishda xarita darhol shu yerdan boshlanadi */
+  lastLocation: LatLng | null;
+  lastAddress: string;
+  setLastLocation: (p: LatLng, address?: string) => void;
   setLanguage: (lang: Lang) => void;
   setPhone: (phone: string) => void;
   setThemeMode: (mode: ThemeMode) => void;
@@ -55,6 +59,9 @@ export const useUser = create<UserState>()(
   themeMode: 'system',
   billingPlan: null,
   favorites: mockFavorites,
+  lastLocation: null,
+  lastAddress: '',
+  setLastLocation: (lastLocation, address) => set((s) => ({ lastLocation, lastAddress: address ?? s.lastAddress })),
   setLanguage: (language) => set({ language }),
   setPhone: (phone) => set({ phone }),
   setName: (name) => set({ name }),
@@ -96,8 +103,9 @@ export const useOrder = create<OrderState>((set) => ({
   problemId: 'tap',
   description: '',
   photos: [],
-  address: mockClient.address,
-  location: mockClient.location,
+  // Haqiqiy joy aniqlanguncha (yoki oxirgi ma'lum joy o'qilguncha) — Toshkent markazi, manzil bo'sh
+  address: '',
+  location: TASHKENT_CENTER,
   preferredMasterId: null,
   scheduledAt: null,
   setDraft: (p) => set(p),
@@ -301,6 +309,8 @@ export type ActiveOrder = {
   step: number;
   /** Yo'lning o'rtacha tezligi (m/s) — "N daqiqa" uchun */
   speed: number;
+  /** Haqiqiy yo'l olindi (false — usta joyida, yo'l kutilmoqda) */
+  routeReady?: boolean;
   phaseAt: number;
 };
 
@@ -358,3 +368,11 @@ export const useHistory = create<HistoryState>()(
     { name: 'uyservice-history', storage: createJSONStorage(() => AsyncStorage) },
   ),
 );
+
+// Ilova ochilganda: mijoz manzili — oxirgi ma'lum haqiqiy joy (xarita darhol shu yerdan boshlanadi, keyin GPS aniqlaydi)
+function restoreLastPlace() {
+  const { lastLocation, lastAddress } = useUser.getState();
+  if (lastLocation && !useOrder.getState().address) useOrder.setState({ location: lastLocation, address: lastAddress });
+}
+if (useUser.persist.hasHydrated()) restoreLastPlace();
+else useUser.persist.onFinishHydration(restoreLastPlace);
