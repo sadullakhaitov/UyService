@@ -30,7 +30,7 @@ Hammasi TypeScript'da, o'z serverimiz yo'q.
 |---|---|
 | Mobil ilova | Expo SDK 57 (React Native) + TypeScript |
 | Ekranlar orasida o'tish | Expo Router (fayl nomi = ekran) |
-| Xarita | react-native-maps (Android — Google Maps; iOS Expo Go'da Apple Maps) |
+| Xarita | **Yandex Maps** JS API 2.1 — hamma joyda bir xil: telefonda `react-native-webview` ichida (Expo Go'da ham ishlaydi), brauzer/Telegram'da iframe ichida. Kalit: `EXPO_PUBLIC_YANDEX_MAPS_KEY` |
 | Yo'nalish va vaqt | Hozircha bepul OSRM (OpenStreetMap) — haqiqiy ko'chalar bo'ylab yo'l va vaqt (`lib/routes.ts`); 7-bosqichda Google Routes API |
 | Manzil qidirish | Google Places API (keyinroq) |
 | Animatsiyalar | react-native-reanimated 4 |
@@ -71,10 +71,12 @@ app/                      ← ekranlar (Expo Router)
   master/job.tsx          ← mijozga borish, ishni boshlash/tugatish
 components/
   map/                    ← xarita bilan bog'liq hamma narsa
-    MapBase.tsx           ← haqiqiy xarita (Android/iOS)
-    MapBase.web.tsx       ← brauzer uchun soxta xarita (faqat dizaynni ko'rish)
-    PulseRings.tsx, ClientDot.tsx, CenterPin.tsx, MasterIcon.tsx, RouteLine.tsx
-    mapStyle.json         ← xarita ranglari
+    MapBase.tsx           ← Yandex xaritasi WebView ichida (Android/iOS)
+    MapBase.web.tsx       ← Yandex xaritasi iframe ichida (brauzer); yuklanmasa → FakeMap.tsx
+    yandex/html.ts        ← xarita sahifasi: belgilar, to'lqinlar, yo'l, silliq siljish (60 fps sahifaning o'zida)
+    yandex/useYandexMap.ts ← props → holat; React ↔ sahifa xabarlari (state / flyTo / zoomBy ↔ moveStart / moveEnd)
+    FakeMap.tsx           ← zaxira soxta xarita (faqat dizayn/demo)
+    ClientDot.tsx, CenterPin.tsx, MasterIcon.tsx, usePulse.ts, useBlink.ts
   ui/                     ← Button, Card, Chip, Rating, Logo, ...
   sheets/Sheet.tsx        ← pastdan chiqadigan panel
 lib/                      ← i18n, geo, location, routes, supabase
@@ -104,7 +106,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 ## 5. Xarita va animatsiyalar
 
 - Xarita har doim to'liq orqa fonda, panellar ustidan chiqadi; 60 fps.
-- O'z rang uslubimiz (`mapStyle.json`): POI o'chirilgan, yo'llar oq, binolar och kulrang-yashil.
+- Yandex xaritasi (standart Yandex uslubi), boshqaruv tugmalari va "Yandex Kartada ochish" bloki o'chirilgan; POI bosilmaydi. Hamma belgilar — xarita sahifasining o'zida (`yandex/html.ts`), React faqat holat yuboradi.
 - Ochilganda kamera telefonning haqiqiy joyiga (GPS) 16-zoom bilan uchib keladi; ko'k nuqta — foydalanuvchi joyi; "joylashuv" tugmasi har bosilganda GPS'ni qayta oladi.
 - Pin ustida pufakcha: eng yaqin ustagacha taxminiy vaqt ("3 daq"), Yandex'dagidek.
 - Mijoz belgisi: to'q sariq doira + "nafas oluvchi" halqa. Manzil xaritani surish bilan tanlanadi: markazdagi pin surilganda ko'tariladi, to'xtaganda tushadi.
@@ -159,7 +161,7 @@ Eng yuqori ballga taklif, 60 s taymer (usta ma'lumotlarni o'qib ulgurishi uchun)
 ## 9. Bosqichlar
 
 1. ✅ Loyiha skeleti, papkalar, `theme.ts`.
-2. ✅ Xarita: `MapBase`, `mapStyle.json`, uchib kelish, nafas oluvchi nuqta.
+2. ✅ Xarita: `MapBase` (Yandex), uchib kelish, nafas oluvchi nuqta.
 3. ✅ Mijoz ekranlari (soxta ma'lumot bilan).
 4. ✅ Animatsiyalar (to'lqinlar, miltillash, zoom, silliq usta belgisi, oqib turuvchi yo'l) — telefonda sinab ko'rish kerak.
 5. ⏳ Supabase: migratsiyalar, PostGIS, RLS, telefon + SMS (Eskiz.uz) kirish.
@@ -177,8 +179,8 @@ npm run web               # brauzerda (xarita soxta, faqat dizayn uchun)
 npm run typecheck
 ```
 
-Xarita Expo Go'da ishlamasa — "development build": `npx eas-cli build --profile development`.
+Xarita (Yandex, WebView) Expo Go'da ham ishlaydi; telefonda internet bo'lishi kerak.
 
 ## 11. Kalitlar
 
-Google va Supabase kalitlari `.env` faylida, git'ga yuklanmaydi. Google kalitini faqat ilovangizga cheklang (Google Cloud → Credentials → Application restrictions; paket nomi `uz.uyservice.app`).
+Yandex va Supabase kalitlari `.env` faylida, git'ga yuklanmaydi. Yandex kaliti: developer.tech.yandex.ru → "JavaScript API и HTTP Геокодер"; HTTP Referer cheklovi `uyservice.uz` (telefonda xarita sahifasi shu manzil nomidan ochiladi, `MAP_BASE_URL`). Kalit bo'lmasa xarita cheklangan rejimda ishlaydi yoki umuman ochilmasligi mumkin — kalit qo'yish shart.

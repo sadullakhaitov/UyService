@@ -1,7 +1,7 @@
 import type { ExpoConfig } from 'expo/config';
 
 // Kalitlar .env faylidan olinadi (git'ga yuklanmaydi). Namuna: .env.example
-const googleMapsKey = process.env.GOOGLE_MAPS_API_KEY ?? '';
+// Xarita — Yandex (EXPO_PUBLIC_YANDEX_MAPS_KEY), u kod ichida o'qiladi: components/map/yandex/useYandexMap.ts
 
 const config: ExpoConfig = {
   name: 'UyService',
@@ -15,7 +15,6 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: 'uz.uyservice.app',
     supportsTablet: false,
-    config: { googleMapsApiKey: googleMapsKey },
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
         'Usta manzilingizni topishi uchun joylashuvingiz kerak.',
@@ -29,7 +28,6 @@ const config: ExpoConfig = {
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',
     },
-    config: { googleMaps: { apiKey: googleMapsKey } },
     permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION'],
   },
   web: {
