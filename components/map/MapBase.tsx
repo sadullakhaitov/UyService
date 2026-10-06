@@ -1,14 +1,15 @@
 // Haqiqiy xarita (Android/iOS). Veb uchun: MapBase.web.tsx
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, Keyboard, Platform, StyleSheet, View } from 'react-native';
-import MapView, { AnimatedRegion, Marker, MarkerAnimated, PROVIDER_GOOGLE, type Camera } from 'react-native-maps';
+import MapView, { AnimatedRegion, Circle, Marker, MarkerAnimated, PROVIDER_GOOGLE, type Camera } from 'react-native-maps';
 import { colors } from '@/constants/theme';
-import { bearing, type LatLng } from '@/lib/geo';
+import { bearing, distanceKm, type LatLng } from '@/lib/geo';
 import { ClientDot } from './ClientDot';
 import { MasterIcon, NearbyIcon } from './MasterIcon';
 import mapStyle from './mapStyle.json';
 import { RouteLine } from './RouteLine';
-import { DEFAULT_ZOOM, MOVE_INTERVAL_MS, type MapBaseProps } from './types';
+import { DEFAULT_ZOOM, MOVE_INTERVAL_MS, type MapBaseProps, type MapHandle } from './types';
+import { pulseOpacity, pulseRadius, usePulse } from './usePulse';
 import { useBlink } from './useBlink';
 
 // iOS Expo Go'da Google xarita yo'q — u yerda Apple xaritasi ishlatiladi (rang uslubisiz).
@@ -17,7 +18,7 @@ const provider = Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined;
 const zoomToAltitude = (z: number) => 35_200_000 / 2 ** z;
 const cam = (center: LatLng, zoom: number): Partial<Camera> => ({ center, zoom, altitude: zoomToAltitude(zoom), heading: 0, pitch: 0 });
 
-export function MapBase({
+export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
   center,
   zoom = DEFAULT_ZOOM,
   flyFrom,
@@ -31,8 +32,15 @@ export function MapBase({
   onMoveStart,
   onMoveEnd,
   overlay,
-}: MapBaseProps) {
+  pulse,
+  userLocation,
+}, handle) {
   const ref = useRef<MapView>(null);
+  const rings = usePulse(Boolean(pulse));
+
+  useImperativeHandle(handle, () => ({
+    flyTo: (c, z = DEFAULT_ZOOM) => ref.current?.animateCamera(cam(c, z), { duration: 900 }),
+  }));
   const ready = useRef(false);
   const dragging = useRef(false);
   const blink = useBlink(Boolean(blinkNearby), nearby?.length ?? 0);
@@ -81,6 +89,7 @@ export function MapBase({
         showsPointsOfInterests={false}
         showsBuildings
         showsCompass={false}
+        showsUserLocation={Boolean(userLocation)}
         showsMyLocationButton={false}
         toolbarEnabled={false}
         pitchEnabled={false}
@@ -103,6 +112,18 @@ export function MapBase({
             <NearbyIcon />
           </Marker>
         ))}
+        {pulse
+          ? rings.map((p, i) => (
+              <Circle
+                key={`p${i}`}
+                center={pulse.center}
+                radius={pulseRadius(p, pulse.maxRadiusM)}
+                strokeWidth={2}
+                strokeColor={`rgba(14,90,75,${pulseOpacity(p)})`}
+                fillColor={`rgba(14,90,75,${pulseOpacity(p) * 0.22})`}
+              />
+            ))
+          : null}
         {route?.length ? <RouteLine path={route} /> : null}
         {clientMarker ? (
           <Marker coordinate={clientMarker} anchor={{ x: 0.5, y: 0.5 }} tracksViewChanges={false}>
@@ -118,7 +139,7 @@ export function MapBase({
       ) : null}
     </View>
   );
-}
+});
 
 // Har 5 s kelgan nuqta orasida 5 s davomida silliq siljiydi va yo'nalishi bo'yicha buriladi
 function MovingMaster({ target }: { target: LatLng }) {
@@ -127,16 +148,23 @@ function MovingMaster({ target }: { target: LatLng }) {
   const [heading, setHeading] = useState(0);
   const [track, setTrack] = useState(true);
 
+  // Android: SVG chizilgach kuzatishni o'chiramiz (aks holda sekinlashadi)
   useEffect(() => {
-    const id = setTimeout(() => setTrack(false), 600); // Android: SVG chizilgach kuzatishni o'chiramiz
+    const id = setTimeout(() => setTrack(false), 600);
     return () => clearTimeout(id);
   }, []);
+  const ios = Platform.OS === 'ios';
 
   useEffect(() => {
     const from = last.current;
     if (from.latitude === target.latitude && from.longitude === target.longitude) return;
-    setHeading(bearing(from, target));
     last.current = target;
+    // Uzoq sakrash (masalan, GPS birinchi marta kelganda) — animatsiyasiz
+    if (distanceKm(from, target) > 0.5) {
+      region.setValue({ ...target, latitudeDelta: 0, longitudeDelta: 0 });
+      return;
+    }
+    setHeading(bearing(from, target));
     region
       .timing({ ...target, latitudeDelta: 0, longitudeDelta: 0, duration: MOVE_INTERVAL_MS, easing: Easing.linear, useNativeDriver: false } as never)
       .start();
@@ -147,10 +175,12 @@ function MovingMaster({ target }: { target: LatLng }) {
       coordinate={region as unknown as Animated.WithAnimatedValue<LatLng>}
       anchor={{ x: 0.5, y: 0.5 }}
       flat
-      rotation={heading}
-      tracksViewChanges={track}
+      rotation={ios ? undefined : heading}
+      tracksViewChanges={ios || track}
     >
-      <MasterIcon />
+      <View style={ios ? { transform: [{ rotate: `${heading}deg` }] } : undefined}>
+        <MasterIcon />
+      </View>
     </MarkerAnimated>
   );
 }

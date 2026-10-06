@@ -28,8 +28,17 @@ export type MapBaseProps = {
   onMoveStart?: () => void;
   /** Surish to'xtaganda yangi markaz (pin tushadi, manzil yangilanadi) */
   onMoveEnd?: (center: LatLng) => void;
-  /** Fokus nuqtasi ustidagi ekran qatlamlari (pin, to'lqinlar) */
+  /** Fokus nuqtasi ustidagi ekran qatlamlari (faqat markaziy pin) */
   overlay?: ReactNode;
+  /** Xaritaga bog'langan qidiruv to'lqinlari (metrda) */
+  pulse?: { center: LatLng; maxRadiusM: number };
+  /** Foydalanuvchining haqiqiy joyi — ko'k nuqta */
+  userLocation?: LatLng | null;
+};
+
+export type MapHandle = {
+  /** Kamerani shu nuqtaga silliq uchirish */
+  flyTo: (center: LatLng, zoom?: number) => void;
 };
 
 export const DEFAULT_ZOOM = 16;

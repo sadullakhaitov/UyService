@@ -8,27 +8,34 @@ import { MOVE_INTERVAL_MS } from '@/components/map/types';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, Button, RatingBadge, Squish, Text } from '@/components/ui';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
-import { routeLengthKm } from '@/lib/routes';
+import { remainingEtaMin, resample, useRoute } from '@/lib/routes';
 import { t } from '@/lib/i18n';
-import { buildRoute, mastersAround } from '@/mocks';
+import { mastersAround } from '@/mocks';
 import { useOrder, type OrderStatus } from '@/store';
+
+const STEP_M = 60;
 
 export default function Tracking() {
   const insets = useSafeAreaInsets();
   const { masterId, location, categoryId, status, setStatus, reset } = useOrder();
   const masters = useMemo(() => mastersAround(location), [location]);
   const master = masters.find((m) => m.id === masterId) ?? masters[0];
-  // Soxta yo'l: tayinlangan ustaning joyidan mijoz manziligacha
-  const mockRoute = useMemo(() => buildRoute(master.location, location), [master.id, location]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Ko'chalar bo'ylab haqiqiy yo'l (OSRM); kelguncha — taxminiy
+  const route = useRoute(master.location, location);
+  // Soxta GPS: usta har 5 s da yo'l bo'ylab ~60 m siljiydi (7-bosqichda — Supabase Realtime'dan)
+  const mockRoute = useMemo(() => (route ? resample(route.path, STEP_M) : [master.location, location]), [route]); // eslint-disable-line react-hooks/exhaustive-deps
   const [sheetH, setSheetH] = useState(460);
   const [i, setI] = useState(0);
+
+  // Haqiqiy yo'l kelganda usta boshidan yuradi
+  useEffect(() => setI(0), [route?.real]);
 
   // Soxta: usta joylashuvi har 5 s yangilanadi (7-bosqichda Supabase Realtime)
   useEffect(() => {
     if (status !== 'on_the_way') return;
     const id = setInterval(() => setI((x) => Math.min(x + 1, mockRoute.length - 1)), MOVE_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [status]);
+  }, [status, mockRoute]);
 
   useEffect(() => {
     if (i === mockRoute.length - 1 && status === 'on_the_way') {
@@ -43,8 +50,9 @@ export default function Tracking() {
     return () => clearTimeout(id);
   }, [status, setStatus]);
 
-  const remaining = mockRoute.slice(i);
-  const eta = Math.max(1, Math.round((routeLengthKm(remaining) / 22) * 60));
+  // Chiziq usta belgisining orqasidan boshlanadi (belgi oraliqda silliq siljiydi)
+  const remaining = mockRoute.slice(Math.max(0, i - 1));
+  const eta = route ? remainingEtaMin(route, mockRoute.slice(i)) : 1;
   const fitTo = useMemo(() => [mockRoute[Math.floor(i / 4) * 4], location], [Math.floor(i / 4), mockRoute]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const label: Record<string, { text: string; color: string }> = {

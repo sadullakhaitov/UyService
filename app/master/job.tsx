@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { MapPin, Phone } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Linking, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,8 +12,9 @@ import { BILLING, platformCut } from '@/constants/billing';
 import { getCategory } from '@/constants/categories';
 import { colors, fonts, shadow } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
-import { routeLengthKm } from '@/lib/routes';
-import { mockClient, mockOffer, mockRoute } from '@/mocks';
+import { remainingEtaMin, resample, useRoute } from '@/lib/routes';
+import { useMyLocation } from '@/lib/useMyLocation';
+import { mockClient, mockMasters, mockOffer } from '@/mocks';
 import { useUser } from '@/store';
 
 type Step = 'on_the_way' | 'arrived' | 'in_progress' | 'finishing' | 'completed';
@@ -29,27 +30,44 @@ export default function Job() {
   const [parts, setParts] = useState('45000');
   const fee = getCategory(mockOffer.categoryId).callFee;
 
+  // Usta — telefonning haqiqiy joyida; soxta mijoz undan ~1,5 km narida
+  const me = useMyLocation();
+  const [start, setStart] = useState(mockMasters[0].location);
+  useEffect(() => {
+    if (me) setStart(me);
+  }, [me]);
+  const client = useMemo(
+    () => ({
+      latitude: start.latitude + (mockClient.location.latitude - mockMasters[0].location.latitude),
+      longitude: start.longitude + (mockClient.location.longitude - mockMasters[0].location.longitude),
+    }),
+    [start],
+  );
+  const route = useRoute(start, client);
+  const path = useMemo(() => (route ? resample(route.path, 60) : [start, client]), [route]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setI(0), [path]);
+
   // Soxta GPS: har 5 s da keyingi nuqta (haqiqiyda master_locations jadvaliga yoziladi)
   useEffect(() => {
     if (step !== 'on_the_way') return;
-    const id = setInterval(() => setI((x) => Math.min(x + 1, mockRoute.length - 1)), MOVE_INTERVAL_MS);
+    const id = setInterval(() => setI((x) => Math.min(x + 1, path.length - 1)), MOVE_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [step]);
+  }, [step, path]);
 
   const total = fee + (Number(work) || 0) + (Number(parts) || 0);
   const cut = platformCut(plan, total);
-  const eta = Math.max(1, Math.round((routeLengthKm(mockRoute.slice(i)) / 22) * 60));
+  const eta = route ? remainingEtaMin(route, path.slice(i)) : 1;
   const stepIndex = STEPS.indexOf(step === 'finishing' ? 'in_progress' : step);
 
   return (
     <View style={styles.root}>
       <MapBase
-        center={mockClient.location}
+        center={client}
         insets={{ top: insets.top + 80, bottom: sheetH }}
-        route={step === 'on_the_way' ? mockRoute.slice(i) : undefined}
-        master={step === 'on_the_way' ? mockRoute[i] : mockClient.location}
-        clientMarker={mockClient.location}
-        fitTo={step === 'on_the_way' ? [mockRoute[0], mockClient.location] : [mockClient.location]}
+        route={step === 'on_the_way' ? path.slice(Math.max(0, i - 1)) : undefined}
+        master={step === 'on_the_way' ? path[i] : client}
+        clientMarker={client}
+        fitTo={step === 'on_the_way' ? [path[Math.floor(i / 4) * 4], client] : [client]}
       />
 
       <View style={[styles.steps, shadow.float, { top: insets.top + 12 }]}>

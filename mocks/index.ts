@@ -87,22 +87,6 @@ export const mockMasters: MockMaster[] = [
   },
 ];
 
-// Akmal akaning mijozgacha yo'li (ko'chalar bo'ylab), har 5 s da bitta nuqta
-export const mockRoute: LatLng[] = [
-  { latitude: 41.2961, longitude: 69.2142 },
-  { latitude: 41.2949, longitude: 69.2141 },
-  { latitude: 41.2936, longitude: 69.2139 },
-  { latitude: 41.2924, longitude: 69.2137 },
-  { latitude: 41.2922, longitude: 69.2118 },
-  { latitude: 41.2919, longitude: 69.2097 },
-  { latitude: 41.2917, longitude: 69.2076 },
-  { latitude: 41.2904, longitude: 69.2072 },
-  { latitude: 41.2891, longitude: 69.2068 },
-  { latitude: 41.2878, longitude: 69.2063 },
-  { latitude: 41.2875, longitude: 69.2047 },
-  { latitude: 41.2866, longitude: 69.2039 },
-  { latitude: 41.2856, longitude: 69.2036 },
-];
 
 export const mockFavorites = ['m1'];
 
@@ -153,23 +137,4 @@ export function mastersAround(center: LatLng): MockMaster[] {
     ...m,
     location: { latitude: m.location.latitude + dLat, longitude: m.location.longitude + dLng },
   }));
-}
-
-// Ustadan mijozgacha ko'chalar bo'ylab (avval shimol–janub, keyin sharq–g'arb) soxta yo'l.
-// Har bir nuqta — 5 s dagi bitta GPS yangilanishi (demo uchun tezlashtirilgan: ~120 m)
-export function buildRoute(from: LatLng, to: LatLng, stepM = 120): LatLng[] {
-  const corner = { latitude: to.latitude, longitude: from.longitude };
-  const out: LatLng[] = [];
-  const leg = (a: LatLng, b: LatLng) => {
-    const m = Math.hypot((b.latitude - a.latitude) * 111_000, (b.longitude - a.longitude) * 83_500);
-    const n = Math.max(1, Math.round(m / stepM));
-    for (let i = 0; i < n; i++) {
-      const k = i / n;
-      out.push({ latitude: a.latitude + (b.latitude - a.latitude) * k, longitude: a.longitude + (b.longitude - a.longitude) * k });
-    }
-  };
-  leg(from, corner);
-  leg(corner, to);
-  out.push(to);
-  return out;
 }

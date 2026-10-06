@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { bearing, lerp, type LatLng } from '@/lib/geo';
+import { bearing, distanceKm, lerp, type LatLng } from '@/lib/geo';
 import { MOVE_INTERVAL_MS } from './types';
 
 // Har 5 s kelgan koordinata orasida silliq interpolatsiya + yo'nalish (heading).
@@ -18,6 +18,10 @@ export function useMovingPoint(target: LatLng | undefined, duration = MOVE_INTER
       return;
     }
     if (from.latitude === target.latitude && from.longitude === target.longitude) return;
+    if (distanceKm(from, target) > 0.5) {
+      setPos(target);
+      return;
+    }
     setHeading(bearing(from, target));
     const start = Date.now();
     let raf = 0;

@@ -31,7 +31,7 @@ Hammasi TypeScript'da, o'z serverimiz yo'q.
 | Mobil ilova | Expo SDK 57 (React Native) + TypeScript |
 | Ekranlar orasida o'tish | Expo Router (fayl nomi = ekran) |
 | Xarita | react-native-maps (Android — Google Maps; iOS Expo Go'da Apple Maps) |
-| Yo'nalish va vaqt | Google Routes API (`lib/routes.ts`, hozircha soxta hisob) |
+| Yo'nalish va vaqt | Hozircha bepul OSRM (OpenStreetMap) — haqiqiy ko'chalar bo'ylab yo'l va vaqt (`lib/routes.ts`); 7-bosqichda Google Routes API |
 | Manzil qidirish | Google Places API (keyinroq) |
 | Animatsiyalar | react-native-reanimated 4 |
 | Pastdan chiqadigan panel | @gorhom/bottom-sheet 5 |
@@ -76,7 +76,7 @@ lib/                      ← i18n, geo, location, routes, supabase
 store/                    ← Zustand (foydalanuvchi, buyurtma, usta)
 constants/                ← theme, categories (+ CALL_FEE), dispatch, billing
 locales/uz.json           ← ilovadagi barcha matnlar
-mocks/                    ← soxta ma'lumotlar (5-bosqichgacha)
+mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
 design/                   ← dizayn skrinshotlari
 supabase/migrations, supabase/functions/{dispatch,offer-timeout}  ← 5–7-bosqich
 ```
@@ -95,11 +95,12 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 - Xarita har doim to'liq orqa fonda, panellar ustidan chiqadi; 60 fps.
 - O'z rang uslubimiz (`mapStyle.json`): POI o'chirilgan, yo'llar oq, binolar och kulrang-yashil.
-- Ochilganda kamera Toshkent markazidan mijozga 16-zoom bilan uchib keladi.
+- Ochilganda kamera telefonning haqiqiy joyiga (GPS) 16-zoom bilan uchib keladi; ko'k nuqta — foydalanuvchi joyi; "joylashuv" tugmasi har bosilganda GPS'ni qayta oladi.
+- Pin ustida pufakcha: eng yaqin ustagacha taxminiy vaqt ("3 daq"), Yandex'dagidek.
 - Mijoz belgisi: to'q sariq doira + "nafas oluvchi" halqa. Manzil xaritani surish bilan tanlanadi: markazdagi pin surilganda ko'tariladi, to'xtaganda tushadi.
 - Atrofdagi ustalar ~100 m aniqlikda (`lib/geo.ts` → `blur`).
-- Qidiruv: 3 ta to'lqin (2,4 s, 0,8 s farq, cheksiz); usta belgilari 0,35 ↔ 1 miltillaydi; kamera 16 → 14.
-- Usta yo'lda: har 5 s kelgan koordinata orasida 5 s silliq interpolatsiya + burilish; yo'l chizig'i chiziq-chiziq (iOS'da oqadi; Android'da `lineDashPhase` yo'q); kamera ikkalasini `fitToCoordinates`.
+- Qidiruv: 3 ta to'lqin (2,4 s, 0,8 s farq, cheksiz) — xaritaning o'zida metrda chiziladi (`usePulse` + `Circle`), xarita surilsa nuqtadan ajralmaydi; usta belgilari 0,35 ↔ 1 miltillaydi; kamera 16 → 14.
+- Usta yo'lda: yo'l ko'chalar bo'ylab (OSRM), soxta GPS har 5 s da yo'l bo'ylab ~60 m; nuqtalar orasida 5 s silliq interpolatsiya + burilish; "N daqiqa" qolgan yo'l uzunligidan; yo'l chizig'i chiziq-chiziq (iOS'da oqadi; Android'da `lineDashPhase` yo'q); kamera ikkalasini `fitToCoordinates`.
 - Tugmalar bosilganda biroz kichrayadi (`components/ui/Pressable.tsx`), panellar prujina bilan chiqadi.
 - Usta ilovasi: SVG aylana taymer 15 → 0, oxirgi 5 soniyada tebranish.
 

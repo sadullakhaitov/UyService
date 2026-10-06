@@ -1,13 +1,14 @@
 // Veb (brauzer) uchun soxta xarita: react-native-maps vebda ishlamaydi.
 // Dizaynni tez ko'rish/skrinshot uchun — haqiqiy telefonda MapBase.tsx ishlaydi.
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { PanResponder, StyleSheet, View } from 'react-native';
-import Svg, { Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { colors } from '@/constants/theme';
 import type { LatLng } from '@/lib/geo';
 import { ClientDot } from './ClientDot';
 import { MasterIcon, NearbyIcon } from './MasterIcon';
-import { DEFAULT_ZOOM, type MapBaseProps } from './types';
+import { DEFAULT_ZOOM, type MapBaseProps, type MapHandle } from './types';
+import { pulseOpacity, pulseRadius, usePulse } from './usePulse';
 import { useBlink } from './useBlink';
 import { useMovingPoint } from './useMovingPoint';
 
@@ -23,7 +24,7 @@ const H = range(41.2462, 0.0023, 44); // ... 41.2853, 41.2876, 41.2899, 41.2922 
 const MAJOR_V = new Set([69.2072, 69.2208]);
 const MAJOR_H = new Set([41.2922, 41.2807]);
 
-export function MapBase({
+export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
   center,
   zoom = DEFAULT_ZOOM,
   flyFrom,
@@ -37,7 +38,10 @@ export function MapBase({
   onMoveStart,
   onMoveEnd,
   overlay,
-}: MapBaseProps) {
+  pulse,
+  userLocation,
+}, handle) {
+  const rings = usePulse(Boolean(pulse));
   const [size, setSize] = useState({ w: 390, h: 844 });
   const [cam, setCam] = useState<Cam>(() =>
     flyFrom ? { lat: flyFrom.latitude, lng: flyFrom.longitude, zoom: 13 } : { lat: center.latitude, lng: center.longitude, zoom },
@@ -58,6 +62,12 @@ export function MapBase({
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   };
+
+  useImperativeHandle(handle, () => ({
+    flyTo: (c, z = DEFAULT_ZOOM) => {
+      animateTo({ lat: c.latitude, lng: c.longitude, zoom: z }, 900);
+    },
+  }));
 
   useEffect(() => {
     if (flyFrom) {
@@ -198,6 +208,31 @@ export function MapBase({
             />
           </>
         ) : null}
+        {pulse
+          ? rings.map((p, i) => {
+              const c = project(pulse.center);
+              const r = (pulseRadius(p, pulse.maxRadiusM) / (111_320 * COS)) * k;
+              return (
+                <Circle
+                  key={`p${i}`}
+                  cx={c.x}
+                  cy={c.y}
+                  r={r}
+                  stroke={colors.primary}
+                  strokeOpacity={pulseOpacity(p)}
+                  strokeWidth={2}
+                  fill={colors.primary}
+                  fillOpacity={pulseOpacity(p) * 0.22}
+                />
+              );
+            })
+          : null}
+        {userLocation ? (
+          <>
+            <Circle cx={project(userLocation).x} cy={project(userLocation).y} r={14} fill="#2F80ED" fillOpacity={0.18} />
+            <Circle cx={project(userLocation).x} cy={project(userLocation).y} r={7} fill="#2F80ED" stroke="#FFFFFF" strokeWidth={2.5} />
+          </>
+        ) : null}
       </Svg>
 
       {nearby?.map((p, i) => {
@@ -229,7 +264,7 @@ export function MapBase({
       ) : null}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   marker: { position: 'absolute' },

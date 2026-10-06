@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { colors } from '@/constants/theme';
+import { colors, fonts } from '@/constants/theme';
+import { Text } from '@/components/ui/Text';
 
 const LIFT = 16;
 
 // Manzil tanlash pini: xarita surilganda ko'tariladi, to'xtaganda tushadi (Yandex'dagidek).
-// Pin uchi aynan fokus nuqtasida turadi.
-export function CenterPin({ lifted }: { lifted: boolean }) {
+// Pin uchi aynan fokus nuqtasida turadi. `label` — pin ustidagi pufakcha (masalan, eng yaqin usta: "4 daq")
+export function CenterPin({ lifted, label }: { lifted: boolean; label?: string }) {
   const y = useSharedValue(0);
   useEffect(() => {
     y.value = withSpring(lifted ? -LIFT : 0, { damping: 12, stiffness: 220 });
@@ -21,6 +22,12 @@ export function CenterPin({ lifted }: { lifted: boolean }) {
     <View pointerEvents="none" style={styles.box}>
       <Animated.View style={[styles.shadow, shade]} />
       <Animated.View style={[styles.pin, pin]}>
+        {label && !lifted ? (
+          <View style={styles.bubble}>
+            <Text style={styles.bubbleText}>{label}</Text>
+            <View style={styles.bubbleTail} />
+          </View>
+        ) : null}
         <View style={styles.head}>
           <View style={styles.inner} />
         </View>
@@ -32,11 +39,30 @@ export function CenterPin({ lifted }: { lifted: boolean }) {
 
 const HEAD = 34;
 const STEM = 16;
+const BOX_H = (HEAD + STEM) * 2 + 80;
 
 const styles = StyleSheet.create({
   // Quti markazi = pin uchi
-  box: { width: 80, height: (HEAD + STEM) * 2, alignItems: 'center', justifyContent: 'center' },
-  pin: { position: 'absolute', bottom: HEAD + STEM, alignItems: 'center' },
+  box: { width: 160, height: BOX_H, alignItems: 'center', justifyContent: 'center' },
+  bubble: {
+    marginBottom: 6,
+    backgroundColor: colors.ink,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    height: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bubbleText: { fontFamily: fonts.heavy, fontSize: 13, color: colors.onPrimary },
+  bubbleTail: {
+    position: 'absolute',
+    bottom: -5,
+    width: 10,
+    height: 10,
+    backgroundColor: colors.ink,
+    transform: [{ rotate: '45deg' }],
+  },
+  pin: { position: 'absolute', bottom: BOX_H / 2, alignItems: 'center' },
   head: {
     width: HEAD,
     height: HEAD,

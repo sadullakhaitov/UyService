@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { ChevronRight, LocateFixed, MapPin, ReceiptText, Search, User } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Keyboard, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CenterPin, MapBase } from '@/components/map';
+import { CenterPin, MapBase, type MapHandle } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, IconButton, Logo, RatingBadge, Squish, Text } from '@/components/ui';
 import { categories, problems, type CategoryId } from '@/constants/categories';
@@ -12,6 +12,8 @@ import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { blur, distanceKm, type LatLng } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { getCurrentLocation, reverseGeocode } from '@/lib/location';
+import { estimateEtaMin } from '@/lib/routes';
+import { useMyLocation } from '@/lib/useMyLocation';
 import { mastersAround, mockMasters, TASHKENT_CENTER } from '@/mocks';
 import { useOrder, useUser } from '@/store';
 
@@ -22,12 +24,28 @@ export default function ClientHome() {
   const [query, setQuery] = useState('');
   const { address, location, setAddress, setDraft, reset } = useOrder();
   const favorites = useUser((s) => s.favorites);
-  const [center, setCenter] = useState<LatLng>(location);
+  const [initial] = useState<LatLng>(location);
+  const map = useRef<MapHandle>(null);
+  const me = useMyLocation();
+  const userMoved = useRef(false);
 
-  const nearby = useMemo(
-    () => mastersAround(location).filter((m) => distanceKm(m.location, location) < 3).map((m) => blur(m.location)),
-    [location],
-  );
+  const around = useMemo(() => mastersAround(location).filter((m) => distanceKm(m.location, location) < 3), [location]);
+  const nearby = useMemo(() => around.map((m) => blur(m.location)), [around]);
+  // Pin ustida: eng yaqin ustagacha taxminiy vaqt (Yandex'dagidek)
+  const etaLabel = around.length
+    ? t('client.etaBubble', { min: Math.min(...around.map((m) => estimateEtaMin(m.location, location))) })
+    : undefined;
+
+  const goTo = async (p: LatLng) => {
+    map.current?.flyTo(p, 16);
+    const name = await reverseGeocode(p);
+    setAddress(name ?? t('client.myLocation'), p);
+  };
+
+  // Ilova ochilganda — telefonning haqiqiy joyiga uchib boradi (foydalanuvchi o'zi surmagan bo'lsa)
+  useEffect(() => {
+    if (me && !userMoved.current) goTo(me);
+  }, [me]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -54,11 +72,10 @@ export default function ClientHome() {
     setAddress(name ?? address, c);
   };
 
+  // "Mening joyim" tugmasi: har bosilganda GPS qayta olinadi va kamera aniq joyga qaytadi
   const locate = async () => {
-    const here = await getCurrentLocation();
-    if (!here) return;
-    setCenter(here);
-    onMoveEnd(here);
+    const here = (await getCurrentLocation()) ?? me;
+    if (here) goTo(here);
   };
 
   const topH = insets.top + 76;
@@ -66,16 +83,19 @@ export default function ClientHome() {
   return (
     <View style={styles.root}>
       <MapBase
-        center={center}
+        ref={map}
+        center={initial}
+        userLocation={me}
         flyFrom={TASHKENT_CENTER}
         insets={{ top: topH, bottom: sheetH }}
         nearby={nearby}
         onMoveStart={() => {
+          userMoved.current = true;
           Keyboard.dismiss();
           setMoving(true);
         }}
         onMoveEnd={onMoveEnd}
-        overlay={<CenterPin lifted={moving} />}
+        overlay={<CenterPin lifted={moving} label={etaLabel} />}
       />
 
       <View style={[styles.top, { paddingTop: insets.top + 12 }]} pointerEvents="box-none">

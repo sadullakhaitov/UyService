@@ -79,7 +79,9 @@
     "myMasters": "Mening ustalarim",
     "call": "Chaqirish",
     "nearbyOnline": "{{count}} onlayn",
-    "history": "Buyurtmalar tarixi"
+    "history": "Buyurtmalar tarixi",
+    "etaBubble": "{{min}} daq",
+    "myLocation": "Mening joyim"
   },
   "order": {
     "category": "Kategoriya",

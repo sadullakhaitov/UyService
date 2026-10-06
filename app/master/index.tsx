@@ -1,14 +1,16 @@
 import { router, useFocusEffect } from 'expo-router';
-import { ChevronRight, Clock, Power, User, Wallet } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { ChevronRight, Clock, LocateFixed, Power, User, Wallet } from 'lucide-react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MapBase, PulseRings } from '@/components/map';
+import { MapBase, type MapHandle } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { IconButton, Logo, Squish, Text } from '@/components/ui';
 import { BILLING } from '@/constants/billing';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
+import { getCurrentLocation } from '@/lib/location';
+import { useMyLocation } from '@/lib/useMyLocation';
 import { mockMasterSelf } from '@/mocks';
 import { useMaster, useUser } from '@/store';
 
@@ -20,6 +22,20 @@ export default function MasterHome() {
   const { online, setOnline, verified, activity } = useMaster();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const [sheetH, setSheetH] = useState(380);
+  const map = useRef<MapHandle>(null);
+  const me = useMyLocation();
+  const [initial] = useState(mockMasterSelf.location);
+  const pos = me ?? initial;
+
+  // Ustaning haqiqiy joyi kelganda kamera o'sha yerga uchadi
+  useEffect(() => {
+    if (me) map.current?.flyTo(me, 15);
+  }, [me]);
+
+  const locate = async () => {
+    const here = (await getCurrentLocation()) ?? me;
+    if (here) map.current?.flyTo(here, 15);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -37,11 +53,12 @@ export default function MasterHome() {
   return (
     <View style={styles.root}>
       <MapBase
-        center={mockMasterSelf.location}
+        ref={map}
+        center={initial}
         zoom={15}
         insets={{ top: insets.top + 70, bottom: sheetH }}
-        master={mockMasterSelf.location}
-        overlay={online ? <PulseRings size={260} /> : null}
+        master={pos}
+        pulse={online ? { center: pos, maxRadiusM: 350 } : undefined}
       />
 
       <View style={[styles.top, { paddingTop: insets.top + 12 }]} pointerEvents="box-none">
@@ -54,6 +71,8 @@ export default function MasterHome() {
         </View>
         <IconButton icon={User} label={t('common.profile')} floating onPress={() => router.push('/role')} />
       </View>
+
+      <IconButton icon={LocateFixed} label={t('client.myLocation')} floating onPress={locate} style={[styles.locate, { bottom: sheetH + 12 }]} />
 
       <Sheet onHeight={setSheetH}>
         {!verified ? (
@@ -119,6 +138,7 @@ export default function MasterHome() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
+  locate: { position: 'absolute', right: 16 },
   top: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', alignItems: 'center', gap: 10 },
   pill: { backgroundColor: colors.surface, height: 44, borderRadius: 14, paddingHorizontal: 14, justifyContent: 'center' },
   state: { flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 'auto' },

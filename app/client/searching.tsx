@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { SearchX } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ClientDot, MapBase, PulseRings } from '@/components/map';
+import { MapBase } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Card, IndeterminateBar, Row, Text } from '@/components/ui';
 import { getCategory } from '@/constants/categories';
@@ -15,7 +15,6 @@ import { useOrder } from '@/store';
 // Soxta dispatch: 3 → 6 → 10 km radiusda qidiradi; 7-bosqichda Supabase Edge Function'ga almashadi
 const FOUND_AFTER_MS = 7000;
 const GIVE_UP_AFTER_MS = 9000;
-const RINGS = 420;
 
 export default function Searching() {
   const { categoryId, problemId, location, preferredMasterId, assign, setStatus, reset } = useOrder();
@@ -69,16 +68,8 @@ export default function Searching() {
         insets={{ top: 40, bottom: sheetH }}
         nearby={nearby}
         blinkNearby={!none}
-        overlay={
-          <View style={styles.focus}>
-            {!none ? (
-              <View style={StyleSheet.absoluteFill}>
-                <PulseRings size={RINGS} />
-              </View>
-            ) : null}
-            <ClientDot />
-          </View>
-        }
+        clientMarker={location}
+        pulse={none ? undefined : { center: location, maxRadiusM: 900 }}
       />
 
       <Sheet onHeight={setSheetH}>
@@ -120,7 +111,6 @@ export default function Searching() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
-  focus: { width: RINGS, height: RINGS, alignItems: 'center', justifyContent: 'center' },
   head: { gap: 6 },
   actions: { flexDirection: 'row', gap: 10 },
   none: { alignItems: 'center', gap: 8, paddingVertical: 4 },
