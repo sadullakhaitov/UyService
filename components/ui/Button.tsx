@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react-native';
 import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, fonts, radius, size, themed } from '@/constants/theme';
+import { colors, fonts, radius, size, themed, useScheme } from '@/constants/theme';
 import { Squish } from './Pressable';
 import { Text } from './Text';
 
@@ -29,6 +29,7 @@ const palette = (): Record<Kind, { bg: string; fg: string }> => ({
 
 // Har bir ekranda bitta asosiy (yashil) tugma, qolganlari och kulrang.
 export function Button({ title, onPress, kind = 'primary', icon: Icon, big, disabled, loading, style, color }: Props) {
+  useScheme();
   const p = color ?? palette()[kind];
   return (
     <Squish

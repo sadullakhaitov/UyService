@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Text } from '@/components/ui';
 import { PhotoTile } from '@/components/ui/PhotoTile';
-import { colors, themed } from '@/constants/theme';
+import { colors, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { pickImages } from '@/lib/photos';
 import { useMaster } from '@/store';
@@ -12,6 +12,7 @@ const MAX_WORKS = 12;
 
 // Ish namunalari: mijoz "Usta yo'lda" ekranida ko'radi
 export default function Works() {
+  useScheme();
   const { profile, setProfile } = useMaster();
   const works = profile.works;
   return (

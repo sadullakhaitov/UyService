@@ -7,7 +7,7 @@ import { Squish, Text } from '@/components/ui';
 import { Flag } from '@/components/ui/Flag';
 import { LogoMark } from '@/components/ui/Logo';
 import { categories } from '@/constants/categories';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { LANGS, setLanguage, t, type Lang } from '@/lib/i18n';
 import { useUser } from '@/store';
 
@@ -22,6 +22,7 @@ const BUBBLES = [
 ];
 
 export default function Welcome() {
+  useScheme();
   const setLang = useUser((s) => s.setLanguage);
   const current = useUser((s) => s.language) ?? 'uz';
 
@@ -69,6 +70,7 @@ export default function Welcome() {
 
 // Sekin "nafas olib" suzib turadi
 function Bubble({ index, style, children }: { index: number; style: object; children: React.ReactNode }) {
+  useScheme();
   const p = useSharedValue(0);
   useEffect(() => {
     p.value = withDelay(index * 220, withRepeat(withTiming(1, { duration: 2600 + index * 300, easing: Easing.inOut(Easing.sin) }), -1, true));

@@ -1,10 +1,11 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { Text } from './Text';
 
 // Vaqtinchalik belgi: uy tomi + kalit. Haqiqiy logotip tayyor bo'lgach shu fayl almashtiriladi.
 export function LogoMark({ size = 28, light }: { size?: number; light?: boolean }) {
+  useScheme();
   return (
     <Svg width={size} height={size} viewBox="0 0 32 32">
       <Path d="M4 14.5 16 5l12 9.5V26a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill={light ? colors.onPrimary : colors.primary} />
@@ -18,6 +19,7 @@ export function LogoMark({ size = 28, light }: { size?: number; light?: boolean 
 }
 
 export function Logo({ size = 16, light }: { size?: number; light?: boolean }) {
+  useScheme();
   return (
     <View style={styles.row}>
       <LogoMark size={size * 1.6} light={light} />

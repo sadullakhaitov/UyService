@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react-native';
 import { X } from 'lucide-react-native';
 import { Image, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { Squish } from './Pressable';
 import { Text } from './Text';
@@ -24,6 +24,7 @@ export function PhotoTile({
   size?: number | `${number}%`;
   style?: StyleProp<ViewStyle>;
 }) {
+  useScheme();
   if (uri) {
     return (
       <View style={[styles.tile, { width: size, height: typeof size === 'number' ? size : undefined, aspectRatio: 1 }, style]}>

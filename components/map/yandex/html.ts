@@ -20,6 +20,10 @@ export type MapState = {
   userLocation: LatLng | null;
   accent: string;
   moveDuration: number;
+  /** Tungi rejim va unga mos ranglar — rejim almashganda xarita qayta yuklanmaydi, joyida yangilanadi */
+  dark: boolean;
+  mapBg: string;
+  primary: string;
 };
 
 export type MapCommand =
@@ -107,12 +111,9 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
   }
 
   // Tungi rejim: faqat xarita qatlami (ko'chalar, binolar) qorong'ilashadi, belgilar o'z rangida qoladi
+  var DARK = 'invert(92%) hue-rotate(180deg) saturate(0.55) brightness(0.92) contrast(0.92)';
   function applyDark(){
-    if (!init.dark) return;
-    try {
-      var el = map.panes.get('ground').getElement();
-      el.style.filter = 'invert(92%) hue-rotate(180deg) saturate(0.55) brightness(0.92) contrast(0.92)';
-    } catch (e) {}
+    try { map.panes.get('ground').getElement().style.filter = init.dark ? DARK : ''; } catch (e) {}
   }
 
   ymaps.ready(function(){
@@ -242,6 +243,12 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
       if (cmd.type !== 'state') return;
       var prev = S, s = cmd.state;
       S = s;
+      // Kunduzgi ↔ tungi: filtr, fon va belgi ranglari joyida almashadi
+      if (prev && (prev.dark !== s.dark || prev.primary !== s.primary)) {
+        init.dark = s.dark; C.primary = s.primary; applyDark();
+        document.documentElement.style.background = document.body.style.background = document.getElementById('map').style.background = s.mapBg;
+        prev = Object.assign({}, prev, { nearby: null });
+      }
       // Panel balandligi o'zgardi — pin ostidagi nuqta joyida qoladi (Google'dagi mapPadding kabi)
       var keep = null;
       if (prev && !same(prev.insets, s.insets) && !s.fitTo.length) {

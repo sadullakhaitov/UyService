@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
-import { colors, fonts, radius, size, themed } from '@/constants/theme';
+import { colors, fonts, radius, size, themed, useScheme } from '@/constants/theme';
 import { Squish } from './Pressable';
 import { Text } from './Text';
 
 export function Chip({ label, selected, onPress, color, onColor }: { label: string; selected?: boolean; onPress?: () => void; color?: string; onColor?: string }) {
+  useScheme();
   return (
     <Squish
       accessibilityRole="button"

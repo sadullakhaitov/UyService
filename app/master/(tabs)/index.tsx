@@ -10,7 +10,7 @@ import { SwipeButton } from '@/components/ui/SwipeButton';
 import { BILLING } from '@/constants/billing';
 import { categories } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
-import { colors, fonts, radius, shadow, themed } from '@/constants/theme';
+import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { getCurrentLocation } from '@/lib/location';
 import { useBlocked } from '@/lib/masterFeed';
@@ -19,10 +19,12 @@ import { useMyLocation } from '@/lib/useMyLocation';
 import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
 import { useLocationLog, useMaster, useUser } from '@/store';
+import { GlassBg } from '@/components/ui/Glass';
 
 const DAY = 86_400_000;
 
 export default function MasterOrders() {
+  useScheme();
   const insets = useSafeAreaInsets();
   const { online, setOnline, activity, subscriptionUntil, todayIncome, todayJobs } = useMaster();
   const sentAt = useLocationLog((s) => s.lastAt);
@@ -90,6 +92,7 @@ export default function MasterOrders() {
 
       <View style={[styles.topRow, { top: topH }]} pointerEvents="box-none">
         <View style={[styles.statePill, shadow.float]}>
+          <GlassBg radius={22} />
           <View style={[styles.dot, { backgroundColor: online ? colors.success : colors.muted }]} />
           <Text style={styles.stateText}>{online ? t('master.online') : t('master.offline')}</Text>
         </View>
@@ -98,6 +101,7 @@ export default function MasterOrders() {
 
       <View style={[styles.rightCol, { bottom: sheetH + 12 }]} pointerEvents="box-none">
         <View style={[styles.zoom, shadow.float]}>
+          <GlassBg radius={26} interactive />
           <Pressable accessibilityRole="button" accessibilityLabel={t('mOrders.zoomIn')} onPress={() => map.current?.zoomBy(1)} style={styles.zoomBtn}>
             <Plus size={24} color={colors.ink} strokeWidth={2.2} />
           </Pressable>
@@ -180,6 +184,7 @@ export default function MasterOrders() {
 }
 
 function FilterModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  useScheme();
   const insets = useSafeAreaInsets();
   const { categories: mine, radiusKm, setFilter } = useMaster();
   const toggle = (id: (typeof mine)[number]) =>
@@ -188,6 +193,7 @@ function FilterModal({ visible, onClose }: { visible: boolean; onClose: () => vo
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('common.close')} />
       <View style={[styles.modal, { paddingBottom: insets.bottom + 16 }]}>
+        <GlassBg radius={{ tl: radius.sheet, tr: radius.sheet, bl: 0, br: 0 }} strong />
         <View style={styles.handle} />
         <Text variant="h2">{t('mOrders.filters')}</Text>
         <Text variant="bodyBold">{t('mOrders.filterCategories')}</Text>
@@ -226,12 +232,12 @@ const styles = themed(() => ({
   bannerText: { flex: 1, fontFamily: fonts.bold, fontSize: 15, color: colors.onPrimary, textAlign: 'center' },
   bannerGo: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   topRow: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  statePill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.surface, height: 44, borderRadius: 22, paddingHorizontal: 16 },
+  statePill: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 22, paddingHorizontal: 16 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   stateText: { fontFamily: fonts.bold, fontSize: 14, color: colors.ink },
   round: { width: 52, height: 52, borderRadius: 26 },
   rightCol: { position: 'absolute', right: 16, gap: 12, alignItems: 'flex-end' },
-  zoom: { backgroundColor: colors.surface, borderRadius: 26, width: 52, overflow: 'hidden' },
+  zoom: { borderRadius: 26, width: 52, overflow: 'hidden' },
   zoomBtn: { height: 52, alignItems: 'center', justifyContent: 'center' },
   zoomSep: { height: 1, backgroundColor: colors.line, marginHorizontal: 10 },
   stats: { flexDirection: 'row', alignItems: 'center' },
@@ -245,7 +251,7 @@ const styles = themed(() => ({
   promoPrice: { fontFamily: fonts.heavy, fontSize: 16, color: colors.accent },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
   backdrop: { flex: 1, backgroundColor: colors.backdrop },
-  modal: { backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, padding: 20, gap: 14 },
+  modal: { borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, padding: 20, gap: 14 },
   handle: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.handle, alignSelf: 'center', marginBottom: 4 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 }));

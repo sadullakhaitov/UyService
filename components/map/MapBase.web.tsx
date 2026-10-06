@@ -2,13 +2,14 @@
 // Yandex skripti yuklanmasa (masalan, tashqi skriptlar taqiqlangan demo sahifada) — soxta xarita (FakeMap).
 import { createElement, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Keyboard, StyleSheet, View } from 'react-native';
-import { colors, themed } from '@/constants/theme';
+import { colors, themed, useScheme } from '@/constants/theme';
 import { FakeMap } from './FakeMap';
 import { DEFAULT_ZOOM, type MapBaseProps, type MapHandle } from './types';
 import type { MapCommand, MapEvent } from './yandex/html';
 import { useYandexMap } from './yandex/useYandexMap';
 
 export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(props, handle) {
+  useScheme();
   const [mode, setMode] = useState<'loading' | 'yandex' | 'fake'>('loading');
   if (mode === 'fake') return <FakeMap ref={handle} {...props} />;
   return <YandexFrame {...props} handle={handle} ready={mode === 'yandex'} onMode={setMode} />;
@@ -21,6 +22,7 @@ type FrameProps = MapBaseProps & {
 };
 
 function YandexFrame({ handle, ready, onMode, ...props }: FrameProps) {
+  useScheme();
   const { html, json, onEvent } = useYandexMap(props);
   const { insets = { top: 0, bottom: 0 }, overlay } = props;
   const frame = useRef<HTMLIFrameElement | null>(null);

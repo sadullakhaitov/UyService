@@ -4,12 +4,13 @@ import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextIn
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Text } from '@/components/ui/Text';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useChats } from '@/store';
 
 // Chat oynasi: usta ↔ qo'llab-quvvatlash / mijoz, mijoz ↔ usta. Hozir mahalliy, 5-bosqichda Supabase Realtime
 export function ChatView({ id, accent = colors.primary, onAccent = colors.onPrimary }: { id: string; accent?: string; onAccent?: string }) {
+  useScheme();
   const chat = useChats((s) => s.chats.find((c) => c.id === id));
   const { send, markRead, receive } = useChats();
   const [text, setText] = useState('');

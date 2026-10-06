@@ -3,7 +3,7 @@ import { Headset, Megaphone } from 'lucide-react-native';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Squish, Text } from '@/components/ui';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useChats, type Chat } from '@/store';
 
@@ -14,6 +14,7 @@ const time = (ms: number) => {
 };
 
 export default function Chats() {
+  useScheme();
   const chats = useChats((s) => s.chats);
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
@@ -30,6 +31,7 @@ export default function Chats() {
 }
 
 function ChatRow({ chat }: { chat: Chat }) {
+  useScheme();
   const last = chat.messages[chat.messages.length - 1];
   return (
     <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push(`/master/chat/${chat.id}`)} style={styles.row}>

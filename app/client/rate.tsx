@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Divider, RatingInput, Row, Squish, Text } from '@/components/ui';
 import { getCategory, WARRANTY_DAYS } from '@/constants/categories';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
 import { useActiveOrder, useHistory, useOrders, useUser } from '@/store';
@@ -17,6 +17,7 @@ const WORK = 70_000;
 const PARTS = 45_000;
 
 export default function Rate() {
+  useScheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const order = useActiveOrder(id);
   const remove = useOrders((s) => s.remove);

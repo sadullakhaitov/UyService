@@ -1,8 +1,9 @@
 import { StyleSheet, View } from 'react-native';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { Text } from './Text';
 
 export function Avatar({ initials, size = 48, solid }: { initials: string; size?: number; solid?: boolean }) {
+  useScheme();
   return (
     <View
       style={[

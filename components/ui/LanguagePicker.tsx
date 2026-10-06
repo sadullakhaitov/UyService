@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { LANGS, t } from '@/lib/i18n';
 import { useUser } from '@/store';
 import { Flag } from './Flag';
@@ -8,6 +8,7 @@ import { Text } from './Text';
 
 // Til tanlash ro'yxati (mijoz profili, usta sozlamalari)
 export function LanguagePicker() {
+  useScheme();
   const { language, setLanguage } = useUser();
   return (
     <View style={styles.langs}>

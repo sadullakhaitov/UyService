@@ -1,8 +1,9 @@
 import { Stack } from 'expo-router';
-import { colors } from '@/constants/theme';
+import { colors, useScheme } from '@/constants/theme';
 import { useOrderSimulator } from '@/lib/orderSimulator';
 
 export default function ClientLayout() {
+  useScheme();
   // Hamma faol buyurtmalar orqa fonda yuradi (soxta dispatch va usta harakati)
   useOrderSimulator();
   return (

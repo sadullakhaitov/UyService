@@ -1,8 +1,9 @@
 import BottomSheet, { BottomSheetView, useBottomSheetSpringConfigs } from '@gorhom/bottom-sheet';
 import { useRef, type ReactNode } from 'react';
-import { Keyboard, StyleSheet } from 'react-native';
+import { Keyboard, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { GlassBg } from '@/components/ui/Glass';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, radius, shadow, themed } from '@/constants/theme';
+import { colors, radius, shadow, themed, useScheme } from '@/constants/theme';
 
 const HANDLE = 24;
 
@@ -22,6 +23,7 @@ export function Sheet({
   /** Pastki tab menyu ustida bo'lsa — 0 (xavfsiz zona tab menyuda) */
   bottomInset?: number;
 }) {
+  useScheme();
   const safe = useSafeAreaInsets();
   const insets = { bottom: bottomInset ?? safe.bottom };
   const spring = useBottomSheetSpringConfigs({ damping: 16, stiffness: 160, mass: 0.9, overshootClamping: false });
@@ -50,7 +52,7 @@ export function Sheet({
         index.current = i;
         report();
       }}
-      backgroundStyle={styles.bg}
+      backgroundComponent={SheetGlass}
       handleIndicatorStyle={styles.handle}
       style={shadow.sheet}
     >
@@ -67,8 +69,19 @@ export function Sheet({
   );
 }
 
+// Panel foni — Liquid Glass (xarita ostidan xira ko'rinib turadi)
+const SHEET_R = { tl: radius.sheet, tr: radius.sheet, bl: 0, br: 0 };
+function SheetGlass({ style }: { style?: StyleProp<ViewStyle> }) {
+  useScheme();
+  return (
+    <View pointerEvents="none" style={[style, styles.bg]}>
+      <GlassBg radius={SHEET_R} strong />
+    </View>
+  );
+}
+
 const styles = themed(() => ({
-  bg: { backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet },
+  bg: { borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet },
   handle: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.handle },
   content: { paddingHorizontal: 16, paddingTop: 4, gap: 16 },
 }));

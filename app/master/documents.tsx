@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
 import { PhotoTile } from '@/components/ui/PhotoTile';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
 import { takePhoto } from '@/lib/photos';
 import { useMaster, type VerifyStatus } from '@/store';
@@ -17,6 +17,7 @@ const STATUS = (): Record<VerifyStatus, { icon: typeof Clock3; bg: string; fg: s
 
 // Hujjatlar va shaxsni tasdiqlash: admin tekshiruvi holati (5-bosqichda admin Supabase panelidan tasdiqlaydi)
 export default function Documents() {
+  useScheme();
   const { profile, setProfile, setVerifyStatus, submitProfile } = useMaster();
   const s = STATUS()[profile.status];
   const Icon = s.icon;

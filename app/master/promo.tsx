@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { useMaster } from '@/store';
 
@@ -15,6 +15,7 @@ const CODES: Record<string, { priority?: number; bonus?: number }> = {
 };
 
 export default function Promo() {
+  useScheme();
   const { usedPromos, addPriority, charge } = useMaster();
   const [code, setCode] = useState('');
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);

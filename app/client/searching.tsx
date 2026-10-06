@@ -7,7 +7,7 @@ import { MapBase } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Card, IconButton, IndeterminateBar, Row, Text } from '@/components/ui';
 import { getCategory } from '@/constants/categories';
-import { colors, themed } from '@/constants/theme';
+import { colors, themed, useScheme } from '@/constants/theme';
 import { blur } from '@/lib/geo';
 import { formatSchedule, formatSum, t } from '@/lib/i18n';
 import { SCHEDULE_LEAD_MS, searchInfo, startSearch } from '@/lib/orderSimulator';
@@ -15,6 +15,7 @@ import { mastersAround } from '@/mocks';
 import { useActiveOrder, useOrders } from '@/store';
 
 export default function Searching() {
+  useScheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const order = useActiveOrder(id);
   const { remove } = useOrders();

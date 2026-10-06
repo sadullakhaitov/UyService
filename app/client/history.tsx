@@ -4,13 +4,14 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, RatingBadge, ScreenHeader, Squish, Text } from '@/components/ui';
 import { getCategory } from '@/constants/categories';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import type { CategoryId } from '@/constants/categories';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
 import { useHistory, useOrder } from '@/store';
 
 export default function History() {
+  useScheme();
   const { reset, setDraft } = useOrder();
   const items = useHistory((s) => s.items);
 

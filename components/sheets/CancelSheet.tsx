@@ -5,8 +5,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button';
 import { Squish } from '@/components/ui/Pressable';
 import { Text } from '@/components/ui/Text';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
+import { GlassBg } from '@/components/ui/Glass';
 
 export const CLIENT_REASONS = ['changedMind', 'tooLong', 'foundOther', 'wrongAddress', 'other'] as const;
 export const MASTER_REASONS = ['clientNoAnswer', 'tooFar', 'emergency', 'wrongProblem', 'other'] as const;
@@ -25,12 +26,14 @@ export function CancelSheet({
   onClose: () => void;
   onConfirm: (reason: string) => void;
 }) {
+  useScheme();
   const insets = useSafeAreaInsets();
   const [reason, setReason] = useState<string | null>(null);
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('common.close')} />
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
+        <GlassBg radius={{ tl: radius.sheet, tr: radius.sheet, bl: 0, br: 0 }} strong />
         <View style={styles.handle} />
         <Text variant="h2">{t('cancel.title')}</Text>
         {warning ? (
@@ -60,7 +63,7 @@ export function CancelSheet({
 
 const styles = themed(() => ({
   backdrop: { flex: 1, backgroundColor: colors.backdrop },
-  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, padding: 20, gap: 12 },
+  sheet: { borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, padding: 20, gap: 12 },
   handle: { width: 40, height: 5, borderRadius: 3, backgroundColor: colors.handle, alignSelf: 'center', marginBottom: 4 },
   warn: { padding: 12, borderRadius: radius.card, backgroundColor: colors.accentSoft },
   warnText: { color: colors.accentInk },

@@ -1,12 +1,13 @@
 import { Star } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { Squish } from './Pressable';
 import { Text } from './Text';
 
 // Kichik: ⭐ 4.9
 export function RatingBadge({ value }: { value: number }) {
+  useScheme();
   return (
     <View style={styles.badge}>
       <Star size={14} color={colors.accent} fill={colors.accent} />
@@ -17,6 +18,7 @@ export function RatingBadge({ value }: { value: number }) {
 
 // Katta: 5 ta bosiladigan yulduz
 export function RatingInput({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  useScheme();
   return (
     <View style={styles.row}>
       {[1, 2, 3, 4, 5].map((n) => {

@@ -1,9 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { colors, themed } from '@/constants/theme';
+import { colors, themed, useScheme } from '@/constants/theme';
 
 // Usta belgisi: yashil doira ichida yo'nalish o'qi (yuqoriga qaragan; burilish tashqaridan beriladi)
 export function MasterIcon({ size = 38, color = colors.primary }: { size?: number; color?: string }) {
+  useScheme();
   return (
     <View style={[styles.circle, { width: size, height: size, borderRadius: size / 2, backgroundColor: color }]}>
       <Svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24">
@@ -14,6 +15,7 @@ export function MasterIcon({ size = 38, color = colors.primary }: { size?: numbe
 }
 
 export function NearbyIcon() {
+  useScheme();
   return <View style={styles.nearby} />;
 }
 

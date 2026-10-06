@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { sendCode, verifyCode } from '@/lib/auth';
 import { t } from '@/lib/i18n';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -13,6 +13,7 @@ import { useMaster, useUser } from '@/store';
 const LEN = 6;
 
 export default function CodeScreen() {
+  useScheme();
   const { phone = '', next } = useLocalSearchParams<{ phone?: string; next?: string }>();
   const { setPhone, setRole, billingPlan } = useUser();
   const [code, setCode] = useState('');

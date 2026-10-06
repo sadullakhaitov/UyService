@@ -31,6 +31,9 @@ export function useYandexMap(p: MapBaseProps) {
     userLocation: p.userLocation ?? null,
     accent: p.accent ?? colors.primary,
     moveDuration: p.moveDuration ?? MOVE_INTERVAL_MS,
+    dark: isDark(),
+    mapBg: colors.map,
+    primary: colors.primary,
   };
   const json = JSON.stringify(state);
 

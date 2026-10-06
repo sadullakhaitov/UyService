@@ -2,6 +2,8 @@
 // Ikki rejim: kunduzgi (light) va tungi (dark). Rejim ildiz _layout'da tanlanadi (setScheme),
 // `colors.x` har o'qilganda joriy rejim rangini qaytaradi; ekran uslublari `themed()` orqali yaratiladi.
 import { StyleSheet } from 'react-native';
+import { useStore } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 
 const light = {
   primary: '#0E5A4B',
@@ -58,6 +60,13 @@ const light = {
   onToast: '#FFFFFF',
   onToastMuted: '#C9D6D1',
   logoAccent: '#FFD7B8',
+
+  /** Liquid Glass: xiralashtirilgan fon ustidagi tus, xira bo'lmaganda (Android) qalinroq tus, yorug' hoshiya */
+  glassFill: 'rgba(255,255,255,0.42)',
+  glassFillStrong: 'rgba(255,255,255,0.72)',
+  glassSolid: 'rgba(255,255,255,0.88)',
+  glassBorder: 'rgba(255,255,255,0.85)',
+  glassEdge: 'rgba(11,42,36,0.08)',
 };
 
 export type Palette = typeof light;
@@ -111,17 +120,31 @@ const dark: Palette = {
   onToast: '#0B2A24',
   onToastMuted: '#4E625C',
   logoAccent: '#F4AE7C',
+
+  glassFill: 'rgba(23,33,30,0.38)',
+  glassFillStrong: 'rgba(23,33,30,0.7)',
+  glassSolid: 'rgba(25,36,32,0.9)',
+  glassBorder: 'rgba(255,255,255,0.12)',
+  glassEdge: 'rgba(0,0,0,0.35)',
 };
 
 export type Scheme = 'light' | 'dark';
 const palettes: Record<Scheme, Palette> = { light, dark };
+
+// Joriy rejim — kichik store: o'zgarsa, `useScheme()` chaqirgan hamma komponent qayta chiziladi
+// (ekranlar yopilmaydi, navigatsiya joyida qoladi — Telegram'dagidek)
+const schemeStore = createStore<{ scheme: Scheme }>(() => ({ scheme: 'light' }));
 let current: Scheme = 'light';
 
 export const setScheme = (s: Scheme) => {
+  if (s === current) return;
   current = s;
+  schemeStore.setState({ scheme: s });
 };
 export const getScheme = () => current;
 export const isDark = () => current === 'dark';
+/** Komponent ranglari rejim bilan birga yangilanishi uchun (har bir rangli komponent boshida chaqiriladi) */
+export const useScheme = () => useStore(schemeStore, (st) => st.scheme);
 
 /** Har o'qilganda joriy rejim rangi (spread `{ ...colors }` ham joriy qiymatlarni beradi) */
 export const colors = {} as Readonly<Palette>;

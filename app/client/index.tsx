@@ -9,7 +9,7 @@ import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, IconButton, Logo, RatingBadge, Squish, Text } from '@/components/ui';
 import { ActiveOrders } from '@/components/ui/ActiveOrders';
 import { categories, problems, type CategoryId } from '@/constants/categories';
-import { colors, fonts, radius, shadow, themed } from '@/constants/theme';
+import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { blur, distanceKm, type LatLng } from '@/lib/geo';
 import { formatSchedule, t } from '@/lib/i18n';
 import { firstSlot } from '@/lib/schedule';
@@ -18,8 +18,10 @@ import { estimateEtaMin } from '@/lib/routes';
 import { useMyLocation } from '@/lib/useMyLocation';
 import { mastersAround, mockMasters, TASHKENT_CENTER } from '@/mocks';
 import { useOrder, useUser } from '@/store';
+import { GlassBg } from '@/components/ui/Glass';
 
 export default function ClientHome() {
+  useScheme();
   const insets = useSafeAreaInsets();
   const [sheetH, setSheetH] = useState(520);
   const [moving, setMoving] = useState(false);
@@ -118,6 +120,7 @@ export default function ClientHome() {
 
       <View style={[styles.top, { paddingTop: insets.top + 12 }]} pointerEvents="box-none">
         <View style={[styles.logoPill, shadow.float]}>
+          <GlassBg radius={14} />
           <Logo size={15} />
         </View>
         <View style={styles.topRight}>
@@ -230,7 +233,7 @@ const styles = themed(() => ({
   flex: { flex: 1 },
   top: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   topRight: { flexDirection: 'row', gap: 10 },
-  logoPill: { backgroundColor: colors.surface, paddingHorizontal: 14, height: 44, borderRadius: 14, justifyContent: 'center' },
+  logoPill: { paddingHorizontal: 14, height: 44, borderRadius: 14, justifyContent: 'center' },
   locate: { position: 'absolute', right: 16 },
   address: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   addrIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },

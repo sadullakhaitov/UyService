@@ -6,12 +6,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Squish, Text } from '@/components/ui';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
 import { ThemePicker } from '@/components/ui/ThemePicker';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useMaster, useUser } from '@/store';
 
 // Mijoz profili: ro'yxatdan o'tmagan bo'lsa ham ochiladi (mehmon)
 export default function Account() {
+  useScheme();
   const { phone, name, setName, logout, setRole, billingPlan } = useUser();
   const [draft, setDraft] = useState(name);
   const registered = useMaster((s) => Boolean(s.profile.submittedAt));
@@ -78,6 +79,7 @@ export default function Account() {
 }
 
 function Row({ icon: Icon, label, hint, onPress, primary }: { icon: typeof Globe; label: string; hint?: string; onPress: () => void; primary?: boolean }) {
+  useScheme();
   return (
     <Squish accessibilityRole="button" scaleTo={0.98} onPress={onPress} style={[styles.row, primary && { backgroundColor: colors.primary }]}>
       <View style={[styles.rowIcon, primary && { backgroundColor: 'rgba(255,255,255,0.16)' }]}>

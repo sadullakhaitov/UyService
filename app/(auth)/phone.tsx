@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { sendCode } from '@/lib/auth';
 import { t } from '@/lib/i18n';
 
@@ -13,6 +13,7 @@ const format = (digits: string) =>
   [digits.slice(0, 2), digits.slice(2, 5), digits.slice(5, 7), digits.slice(7, 9)].filter(Boolean).join(' ');
 
 export default function PhoneScreen() {
+  useScheme();
   const [digits, setDigits] = useState('');
   const [focused, setFocused] = useState(false);
   const { next } = useLocalSearchParams<{ next?: string }>();

@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { Text } from './Text';
 
 const ACircle = Animated.createAnimatedComponent(Circle);
 
 // Aylana taymer: 60 → 0 kamayadi, oxirgi soniyalarda telefon tebranadi
 export function CountdownRing({ seconds, size = 132, label, onDone, color = colors.primary }: { seconds: number; size?: number; label: string; onDone: () => void; color?: string }) {
+  useScheme();
   const stroke = 10;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;

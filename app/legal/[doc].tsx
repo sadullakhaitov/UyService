@@ -3,13 +3,14 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Text } from '@/components/ui';
 import { DRAFT_NOTE, legal, type LegalDoc, type LegalLang } from '@/constants/legal';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { getLanguage } from '@/lib/i18n';
 
 const isDoc = (v: unknown): v is LegalDoc => v === 'terms' || v === 'privacy';
 
 // Huquqiy hujjat: /legal/terms — Foydalanish shartlari, /legal/privacy — Maxfiylik siyosati
 export default function LegalScreen() {
+  useScheme();
   const { doc } = useLocalSearchParams<{ doc: string }>();
   if (!isDoc(doc)) return null;
   const lang: LegalLang = getLanguage() ?? 'uz';

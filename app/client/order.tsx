@@ -6,16 +6,18 @@ import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, St
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Divider, Row, ScreenHeader, Squish, Text } from '@/components/ui';
 import { getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
-import { colors, fonts, radius, shadow, themed } from '@/constants/theme';
+import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { formatDay, formatRange, formatSchedule, formatSum, formatTime, t } from '@/lib/i18n';
 import { askNotifications } from '@/lib/notify';
 import { isOnline } from '@/lib/useOnline';
 import { DAYS_AHEAD, dayOffsetOf, slotsFor } from '@/lib/schedule';
 import { useOrder, useOrders, useUser } from '@/store';
+import { GlassBg } from '@/components/ui/Glass';
 
 const MAX_PHOTOS = 3;
 
 export default function OrderScreen() {
+  useScheme();
   const { categoryId, problemId, description, photos, address, setDraft, scheduledAt } = useOrder();
   const create = useOrders((s) => s.create);
   const phone = useUser((s) => s.phone);
@@ -127,6 +129,7 @@ export default function OrderScreen() {
       </KeyboardAvoidingView>
 
       <SafeAreaView edges={['bottom']} style={[styles.bottom, shadow.sheet]}>
+        <GlassBg radius={{ tl: radius.sheet, tr: radius.sheet, bl: 0, br: 0 }} strong />
         <View style={styles.where}>
           <MapPin size={16} color={colors.accent} strokeWidth={2.4} />
           <Text variant="small" numberOfLines={1} style={styles.flex}>
@@ -141,6 +144,7 @@ export default function OrderScreen() {
 
 // Kun va soat tanlash (usta shu vaqtda keladi)
 function SchedulePicker({ value, onChange, color, onColor }: { value: number; onChange: (v: number) => void; color: string; onColor: string }) {
+  useScheme();
   const day = Math.max(0, dayOffsetOf(value));
   const days = Array.from({ length: DAYS_AHEAD }, (_, d) => d).filter((d) => slotsFor(d).length);
   const slots = slotsFor(day);
@@ -207,6 +211,6 @@ const styles = themed(() => ({
   photo: { width: 68, height: 68, borderRadius: 14, overflow: 'hidden', backgroundColor: colors.mapBlock },
   remove: { position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' },
   note: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
-  bottom: { backgroundColor: colors.surface, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 12, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet },
+  bottom: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 12, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet },
   where: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 }));

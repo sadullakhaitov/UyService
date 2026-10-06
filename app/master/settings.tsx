@@ -5,12 +5,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Squish, Text } from '@/components/ui';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
 import { ThemePicker } from '@/components/ui/ThemePicker';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { askNotifications } from '@/lib/notify';
 import { useMaster, useUser } from '@/store';
 
 export default function Settings() {
+  useScheme();
   const { notifications, setNotifications, setOnline } = useMaster();
   const logout = useUser((s) => s.logout);
 

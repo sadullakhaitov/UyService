@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Squish, Text } from '@/components/ui';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { searchAddress, type Place } from '@/lib/geocode';
 import { t } from '@/lib/i18n';
 import { getCurrentLocation, reverseGeocode } from '@/lib/location';
@@ -12,6 +12,7 @@ import { useOrder } from '@/store';
 
 // Manzilni yozib qidirish (xaritani surishga qo'shimcha). Tanlangach bosh sahifa xaritasi shu joyga uchadi.
 export default function AddressSearch() {
+  useScheme();
   const { location, setAddress } = useOrder();
   const [q, setQ] = useState('');
   const [items, setItems] = useState<Place[]>([]);

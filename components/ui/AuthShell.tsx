@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { colors, radius, themed } from '@/constants/theme';
+import { colors, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { Logo } from './Logo';
 import { Text } from './Text';
@@ -25,6 +25,7 @@ function useKeyboardOpen() {
 // Klaviatura ochilganda brend qismi kichrayadi, tugma klaviatura ustida turadi;
 // bo'sh joyga bosilsa yoki pastga tortilsa klaviatura yopiladi.
 export function AuthShell({ children, footer, compact }: { children: ReactNode; footer?: ReactNode; compact?: boolean }) {
+  useScheme();
   const keyboard = useKeyboardOpen();
   const small = compact || keyboard;
   return (
@@ -67,6 +68,7 @@ export function AuthShell({ children, footer, compact }: { children: ReactNode; 
 
 // Fondagi yengil naqsh: uy tomlari izlari
 function Pattern() {
+  useScheme();
   return (
     <Svg width="100%" height="100%" viewBox="0 0 390 300" preserveAspectRatio="xMidYMid slice" style={StyleSheet.absoluteFill}>
       <Circle cx="340" cy="40" r="90" fill="#FFFFFF" opacity={0.05} />

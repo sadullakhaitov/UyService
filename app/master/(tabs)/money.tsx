@@ -5,7 +5,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Squish, Text } from '@/components/ui';
 import { BALANCE_LIMIT, BILLING } from '@/constants/billing';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
 import { useMaster, useUser } from '@/store';
@@ -19,6 +19,7 @@ const days = Array.from({ length: 7 }, (_, i) => {
 });
 
 export default function Money() {
+  useScheme();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const { balance, subscriptionUntil, todayIncome } = useMaster();
   const [sel, setSel] = useState(6);

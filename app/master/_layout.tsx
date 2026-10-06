@@ -1,8 +1,9 @@
 import { Stack } from 'expo-router';
-import { colors } from '@/constants/theme';
+import { colors, useScheme } from '@/constants/theme';
 import { useMasterFeed } from '@/lib/masterFeed';
 
 export default function MasterLayout() {
+  useScheme();
   // Takliflar oqimi va joylashuvni har 5 s yuborish — usta ilovasining qaysi bo'limida bo'lmasin ishlaydi
   useMasterFeed();
   return (

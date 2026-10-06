@@ -3,13 +3,14 @@ import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useOnline } from '@/lib/useOnline';
 import { Text } from './Text';
 
 // Internet uzilsa — tepada yumshoq tushadigan banner (hamma ekran ustida)
 export function OfflineBanner() {
+  useScheme();
   const online = useOnline();
   const insets = useSafeAreaInsets();
   const y = useSharedValue(-120);

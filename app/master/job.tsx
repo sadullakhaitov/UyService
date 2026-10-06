@@ -9,7 +9,7 @@ import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Card, Divider, IconButton, Row, Text } from '@/components/ui';
 import { BILLING, platformCut } from '@/constants/billing';
 import { getCategory } from '@/constants/categories';
-import { colors, fonts, shadow, themed } from '@/constants/theme';
+import { colors, fonts, shadow, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { bboxCorners, distanceKm, type LatLng } from '@/lib/geo';
 import { remainingEtaMin, useRoute } from '@/lib/routes';
@@ -18,11 +18,13 @@ import { mockMasterSelf } from '@/mocks';
 import { CancelSheet, MASTER_REASONS } from '@/components/sheets/CancelSheet';
 import { DISPATCH } from '@/constants/dispatch';
 import { useChats, useMaster, useMasterWork, useUser, type MasterOrder } from '@/store';
+import { GlassBg } from '@/components/ui/Glass';
 
 type Step = 'on_the_way' | 'arrived' | 'in_progress' | 'finishing' | 'completed';
 const STEPS: Step[] = ['on_the_way', 'arrived', 'in_progress', 'completed'];
 
 export default function Job() {
+  useScheme();
   const job = useMasterWork((s) => s.job);
   useEffect(() => {
     if (!job) router.replace('/master');
@@ -31,6 +33,7 @@ export default function Job() {
 }
 
 function JobView({ job }: { job: MasterOrder }) {
+  useScheme();
   const insets = useSafeAreaInsets();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const { charge, addIncome, bumpActivity } = useMaster();
@@ -100,6 +103,7 @@ function JobView({ job }: { job: MasterOrder }) {
       />
 
       <View style={[styles.steps, shadow.float, { top: insets.top + 12 }]}>
+        <GlassBg radius={16} />
         {(['stepOnWay', 'stepArrived', 'stepWork', 'stepDone'] as const).map((k, n) => (
           <View key={k} style={styles.stepItem}>
             <View style={[styles.stepBar, { backgroundColor: n <= stepIndex ? colors.primary : colors.line }]} />
@@ -185,6 +189,7 @@ function JobView({ job }: { job: MasterOrder }) {
 }
 
 function PriceInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  useScheme();
   return (
     <View style={styles.price}>
       <Text variant="small" style={styles.flex}>
@@ -204,7 +209,7 @@ function PriceInput({ label, value, onChange }: { label: string; value: string; 
 const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
-  steps: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', gap: 6, backgroundColor: colors.surface, borderRadius: 16, padding: 10 },
+  steps: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', gap: 6, borderRadius: 16, padding: 10 },
   stepItem: { flex: 1, gap: 6 },
   stepBar: { height: 4, borderRadius: 2 },
   stepText: { fontFamily: fonts.medium, fontSize: 11, color: colors.ink2 },

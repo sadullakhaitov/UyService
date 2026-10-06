@@ -7,13 +7,14 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { colors, setScheme } from '@/constants/theme';
+import { colors, setScheme, useScheme } from '@/constants/theme';
 import { setLanguage } from '@/lib/i18n';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { ThemeRevealProvider } from '@/components/ui/ThemeReveal';
 import { useMaster, useUser } from '@/store';
 
 // Kutilmagan xato bo'lsa — oq ekran o'rniga tushunarli xabar va "Qayta urinish"
@@ -29,6 +30,7 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 }
 
 export default function RootLayout() {
+  useScheme();
   const [loaded, error] = useFonts({
     Manrope_500Medium,
     Manrope_600SemiBold,
@@ -58,7 +60,13 @@ export default function RootLayout() {
   const system = useColorScheme();
   const mode = useUser((s) => s.themeMode) ?? 'system';
   const scheme = mode === 'system' ? (system === 'dark' ? 'dark' : 'light') : mode;
-  setScheme(scheme);
+  // Birinchi chizishdan oldin — darhol; keyin — effekt orqali (ekranlar joyida qoladi, faqat ranglar almashadi)
+  const mounted = useRef(false);
+  if (!mounted.current) setScheme(scheme);
+  useLayoutEffect(() => {
+    mounted.current = true;
+    setScheme(scheme);
+  }, [scheme]);
 
   const ready = (loaded || !!error) && hydrated;
   useEffect(() => {
@@ -71,9 +79,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaProvider>
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-        {/* Til yoki rejim almashtirilganda hamma ekran yangi tilda/ranglarda qayta chiziladi */}
-        <Stack key={`${lang}-${scheme}`} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }} />
-        <OfflineBanner />
+        {/* Til almashtirilganda hamma ekran yangi tilda qayta chiziladi. Rejim almashganda esa ekranlar joyida qoladi */}
+        <ThemeRevealProvider>
+          <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }} />
+          <OfflineBanner />
+        </ThemeRevealProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

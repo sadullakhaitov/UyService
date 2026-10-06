@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { Text } from '@/components/ui/Text';
 
 const LIFT = 16;
@@ -9,6 +9,7 @@ const LIFT = 16;
 // Manzil tanlash pini: xarita surilganda ko'tariladi, to'xtaganda tushadi (Yandex'dagidek).
 // Pin uchi aynan fokus nuqtasida turadi. `label` — pin ustidagi pufakcha (masalan, eng yaqin usta: "4 daq")
 export function CenterPin({ lifted, label }: { lifted: boolean; label?: string }) {
+  useScheme();
   const y = useSharedValue(0);
   useEffect(() => {
     y.value = withSpring(lifted ? -LIFT : 0, { damping: 12, stiffness: 220 });

@@ -18,13 +18,14 @@ import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Squish, Text } from '@/components/ui';
 import { BILLING } from '@/constants/billing';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
 import { useMaster, useUser } from '@/store';
 
 
 export default function Profile() {
+  useScheme();
   const m = mockMasterSelf;
   const { activity, categories, profile, priorityPoints, setOnline } = useMaster();
   const name = profile.firstName || m.name.split(' ')[0];
@@ -140,6 +141,7 @@ export default function Profile() {
 }
 
 function Tile({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
+  useScheme();
   return (
     <View style={styles.tile}>
       <Text style={styles.tileValue}>{value}</Text>
@@ -152,6 +154,7 @@ function Tile({ value, label, icon }: { value: string; label: string; icon?: Rea
 }
 
 function Item({ label, value, onPress, last }: { label: string; value: string; onPress: () => void; last?: boolean }) {
+  useScheme();
   return (
     <Squish accessibilityRole="button" scaleTo={0.99} onPress={onPress} style={[styles.item, !last && styles.itemLine]}>
       <Text style={styles.itemLabel}>{label}</Text>
@@ -164,6 +167,7 @@ function Item({ label, value, onPress, last }: { label: string; value: string; o
 }
 
 function Row({ icon: Icon, label, value, onPress, badge, last }: { icon: LucideIcon; label: string; value?: string; onPress: () => void; badge?: number; last?: boolean }) {
+  useScheme();
   return (
     <Squish accessibilityRole="button" scaleTo={0.99} onPress={onPress} style={styles.row}>
       <View style={styles.rowIcon}>

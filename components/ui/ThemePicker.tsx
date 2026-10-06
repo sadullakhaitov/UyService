@@ -1,9 +1,10 @@
 import { Moon, Smartphone, Sun, type LucideIcon } from 'lucide-react-native';
-import { View } from 'react-native';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { Appearance, View } from 'react-native';
+import { colors, fonts, getScheme, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useUser, type ThemeMode } from '@/store';
 import { Squish } from './Pressable';
+import { useThemeReveal } from './ThemeReveal';
 import { Text } from './Text';
 
 const MODES: { mode: ThemeMode; icon: LucideIcon }[] = [
@@ -14,8 +15,16 @@ const MODES: { mode: ThemeMode; icon: LucideIcon }[] = [
 
 // Ko'rinish: avtomatik (telefon sozlamasi), kunduzgi, tungi
 export function ThemePicker() {
+  useScheme();
   const { themeMode, setThemeMode } = useUser();
   const current = themeMode ?? 'system';
+  const reveal = useThemeReveal();
+  // Yangi rejim joriydan farq qilsa — bosilgan joydan doira bo'lib ochiladi (Telegram'dagidek)
+  const choose = (mode: ThemeMode, x: number, y: number) => {
+    const target = mode === 'system' ? (Appearance.getColorScheme() === 'dark' ? 'dark' : 'light') : mode;
+    if (target === getScheme()) return setThemeMode(mode);
+    reveal({ x, y }, () => setThemeMode(mode));
+  };
   return (
     <View style={styles.row}>
       {MODES.map(({ mode, icon: Icon }) => {
@@ -25,7 +34,7 @@ export function ThemePicker() {
             key={mode}
             accessibilityRole="radio"
             accessibilityState={{ selected: on }}
-            onPress={() => setThemeMode(mode)}
+            onPress={(e) => choose(mode, e.nativeEvent.pageX, e.nativeEvent.pageY)}
             style={[styles.item, on && styles.itemOn]}
           >
             <Icon size={22} color={on ? colors.primary : colors.ink2} strokeWidth={2.2} />

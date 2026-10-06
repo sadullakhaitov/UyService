@@ -7,11 +7,12 @@ import { Button, Card, Divider, Row, Text } from '@/components/ui';
 import { CountdownRing } from '@/components/ui/CountdownRing';
 import { getCategory, problems } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatRange, formatSum, t } from '@/lib/i18n';
 import { useMaster, useMasterWork } from '@/store';
 
 export default function Offer() {
+  useScheme();
   const bump = useMaster((s) => s.bumpActivity);
   const offer = useMasterWork((s) => s.offer);
   const { setOffer, acceptOffer } = useMasterWork();
@@ -96,6 +97,7 @@ export default function Offer() {
 }
 
 function Meta({ icon, label }: { icon: React.ReactNode; label: string }) {
+  useScheme();
   return (
     <View style={styles.meta}>
       {icon}

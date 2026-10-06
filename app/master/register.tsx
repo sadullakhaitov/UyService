@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Chip, ScreenHeader, Text } from '@/components/ui';
 import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import { PhotoTile } from '@/components/ui/PhotoTile';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { pickImages, takePhoto } from '@/lib/photos';
 import { useMaster, useUser } from '@/store';
@@ -18,6 +18,7 @@ const YEARS = [1, 2, 3, 5, 10];
 // Usta anketasi (TZ, 4-bo'lim): ism, kategoriyalar, pasport rasmi, ish namunalari.
 // Yuborilgach admin tekshiradi — tasdiqlanmaguncha buyurtma kelmaydi (useMaster().verified).
 export default function Register() {
+  useScheme();
   const { profile, setProfile, submitProfile } = useMaster();
   const billingPlan = useUser((s) => s.billingPlan);
   const setRole = useUser((s) => s.setRole);
@@ -162,6 +163,7 @@ export default function Register() {
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  useScheme();
   return (
     <View style={styles.field}>
       <Text variant="caption">{label}</Text>

@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
-import { colors, themed } from '@/constants/theme';
+import { colors, themed, useScheme } from '@/constants/theme';
 
 // Mijoz belgisi: to'q sariq doira, atrofida sekin "nafas oluvchi" halqa
 export function ClientDot({ breathing = true, size = 22 }: { breathing?: boolean; size?: number }) {
+  useScheme();
   const p = useSharedValue(0);
   useEffect(() => {
     if (breathing) p.value = withRepeat(withTiming(1, { duration: 2200, easing: Easing.out(Easing.sin) }), -1, false);

@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { getCategory } from '@/constants/categories';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatSchedule, t } from '@/lib/i18n';
 import { etaMin } from '@/lib/orderSimulator';
 import { useOrders, type ActiveOrder } from '@/store';
@@ -11,6 +11,7 @@ import { Text } from './Text';
 
 // Bosh sahifadagi faol buyurtmalar: har biri o'z kategoriya rangida, bosilsa o'sha buyurtma ochiladi
 export function ActiveOrders() {
+  useScheme();
   // Selektor massivni o'zgartirmasdan qaytaradi (zustand: har renderda yangi massiv — cheksiz render)
   const all = useOrders((s) => s.orders);
   const orders = all.filter((o) => o.status !== 'completed');
@@ -25,6 +26,7 @@ export function ActiveOrders() {
 }
 
 function OrderCard({ order, single }: { order: ActiveOrder; single: boolean }) {
+  useScheme();
   const cat = getCategory(order.categoryId);
   const Icon = cat.icon;
   const status =

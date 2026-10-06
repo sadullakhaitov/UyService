@@ -3,7 +3,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { PanResponder, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { colors, themed } from '@/constants/theme';
+import { colors, themed, useScheme } from '@/constants/theme';
 import type { LatLng } from '@/lib/geo';
 import { ClientDot } from './ClientDot';
 import { MasterIcon, NearbyIcon } from './MasterIcon';
@@ -43,6 +43,7 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
   accent = colors.primary,
   moveDuration,
 }, handle) {
+  useScheme();
   const rings = usePulse(Boolean(pulse));
   const [size, setSize] = useState({ w: 390, h: 844 });
   const [cam, setCam] = useState<Cam>(() =>

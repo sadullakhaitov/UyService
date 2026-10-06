@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Squish, Text } from '@/components/ui';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 
 const TOPICS: { key: string; icon: LucideIcon }[] = [
@@ -16,6 +16,7 @@ const TOPICS: { key: string; icon: LucideIcon }[] = [
 
 // O'qish: ustalar uchun qisqa qo'llanma (buyurtma qanday keladi, aktivlik, reyting, pul, xavfsizlik)
 export default function Learn() {
+  useScheme();
   const [open, setOpen] = useState<string | null>('dispatch');
   return (
     <SafeAreaView style={styles.root}>

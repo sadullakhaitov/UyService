@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { Text } from './Text';
 
 const KNOB = 64;
@@ -25,6 +25,7 @@ export function SwipeButton({
   tone?: 'primary' | 'muted';
   icon?: LucideIcon;
 }) {
+  useScheme();
   const [w, setW] = useState(0);
   const x = useSharedValue(0);
   const max = Math.max(0, w - KNOB - PAD * 2);

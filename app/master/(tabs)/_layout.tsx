@@ -3,13 +3,15 @@ import { MessageCircle, Navigation, Wallet } from 'lucide-react-native';
 import { StyleSheet, View, type ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui';
-import { colors, fonts, themed } from '@/constants/theme';
+import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { mockMasterSelf } from '@/mocks';
+import { GlassBg } from '@/components/ui/Glass';
 import { useChats, useMaster } from '@/store';
 
 // Usta ilovasi: 4 bo'lim — Buyurtmalar, Pul, Chatlar, Profil (Yandex Pro tuzilmasi)
 export default function MasterTabs() {
+  useScheme();
   // Mijoz rejimidagi chatlar (kind 'master') usta ilovasida ko'rinmaydi
   const unread = useChats((s) => s.chats.reduce((n, c) => n + (c.kind === 'master' ? 0 : c.unread), 0));
   const profile = useMaster((s) => s.profile);
@@ -23,6 +25,8 @@ export default function MasterTabs() {
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: [styles.bar, { height: 72 + insets.bottom, paddingTop: 8, paddingBottom: Math.max(insets.bottom, 8) }],
         tabBarBadgeStyle: styles.badge,
+        // Pastki menyu — Liquid Glass
+        tabBarBackground: () => <GlassBg radius={0} strong />,
       }}
     >
       <Tabs.Screen
@@ -64,6 +68,7 @@ export default function MasterTabs() {
 }
 
 function Label({ text, color }: { text: string; color: ColorValue }) {
+  useScheme();
   return (
     <Text style={[styles.label, { color }]} numberOfLines={1}>
       {text}
@@ -72,7 +77,7 @@ function Label({ text, color }: { text: string; color: ColorValue }) {
 }
 
 const styles = themed(() => ({
-  bar: { backgroundColor: colors.surface, borderTopColor: colors.line },
+  bar: { backgroundColor: 'transparent', borderTopColor: colors.glassEdge, elevation: 0 },
   label: { fontFamily: fonts.bold, fontSize: 11, lineHeight: 15 },
   badge: { backgroundColor: colors.accent, fontFamily: fonts.heavy, fontSize: 11 },
   avatar: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.primaryTint, alignItems: 'center', justifyContent: 'center' },

@@ -3,12 +3,13 @@ import { ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
 import { INVITE_BONUS } from '@/constants/billing';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { useUser } from '@/store';
 
 // Do'st taklif qilish: kod va havola (5-bosqichda referrals jadvali)
 export default function Invite() {
+  useScheme();
   const phone = useUser((s) => s.phone);
   const code = `US${(phone.replace(/\D/g, '').slice(-4) || '0000')}`;
   const link = `https://uyservice.uz/usta?ref=${code}`;

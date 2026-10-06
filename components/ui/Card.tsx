@@ -1,12 +1,14 @@
 import { StyleSheet, View, type ViewProps } from 'react-native';
-import { colors, radius, themed } from '@/constants/theme';
+import { colors, radius, themed, useScheme } from '@/constants/theme';
 import { Text } from './Text';
 
 export function Card({ style, tone = 'surface', ...rest }: ViewProps & { tone?: 'surface' | 'muted' }) {
+  useScheme();
   return <View {...rest} style={[styles.card, tone === 'muted' && styles.muted, style]} />;
 }
 
 export function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+  useScheme();
   return (
     <View style={styles.row}>
       <Text variant="body" style={styles.label}>

@@ -5,12 +5,13 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Squish, Text } from '@/components/ui';
 import { BILLING, type BillingPlan } from '@/constants/billing';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { useUser } from '@/store';
 
 // Usta to'lov modelini o'zi tanlaydi: oylik obuna yoki komissiya
 export default function PlanScreen() {
+  useScheme();
   const current = useUser((s) => s.billingPlan);
   const save = useUser((s) => s.setBillingPlan);
   const [plan, setPlan] = useState<BillingPlan>(current ?? 'commission');
@@ -52,6 +53,7 @@ export default function PlanScreen() {
 }
 
 function PlanCard(p: { icon: LucideIcon; title: string; price: string; points: string[]; badge?: string; selected: boolean; onPress: () => void }) {
+  useScheme();
   const Icon = p.icon;
   return (
     <Squish

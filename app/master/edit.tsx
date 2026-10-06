@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Chip, ScreenHeader, Text } from '@/components/ui';
 import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import type { CategoryId } from '@/constants/categories';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { useMaster } from '@/store';
 
@@ -13,6 +13,7 @@ const YEARS = [1, 2, 3, 5, 10];
 
 // Profilni tahrirlash: ism, tajriba, kategoriyalar (buyurtma filtri ham shunga moslanadi)
 export default function EditProfile() {
+  useScheme();
   const { profile, setProfile, setFilter, categories } = useMaster();
   const [firstName, setFirst] = useState(profile.firstName);
   const [lastName, setLast] = useState(profile.lastName);
@@ -51,6 +52,7 @@ export default function EditProfile() {
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  useScheme();
   return (
     <View style={styles.field}>
       <Text variant="caption">{label}</Text>

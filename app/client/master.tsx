@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Text } from '@/components/ui';
 import { getCategory, type CategoryId } from '@/constants/categories';
-import { colors, fonts, radius, themed } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
 import { mockMasters, mockReviews } from '@/mocks';
 import { useHistory } from '@/store';
@@ -14,6 +14,7 @@ const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
 
 // Usta haqida: reyting, tajriba, mijozlar ko'p belgilagan sifatlar va sharhlar (5-bosqichda reviews jadvali)
 export default function MasterInfo() {
+  useScheme();
   const { id, cat } = useLocalSearchParams<{ id: string; cat?: CategoryId }>();
   const master = mockMasters.find((m) => m.id === id);
   const history = useHistory((s) => s.items);
@@ -106,6 +107,7 @@ export default function MasterInfo() {
 }
 
 function Stat({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+  useScheme();
   return (
     <View style={styles.stat}>
       {icon}

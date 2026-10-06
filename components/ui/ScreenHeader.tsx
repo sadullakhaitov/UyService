@@ -5,9 +5,10 @@ import { StyleSheet, View } from 'react-native';
 import { t } from '@/lib/i18n';
 import { IconButton } from './IconButton';
 import { Text } from './Text';
-import { themed } from '@/constants/theme';
+import { themed, useScheme } from '@/constants/theme';
 
 export function ScreenHeader({ kicker, title, right, onBack }: { kicker?: string; title: string; right?: ReactNode; onBack?: () => void }) {
+  useScheme();
   return (
     <View style={styles.row}>
       <IconButton icon={ChevronLeft} label={t('common.back')} floating onPress={onBack ?? (() => router.back())} />

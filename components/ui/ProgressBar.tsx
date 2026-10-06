@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
-import { colors, themed } from '@/constants/theme';
+import { colors, themed, useScheme } from '@/constants/theme';
 
 // Cheksiz yuguruvchi chiziq — qidiruv davom etayotganini bildiradi
 export function IndeterminateBar({ color = colors.primary }: { color?: string }) {
+  useScheme();
   const [w, setW] = useState(0);
   const x = useSharedValue(0);
   useEffect(() => {

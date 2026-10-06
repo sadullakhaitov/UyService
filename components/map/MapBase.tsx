@@ -3,12 +3,13 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Keyboard, Linking, StyleSheet, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
-import { colors, themed } from '@/constants/theme';
+import { colors, themed, useScheme } from '@/constants/theme';
 import { DEFAULT_ZOOM, type MapBaseProps, type MapHandle } from './types';
 import { MAP_BASE_URL, type MapCommand, type MapEvent } from './yandex/html';
 import { useYandexMap } from './yandex/useYandexMap';
 
 export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(props, handle) {
+  useScheme();
   const { html, json, onEvent } = useYandexMap(props);
   const { insets = { top: 0, bottom: 0 }, overlay } = props;
   const web = useRef<WebView>(null);

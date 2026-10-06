@@ -7,7 +7,7 @@ import { MapBase } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, Button, IconButton, RatingBadge, Squish, Text } from '@/components/ui';
 import { getCategory } from '@/constants/categories';
-import { colors, fonts, radius, shadow, themed } from '@/constants/theme';
+import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { bboxCorners } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { etaMin } from '@/lib/orderSimulator';
@@ -16,6 +16,7 @@ import { CancelSheet, CLIENT_REASONS } from '@/components/sheets/CancelSheet';
 import { useActiveOrder, useChats, useHistory, useOrders } from '@/store';
 
 export default function Tracking() {
+  useScheme();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const order = useActiveOrder(id);
@@ -194,6 +195,7 @@ export default function Tracking() {
 }
 
 function Action({ icon, label, onPress, tint }: { icon: React.ReactNode; label: string; onPress: () => void; tint: string }) {
+  useScheme();
   return (
     <Squish accessibilityRole="button" onPress={onPress} style={[styles.action, { backgroundColor: tint }]}>
       {icon}
