@@ -53,7 +53,7 @@ function ChatRow({ chat }: { chat: Chat }) {
         </View>
         <View style={styles.top}>
           <Text variant="small" numberOfLines={1} style={styles.flex}>
-            {last ? `${last.mine ? 'Siz: ' : ''}${last.text}` : t('chats.empty')}
+            {last ? `${last.mine ? t('chats.you') : ''}${last.text}` : t('chats.empty')}
           </Text>
           {chat.unread ? (
             <View style={styles.badge}>

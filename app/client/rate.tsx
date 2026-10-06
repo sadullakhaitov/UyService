@@ -47,7 +47,7 @@ export default function Rate() {
             <Check size={28} color={cat.onMain} strokeWidth={2.8} />
           </View>
           <Text style={[styles.heroTitle, { color: cat.onMain }]}>{t('rate.doneTitle')}</Text>
-          <Text style={[styles.heroSub, { color: cat.onMain, opacity: 0.85 }]}>{t('rate.duration', { name: master.name, time: '1 soat 10 daqiqa' })}</Text>
+          <Text style={[styles.heroSub, { color: cat.onMain, opacity: 0.85 }]}>{t('rate.duration', { name: master.name, time: t('rate.time') })}</Text>
         </SafeAreaView>
       </View>
 

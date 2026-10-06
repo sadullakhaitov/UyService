@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
@@ -11,7 +11,8 @@ import { useUser } from '@/store';
 const LEN = 6;
 
 export default function CodeScreen() {
-  const phone = useUser((s) => s.phone);
+  const { phone = '', next } = useLocalSearchParams<{ phone?: string; next?: string }>();
+  const { setPhone, setRole, billingPlan } = useUser();
   const [code, setCode] = useState('');
   const [left, setLeft] = useState(59);
   const input = useRef<TextInput>(null);
@@ -24,7 +25,17 @@ export default function CodeScreen() {
 
   // Soxta: istalgan 6 xonali kod qabul qilinadi (5-bosqichda Supabase Auth + Eskiz.uz)
   const verify = (c = code) => {
-    if (c.length === LEN) router.replace('/role');
+    if (c.length !== LEN) return;
+    setPhone(phone);
+    if (next === 'order') {
+      // Mijoz hamma narsani tanlab bo'lgan — buyurtma ekraniga qaytamiz va u darhol yuboriladi
+      router.dismissTo({ pathname: '/client/order', params: { autoSubmit: '1' } });
+    } else if (next === 'master') {
+      setRole('master');
+      router.replace(billingPlan ? '/master' : '/master/plan');
+    } else {
+      router.dismissTo('/client/account');
+    }
   };
 
   return (

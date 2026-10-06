@@ -1,5 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
 import { Camera, MapPin, ShieldCheck, X } from 'lucide-react-native';
 import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,13 +8,15 @@ import { Button, Card, Chip, Divider, Row, ScreenHeader, Squish, Text } from '@/
 import { getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { formatRange, formatSum, t } from '@/lib/i18n';
-import { useOrder, useOrders } from '@/store';
+import { useOrder, useOrders, useUser } from '@/store';
 
 const MAX_PHOTOS = 3;
 
 export default function OrderScreen() {
   const { categoryId, problemId, description, photos, address, setDraft } = useOrder();
   const create = useOrders((s) => s.create);
+  const phone = useUser((s) => s.phone);
+  const { autoSubmit } = useLocalSearchParams<{ autoSubmit?: string }>();
   const category = getCategory(categoryId);
   const list = [...problemsOf(categoryId).map((p) => p.id), 'other'];
   const problem = problems.find((p) => p.id === problemId);
@@ -25,9 +28,19 @@ export default function OrderScreen() {
   };
 
   const submit = () => {
+    // Ro'yxatdan faqat shu yerda o'tiladi: mijoz hamma narsani tanlab bo'lgach
+    if (!phone) {
+      router.push('/phone?next=order');
+      return;
+    }
     const id = create();
     router.replace(`/client/searching?id=${id}`);
   };
+
+  // Raqam tasdiqlanib qaytilganda — buyurtma avtomatik yuboriladi
+  useEffect(() => {
+    if (autoSubmit && phone) submit();
+  }, [autoSubmit, phone]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>

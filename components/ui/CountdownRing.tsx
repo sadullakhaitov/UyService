@@ -61,5 +61,5 @@ export function CountdownRing({ seconds, size = 132, label, onDone, color = colo
 
 const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
-  num: { fontFamily: fonts.heavy, fontSize: 40, lineHeight: 46, color: colors.ink },
+  num: { fontFamily: fonts.heavy, fontSize: 40, lineHeight: 50, color: colors.ink },
 });

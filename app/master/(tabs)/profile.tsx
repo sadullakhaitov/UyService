@@ -30,6 +30,7 @@ export default function Profile() {
   const { activity, categories, verified } = useMaster();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const logout = useUser((s) => s.logout);
+  const setRole = useUser((s) => s.setRole);
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
@@ -48,7 +49,10 @@ export default function Profile() {
               <Wrench size={24} color={colors.onPrimary} strokeWidth={2.2} />
             </View>
             <Text style={styles.role}>{t('profile.role')}</Text>
-            <Squish accessibilityRole="button" onPress={() => router.replace('/role')} style={styles.switch}>
+            <Squish accessibilityRole="button" onPress={() => {
+                setRole('client');
+                router.replace('/client');
+              }} style={styles.switch}>
               <Text style={styles.switchText}>{t('profile.switchRole')}</Text>
             </Squish>
           </View>
@@ -101,7 +105,7 @@ export default function Profile() {
             label={t('profile.logout')}
             onPress={() => {
               logout();
-              router.replace('/phone');
+              router.replace('/client');
             }}
             last
           />

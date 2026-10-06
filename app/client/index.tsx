@@ -105,7 +105,7 @@ export default function ClientHome() {
         </View>
         <View style={styles.topRight}>
           <IconButton icon={ReceiptText} label={t('client.history')} floating onPress={() => router.push('/client/history')} />
-          <IconButton icon={User} label={t('common.profile')} floating onPress={() => router.push('/role')} />
+          <IconButton icon={User} label={t('common.profile')} floating onPress={() => router.push('/client/account')} />
         </View>
       </View>
 

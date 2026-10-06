@@ -23,7 +23,7 @@ export default function PlanScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <ScreenHeader title={t('plan.title')} onBack={() => (router.canGoBack() ? router.back() : router.replace('/role'))} />
+      <ScreenHeader title={t('plan.title')} onBack={() => (router.canGoBack() ? router.back() : router.replace('/client/account'))} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text variant="small">{t('plan.hint')}</Text>
         <PlanCard

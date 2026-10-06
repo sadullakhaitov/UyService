@@ -35,7 +35,9 @@
     "roleClient": "Menga usta kerak",
     "roleClientHint": "Uydagi muammoni tez hal qilish",
     "roleMaster": "Men ustaman",
-    "roleMasterHint": "Buyurtma olish va daromad qilish"
+    "roleMasterHint": "Buyurtma olish va daromad qilish",
+    "loginToOrder": "Usta chaqirish uchun raqamingizni tasdiqlang",
+    "loginToMaster": "Usta bo'lib ishlash uchun raqamingizni tasdiqlang"
   },
   "categories": {
     "plumber": "Santexnik",
@@ -149,7 +151,8 @@
     "addFavorite": "\"Mening ustalarim\"ga qo'shish",
     "pay": "To'lash va yakunlash",
     "payNote": "Muammo bo'lsa, {{days}} kun ichida bepul qayta chaqiring",
-    "star": "{{n}} yulduz"
+    "star": "{{n}} yulduz",
+    "time": "1 soat 10 daqiqa"
   },
   "history": {
     "title": "Buyurtmalar tarixi",
@@ -255,7 +258,8 @@
     "filterRadius": "Qancha uzoqlikdan",
     "done": "Tayyor",
     "zoomIn": "Yaqinlashtirish",
-    "zoomOut": "Uzoqlashtirish"
+    "zoomOut": "Uzoqlashtirish",
+    "days": "{{days}} kun"
   },
   "money": {
     "title": "Pul",
@@ -281,7 +285,8 @@
     "placeholder": "Xabar yozing",
     "send": "Yuborish",
     "autoReply": "Rahmat! Operator tez orada javob beradi.",
-    "empty": "Hozircha xabar yo'q"
+    "empty": "Hozircha xabar yo'q",
+    "you": "Siz: "
   },
   "profile": {
     "role": "Usta",
@@ -306,5 +311,24 @@
     "version": "Ilova versiyasi",
     "soon": "Tez kunda",
     "soonText": "Bu bo'lim keyingi bosqichlarda qo'shiladi"
+  },
+  "welcome": {
+    "title": "UyService'ga xush kelibsiz!",
+    "choose": "Tilni tanlang"
+  },
+  "lang": {
+    "uz": "O'zbek",
+    "ru": "Русский",
+    "en": "English"
+  },
+  "account": {
+    "title": "Profil",
+    "guest": "Mehmon",
+    "guestHint": "Ro'yxatdan o'tish usta chaqirganingizda so'raladi",
+    "login": "Kirish",
+    "beMaster": "Usta bo'lib ishlash",
+    "beMasterHint": "Buyurtma oling va daromad qiling",
+    "language": "Til",
+    "logout": "Chiqish"
   }
 }

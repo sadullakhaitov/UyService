@@ -1,4 +1,7 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { Lang } from '@/lib/i18n';
 import type { BillingPlan } from '@/constants/billing';
 import type { CategoryId } from '@/constants/categories';
 import type { LatLng } from '@/lib/geo';
@@ -18,10 +21,14 @@ export type OrderStatus =
   | 'cancelled';
 
 type UserState = {
+  /** null — ilova birinchi marta ochilgan, til tanlash ekrani ko'rsatiladi */
+  language: Lang | null;
+  /** Bo'sh — ro'yxatdan o'tmagan (mehmon). Ro'yxatdan faqat usta chaqirganda o'tiladi */
   phone: string;
   role: Role | null;
   billingPlan: BillingPlan | null;
   favorites: string[];
+  setLanguage: (lang: Lang) => void;
   setPhone: (phone: string) => void;
   setRole: (role: Role) => void;
   setBillingPlan: (plan: BillingPlan) => void;
@@ -29,11 +36,15 @@ type UserState = {
   logout: () => void;
 };
 
-export const useUser = create<UserState>((set) => ({
+export const useUser = create<UserState>()(
+  persist(
+    (set) => ({
+  language: null,
   phone: '',
   role: null,
   billingPlan: null,
   favorites: mockFavorites,
+  setLanguage: (language) => set({ language }),
   setPhone: (phone) => set({ phone }),
   setRole: (role) => set({ role }),
   setBillingPlan: (billingPlan) => set({ billingPlan }),
@@ -45,7 +56,11 @@ export const useUser = create<UserState>((set) => ({
       return { favorites: want ? [...s.favorites, id] : s.favorites.filter((x) => x !== id) };
     }),
   logout: () => set({ phone: '', role: null }),
-}));
+    }),
+    // Telefonda saqlanadi: til, raqam, rol, tarif, sevimli ustalar
+    { name: 'uyservice-user', storage: createJSONStorage(() => AsyncStorage) },
+  ),
+);
 
 // Buyurtma qoralamasi (yangi buyurtma yaratilayotganda) va mijoz manzili
 type OrderState = {

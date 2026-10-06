@@ -7,11 +7,13 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '@/constants/theme';
+import { setLanguage } from '@/lib/i18n';
+import { useUser } from '@/store';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -31,17 +33,25 @@ export default function RootLayout() {
     Unbounded_700Bold,
   });
 
-  useEffect(() => {
-    if (loaded || error) SplashScreen.hideAsync().catch(() => {});
-  }, [loaded, error]);
+  // Saqlangan sozlamalar (til, raqam, rol) telefondan o'qilguncha kutamiz
+  const [hydrated, setHydrated] = useState(useUser.persist.hasHydrated());
+  useEffect(() => useUser.persist.onFinishHydration(() => setHydrated(true)), []);
+  const lang = useUser((s) => s.language) ?? 'uz';
+  setLanguage(lang);
 
-  if (!loaded && !error) return null;
+  const ready = (loaded || !!error) && hydrated;
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync().catch(() => {});
+  }, [ready]);
+
+  if (!ready) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }} />
+        {/* Til almashtirilganda hamma ekran yangi tilda qayta chiziladi */}
+        <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }} />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

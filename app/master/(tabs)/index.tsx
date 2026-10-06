@@ -150,7 +150,7 @@ export default function MasterOrders() {
                 : t('mOrders.promoSubscriptionSub', { days: daysLeft })}
             </Text>
           </View>
-          <Text style={styles.promoPrice}>{plan === 'commission' ? formatSum(BILLING.subscription.monthlyFee) : `${daysLeft} kun`}</Text>
+          <Text style={styles.promoPrice}>{plan === 'commission' ? formatSum(BILLING.subscription.monthlyFee) : t('mOrders.days', { days: daysLeft })}</Text>
         </Squish>
 
         {online ? (

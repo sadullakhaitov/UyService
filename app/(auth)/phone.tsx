@@ -1,11 +1,11 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
-import { Button, Text } from '@/components/ui';
+import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts, radius } from '@/constants/theme';
 import { t } from '@/lib/i18n';
-import { useUser } from '@/store';
 
 // 90 123 45 67
 const format = (digits: string) =>
@@ -14,17 +14,17 @@ const format = (digits: string) =>
 export default function PhoneScreen() {
   const [digits, setDigits] = useState('');
   const [focused, setFocused] = useState(false);
-  const setPhone = useUser((s) => s.setPhone);
+  const { next } = useLocalSearchParams<{ next?: string }>();
   const ready = digits.length === 9;
 
   const submit = () => {
     if (!ready) return;
-    setPhone(`+998 ${format(digits)}`);
-    router.push('/code');
+    router.push({ pathname: '/code', params: { phone: `+998 ${format(digits)}`, next: next ?? '' } });
   };
 
   return (
     <AuthShell
+      compact={Boolean(next)}
       footer={
         <>
           <Button title={t('auth.getCode')} big disabled={!ready} onPress={submit} />
@@ -34,9 +34,12 @@ export default function PhoneScreen() {
         </>
       }
     >
+      {router.canGoBack() ? <IconButton icon={ChevronLeft} label={t('common.back')} onPress={() => router.back()} /> : null}
       <View style={styles.head}>
         <Text variant="h1">{t('auth.phoneTitle')}</Text>
-        <Text variant="small">{t('auth.phoneHint')}</Text>
+        <Text variant="small">
+          {next === 'order' ? t('auth.loginToOrder') : next === 'master' ? t('auth.loginToMaster') : t('auth.phoneHint')}
+        </Text>
       </View>
       <View style={[styles.field, focused && styles.fieldFocus]}>
         <Text style={styles.prefix}>+998</Text>

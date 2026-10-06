@@ -20,7 +20,7 @@ UyService — Toshkentda uyga usta chaqirish ilovasi: mijoz kategoriyani tanlayd
 
 **MVP ichida bor:** bitta mobil ilova, ikki rejim (Mijoz / Usta, kirishda tanlanadi); 6 ta kategoriya: Santexnik, Elektrik, Konditsioner, Mebel, Ta'mirlash, Maishiy texnika; "Hozir kerak" rejimi (real vaqtda qidirish va xaritada kuzatish); telefon raqam + SMS kod; baholash va "Mening ustalarim"; faqat naqd to'lov; ustaning tarif tanlovi (obuna / komissiya).
 
-**MVP ichida yo'q (keyingi bosqichlar):** "Vaqtni tanlash" (ilovada "Tez kunda" belgisi bilan turibdi), karta orqali to'lov (Click/Payme), chat, rus tili, veb-sayt, alohida admin panel.
+**MVP ichida yo'q (keyingi bosqichlar):** "Vaqtni tanlash" (ilovada "Tez kunda" belgisi bilan turibdi), karta orqali to'lov (Click/Payme), veb-sayt, alohida admin panel. (Uch til — o'zbek, rus, ingliz — qo'shildi.)
 
 ## 2. Texnologiyalar
 
@@ -50,9 +50,10 @@ Yangi paket: `npx expo install <paket>`. Tekshirish: `npm run typecheck`.
 app/                      ← ekranlar (Expo Router)
   _layout.tsx             ← shriftlar, gesture, safe-area
   index.tsx               ← rolga qarab yo'naltirish
-  (auth)/phone.tsx        ← telefon raqam (/phone)
-  (auth)/code.tsx         ← SMS kod (/code)
-  (auth)/role.tsx         ← Mijoz yoki Usta (/role)
+  welcome.tsx             ← birinchi ochilish: til tanlash (O'zbek / Русский / English)
+  (auth)/phone.tsx        ← telefon raqam (/phone?next=order|master)
+  (auth)/code.tsx         ← SMS kod
+  client/account.tsx      ← mijoz profili: mehmon/kirgan, "Usta bo'lib ishlash", til
   client/index.tsx        ← bosh sahifa: xarita + kategoriyalar (/client)
   client/order.tsx        ← muammo, tavsif, rasm, narx
   client/searching.tsx    ← usta qidirilmoqda (to'lqinlar)
@@ -98,7 +99,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 - Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; sozlamalar, chiqish.
 - Tarif tanlash (birinchi kirishda) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → Ishni boshladim → Tugatdim + yakuniy narx, platforma ulushi tarifga qarab).
 
-**Kirish:** telefon → SMS kod → rol. Usta ro'yxatdan o'tganda ism, kategoriyalar, pasport rasmi va ish namunalarini yuklaydi; admin tasdiqlamaguncha buyurtma olmaydi (`useMaster().verified`).
+**Kirish (mehmon birinchi):** ilova ochilganda — til tanlash, keyin darhol mijoz bosh sahifasi. Ro'yxatdan o'tish (telefon → SMS kod) faqat mijoz hamma narsani tanlab "Usta chaqirish"ni bosganda so'raladi; tasdiqlangach buyurtma avtomatik yuboriladi. Usta bo'lish — Profil → "Usta bo'lib ishlash" (raqam tasdiqlanadi → tarif). Til, raqam, rol telefonda saqlanadi (AsyncStorage). Usta ro'yxatdan o'tganda ism, kategoriyalar, pasport rasmi va ish namunalarini yuklaydi; admin tasdiqlamaguncha buyurtma olmaydi (`useMaster().verified`).
 
 ## 5. Xarita va animatsiyalar
 
@@ -151,7 +152,8 @@ Eng yuqori ballga taklif, 60 s taymer (usta ma'lumotlarni o'qib ulgurishi uchun)
 
 - Har bir ekranda bitta asosiy (yashil) tugma, qolganlari och kulrang.
 - Panellar pastdan chiqadi, yuqori burchaklari yumaloq, tepasida tortish chizig'i.
-- Hamma matn `locales/uz.json`da (o'zbek, lotin), kodda `t('kalit')`.
+- Hamma matn `locales/{uz,ru,en}.json`da, kodda `t('kalit')`; yangi kalit uchala faylga qo'shiladi.
+- `Text` komponenti `fontSize` berilib `lineHeight` berilmasa, uni o'zi hisoblaydi (harflar tepasi kesilmasligi uchun).
 - Tungi rejim MVP'da yo'q. Yandex ranglari/logotipi ishlatilmaydi.
 
 ## 9. Bosqichlar

@@ -101,7 +101,7 @@ export default function Money() {
                   {subActive ? t('money.subscriptionActive', { date: formatDate(new Date(subscriptionUntil)) }) : t('money.subscriptionExpired')}
                 </Text>
               </View>
-              <Text variant="small">{formatSum(BILLING.subscription.monthlyFee)} / oy</Text>
+              <Text variant="small">{t('plan.subscriptionPrice', { price: formatSum(BILLING.subscription.monthlyFee) })}</Text>
               <Button title={t('money.renew')} onPress={soon} />
             </View>
           )}
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   supportText: { fontFamily: fonts.bold, fontSize: 15, color: colors.onPrimary },
   amountBlock: { gap: 2 },
   amountRow: { flexDirection: 'row', justifyContent: 'flex-start' },
-  amount: { fontFamily: fonts.heavy, fontSize: 40, lineHeight: 46, color: colors.ink },
+  amount: { fontFamily: fonts.heavy, fontSize: 40, lineHeight: 52, color: colors.ink },
   days: { flex: 1, flexDirection: 'row', gap: 6 },
   day: { flex: 1, alignItems: 'center', gap: 6, minHeight: 44, justifyContent: 'center' },
   dayBar: { alignSelf: 'stretch', height: 4, borderRadius: 2, backgroundColor: colors.line },
