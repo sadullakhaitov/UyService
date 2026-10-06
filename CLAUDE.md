@@ -64,7 +64,7 @@ app/                      ← ekranlar (Expo Router)
   client/master.tsx       ← usta haqida: reyting, maqtovlar, sharhlar
   client/rate.tsx         ← ish tugadi, baholash
   client/history.tsx      ← buyurtmalar tarixi (useHistory, telefonda saqlanadi: baho, izoh, bekor sababi)
-  about.tsx               ← "Biz haqimizda": logotip bosilganda ochiladi (missiya, qanday ishlaydi, kafolatlar, aloqa — constants/company.ts, ⚠️ Telegram/ish vaqti tasdiqlanmagan)
+  about.tsx               ← "Biz haqimizda": logotip bosilganda ochiladi (missiya, qanday ishlaydi, kafolatlar, aloqa — constants/company.ts: support@uyservice.uz, Telegram @uyservice_bot, +998 90 121 88 87, 08:00–22:00)
   legal/[doc].tsx         ← foydalanish shartlari va maxfiylik siyosati (constants/legal.ts, 3 tilda, ⚠️ QORALAMA — yurist tekshirishi kerak)
   master/(tabs)/          ← usta ilovasi, pastki menyu 4 bo'lim (Yandex Pro tuzilmasi)
     index.tsx             ← Buyurtmalar: xarita, filtr, zoom, aktivlik, "surib ishga chiqish"
