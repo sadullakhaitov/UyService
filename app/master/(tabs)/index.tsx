@@ -16,6 +16,7 @@ import { formatSum, t } from '@/lib/i18n';
 import { useBlocked } from '@/lib/masterFeed';
 import { askNotifications } from '@/lib/notify';
 import { locateMe, useMyLocation } from '@/lib/useMyLocation';
+import { MAP_ATTRIBUTION_H, useWide } from '@/lib/useLayout';
 import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
 import { useLocationLog, useMaster, useUser } from '@/store';
@@ -39,6 +40,7 @@ export default function MasterOrders() {
   const [filters, setFilters] = useState(false);
   const map = useRef<MapHandle>(null);
   const me = useMyLocation();
+  const wide = useWide();
   // Xarita oxirgi ma'lum haqiqiy joydan boshlanadi, GPS kelishi bilan aniqlanadi
   const [initial] = useState(() => useUser.getState().lastLocation ?? mockMasterSelf.location);
   // Belgi faqat usta haqiqatan yurganda siljiydi
@@ -113,7 +115,7 @@ export default function MasterOrders() {
         <IconButton icon={SlidersHorizontal} label={t('mOrders.filters')} floating onPress={() => setFilters(true)} style={styles.round} />
       </View>
 
-      <View style={[styles.rightCol, { bottom: sheetH + 12 }]} pointerEvents="box-none">
+      <View style={[styles.rightCol, { bottom: (wide ? MAP_ATTRIBUTION_H : sheetH) + 12 }]} pointerEvents="box-none">
         <View style={[styles.zoom, shadow.float]}>
           <GlassBg radius={26} interactive />
           <Pressable accessibilityRole="button" accessibilityLabel={t('mOrders.zoomIn')} onPress={() => map.current?.zoomBy(1)} style={styles.zoomBtn}>

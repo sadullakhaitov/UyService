@@ -13,6 +13,7 @@ import { blur, distanceKm, type LatLng } from '@/lib/geo';
 import { formatSchedule, t } from '@/lib/i18n';
 import { firstSlot } from '@/lib/schedule';
 import { reverseGeocode } from '@/lib/location';
+import { MAP_ATTRIBUTION_H, useWide } from '@/lib/useLayout';
 import { estimateEtaMin } from '@/lib/routes';
 import { locateMe, useLocStatus, useMyLocation } from '@/lib/useMyLocation';
 import { mastersAround, mockMasters } from '@/mocks';
@@ -35,6 +36,7 @@ export default function ClientHome() {
   const me = useMyLocation();
   const locStatus = useLocStatus();
   const setLastLocation = useUser((s) => s.setLastLocation);
+  const wide = useWide();
   const userMoved = useRef(false);
 
   const around = useMemo(() => mastersAround(location).filter((m) => distanceKm(m.location, location) < 3), [location]);
@@ -149,7 +151,7 @@ export default function ClientHome() {
         label={t('client.address')}
         floating
         onPress={locate}
-        style={[styles.locate, { bottom: sheetH + 12 }]}
+        style={[styles.locate, { bottom: (wide ? MAP_ATTRIBUTION_H : sheetH) + 12 }]}
       />
 
       <Sheet onHeight={setSheetH} top={topH}>
