@@ -26,11 +26,31 @@ const rootLayout = pageLayout(['index', 'client', 'master']);
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-// Veb ko'rinishda brauzerning input atrofidagi chizig'ini o'chiramiz (fokus rangini o'zimiz beramiz)
-if (Platform.OS === 'web' && typeof document !== 'undefined') {
+// Veb ko'rinishda brauzerning input atrofidagi chizig'ini o'chiramiz (fokus rangini o'zimiz beramiz).
+// Brauzer raqam/ismni o'zi to'ldirganda (autofill) maydonni sariq yoki ko'k bo'yaydi — uni maydonning
+// o'z foni bilan yopamiz (ichki soya) va matn rangini joriy rejimdagidek qoldiramiz.
+// Fon: `dataSet={{ autofill: 'field' }}` berilgan maydon — colors.field, qolganlari — colors.surface
+const WEB = Platform.OS === 'web' && typeof document !== 'undefined';
+if (WEB) {
   const style = document.createElement('style');
-  style.textContent = 'input,textarea{outline:none}';
+  const fill = (bg: string) =>
+    `-webkit-text-fill-color:var(--uys-ink)!important;caret-color:var(--uys-ink);` +
+    `-webkit-box-shadow:0 0 0 1000px ${bg} inset!important;box-shadow:0 0 0 1000px ${bg} inset!important;` +
+    `transition:background-color 100000s ease-out 0s;`;
+  const auto = (sel: string) => ['', ':hover', ':focus', ':active'].map((s) => `${sel}:-webkit-autofill${s}`).join(',');
+  style.textContent =
+    'input,textarea{outline:none}' +
+    `${auto('input')},${auto('textarea')}{${fill('var(--uys-surface)')}}` +
+    `${auto('input[data-autofill="field"]')}{${fill('var(--uys-field)')}}`;
   document.head.appendChild(style);
+}
+// Autofill ranglari joriy rejimdan (kunduzgi / tungi)
+function applyWebColors() {
+  if (!WEB) return;
+  const root = document.documentElement.style;
+  root.setProperty('--uys-ink', colors.ink);
+  root.setProperty('--uys-surface', colors.surface);
+  root.setProperty('--uys-field', colors.field);
 }
 
 export default function RootLayout() {
@@ -66,10 +86,14 @@ export default function RootLayout() {
   const scheme = mode === 'system' ? (system === 'dark' ? 'dark' : 'light') : mode;
   // Birinchi chizishdan oldin — darhol; keyin — effekt orqali (ekranlar joyida qoladi, faqat ranglar almashadi)
   const mounted = useRef(false);
-  if (!mounted.current) setScheme(scheme);
+  if (!mounted.current) {
+    setScheme(scheme);
+    applyWebColors();
+  }
   useLayoutEffect(() => {
     mounted.current = true;
     setScheme(scheme);
+    applyWebColors();
   }, [scheme]);
 
   const ready = (loaded || !!error) && hydrated;

@@ -8,6 +8,9 @@ import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { sendCode } from '@/lib/auth';
 import { t } from '@/lib/i18n';
 
+// Brauzer: avtomatik to'ldirilganda maydon foni (colors.field) saqlanadi — app/_layout.tsx'dagi CSS
+const WEB_FIELD = { dataSet: { autofill: 'field' } } as object;
+
 // 90 123 45 67
 const format = (digits: string) =>
   [digits.slice(0, 2), digits.slice(2, 5), digits.slice(5, 7), digits.slice(7, 9)].filter(Boolean).join(' ');
@@ -76,8 +79,14 @@ export default function PhoneScreen() {
           placeholder="90 123 45 67"
           placeholderTextColor={colors.muted}
           value={format(digits)}
+          // Telefon/brauzer raqamni o'zi taklif qiladi; "+998 90 ..." ko'rinishida kelsa, 998 olib tashlanadi
+          autoComplete="tel"
+          textContentType="telephoneNumber"
+          {...WEB_FIELD}
           onChangeText={(v) => {
-            setDigits(v.replace(/\D/g, '').slice(0, 9));
+            let d = v.replace(/\D/g, '');
+            if (d.length > 9 && d.startsWith('998')) d = d.slice(3);
+            setDigits(d.slice(0, 9));
             setFailed(false);
           }}
           onFocus={() => setFocused(true)}
@@ -108,7 +117,8 @@ const styles = themed(() => ({
     paddingHorizontal: 16,
     gap: 12,
   },
-  fieldFocus: { borderColor: colors.primary, backgroundColor: colors.surface },
+  // Fokusda faqat hoshiya rangi o'zgaradi (fon bir xil — brauzer avtomatik to'ldirganda ham maydon toza ko'rinadi)
+  fieldFocus: { borderColor: colors.primary },
   prefix: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink },
   sep: { width: 1.5, height: 24, backgroundColor: colors.line },
   input: { flex: 1, fontFamily: fonts.bold, fontSize: 18, color: colors.ink, letterSpacing: 0.5, height: '100%', minWidth: 0 },

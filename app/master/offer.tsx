@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { Clock, MapPin, Navigation } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Divider, Row, Text } from '@/components/ui';
 import { CountdownRing } from '@/components/ui/CountdownRing';
@@ -24,6 +24,9 @@ export default function Offer() {
   useEffect(() => {
     if (!offer && !accepted.current) router.canGoBack() ? router.back() : router.replace('/master');
   }, [offer]);
+  // Past ekranlarda (telefon brauzeri — manzil satri va pastki panel joy egallaydi) — ixchamroq
+  const { height } = useWindowDimensions();
+  const compact = height < 760;
   if (!offer) return null;
 
   const cat = getCategory(offer.categoryId);
@@ -51,11 +54,12 @@ export default function Offer() {
         </View>
       </View>
 
-      <View style={styles.body}>
-        <CountdownRing seconds={left} label={t('offer.seconds')} onDone={decline} color={cat.main} />
+      {/* Kontent sig'masa — aylantiriladi (taymer belgini, tugmalar kartani to'smaydi) */}
+      <ScrollView style={styles.flex} contentContainerStyle={[styles.body, compact && styles.bodyCompact]} showsVerticalScrollIndicator={false}>
+        <CountdownRing seconds={left} size={compact ? 104 : 132} label={t('offer.seconds')} onDone={decline} color={cat.main} />
 
         <View style={styles.what}>
-          <View style={[styles.icon, { backgroundColor: cat.tint }]}>
+          <View style={[styles.icon, compact && styles.iconCompact, { backgroundColor: cat.tint }]}>
             <Icon size={30} color={cat.ink} strokeWidth={2} />
           </View>
           <Text variant="h1" style={styles.centerText}>
@@ -83,7 +87,7 @@ export default function Offer() {
           <Row label={t('offer.callFee')} value={formatSum(cat.callFee)} />
           <Row label={t('offer.estimate')} value={formatRange(problem?.priceMin ?? null, problem?.priceMax ?? null)} />
         </Card>
-      </View>
+      </ScrollView>
 
       <View style={styles.bottom}>
         <Button title={t('offer.accept')} big color={{ bg: cat.main, fg: cat.onMain }} onPress={accept} />
@@ -113,14 +117,16 @@ const styles = themed(() => ({
   newBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.accentSoft, paddingHorizontal: 14, height: 34, borderRadius: 17 },
   newDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
   newText: { fontFamily: fonts.heavy, fontSize: 14, color: colors.accentInk },
-  body: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20, gap: 18 },
+  body: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20, paddingVertical: 16, gap: 18 },
+  bodyCompact: { gap: 12, paddingVertical: 10 },
   what: { alignItems: 'center', gap: 8 },
   icon: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  iconCompact: { width: 52, height: 52, borderRadius: 16 },
   centerText: { textAlign: 'center' },
   chips: { flexDirection: 'row', gap: 10 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.primarySoft },
   metaText: { fontFamily: fonts.bold, fontSize: 14, color: colors.primary },
   card: { alignSelf: 'stretch', borderRadius: radius.card },
   addr: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  bottom: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
+  bottom: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 12, gap: 10, backgroundColor: colors.surface },
 }));
