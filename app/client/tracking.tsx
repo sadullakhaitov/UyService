@@ -8,15 +8,18 @@ import { MOVE_INTERVAL_MS } from '@/components/map/types';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, Button, RatingBadge, Squish, Text } from '@/components/ui';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
-import { estimateEtaMin, routeLengthKm } from '@/lib/routes';
+import { routeLengthKm } from '@/lib/routes';
 import { t } from '@/lib/i18n';
-import { mockMasters, mockRoute } from '@/mocks';
+import { buildRoute, mastersAround } from '@/mocks';
 import { useOrder, type OrderStatus } from '@/store';
 
 export default function Tracking() {
   const insets = useSafeAreaInsets();
   const { masterId, location, categoryId, status, setStatus, reset } = useOrder();
-  const master = mockMasters.find((m) => m.id === masterId) ?? mockMasters[0];
+  const masters = useMemo(() => mastersAround(location), [location]);
+  const master = masters.find((m) => m.id === masterId) ?? masters[0];
+  // Soxta yo'l: tayinlangan ustaning joyidan mijoz manziligacha
+  const mockRoute = useMemo(() => buildRoute(master.location, location), [master.id, location]); // eslint-disable-line react-hooks/exhaustive-deps
   const [sheetH, setSheetH] = useState(460);
   const [i, setI] = useState(0);
 
@@ -41,8 +44,8 @@ export default function Tracking() {
   }, [status, setStatus]);
 
   const remaining = mockRoute.slice(i);
-  const eta = Math.max(1, Math.round((routeLengthKm(remaining) / 22) * 60) || estimateEtaMin(mockRoute[i], location));
-  const fitTo = useMemo(() => [mockRoute[Math.floor(i / 4) * 4], location], [Math.floor(i / 4)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const eta = Math.max(1, Math.round((routeLengthKm(remaining) / 22) * 60));
+  const fitTo = useMemo(() => [mockRoute[Math.floor(i / 4) * 4], location], [Math.floor(i / 4), mockRoute]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const label: Record<string, { text: string; color: string }> = {
     on_the_way: { text: t('tracking.found'), color: colors.success },

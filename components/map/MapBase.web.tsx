@@ -85,7 +85,7 @@ export function MapBase({
     const zy = Math.log2(((availH * COS) / Math.max(maxLat - minLat, 1e-4)) * (360 / 256));
     return animateTo({ lat: (minLat + maxLat) / 2, lng: (minLng + maxLng) / 2, zoom: Math.min(17, zx, zy) }, 900);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitKey, size.w, size.h]);
+  }, [fitKey, size.w, size.h, insets.top, insets.bottom]);
 
   // Fokus nuqtasi (panellar orasidagi bo'shliq markazi)
   const fx = size.w / 2;

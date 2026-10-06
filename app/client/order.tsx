@@ -32,7 +32,7 @@ export default function OrderScreen() {
     <SafeAreaView edges={['top']} style={styles.root}>
       <ScreenHeader kicker={t('order.category')} title={t(`categories.${categoryId}`)} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.section}>
             <Text variant="h3">{t('order.problemTitle')}</Text>
             <View style={styles.chips}>

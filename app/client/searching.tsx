@@ -9,7 +9,7 @@ import { getCategory } from '@/constants/categories';
 import { colors } from '@/constants/theme';
 import { blur, distanceKm } from '@/lib/geo';
 import { formatSum, t } from '@/lib/i18n';
-import { mockMasters } from '@/mocks';
+import { mastersAround } from '@/mocks';
 import { useOrder } from '@/store';
 
 // Soxta dispatch: 3 → 6 → 10 km radiusda qidiradi; 7-bosqichda Supabase Edge Function'ga almashadi
@@ -27,12 +27,12 @@ export default function Searching() {
 
   const candidates = useMemo(
     () =>
-      mockMasters
+      mastersAround(location)
         .filter((m) => m.categories.includes(categoryId))
         .sort((a, b) => (a.id === preferredMasterId ? -1 : b.id === preferredMasterId ? 1 : distanceKm(a.location, location) - distanceKm(b.location, location))),
     [categoryId, location, preferredMasterId],
   );
-  const nearby = useMemo(() => mockMasters.map((m) => blur(m.location)), []);
+  const nearby = useMemo(() => mastersAround(location).map((m) => blur(m.location)), [location]);
 
   useEffect(() => {
     setNone(false);

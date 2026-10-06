@@ -143,3 +143,33 @@ export const mockOffer = {
   distanceKm: 1.8,
   etaMin: 12,
 };
+
+// Soxta ustalar har doim mijoz tanlagan manzil atrofida chiqadi
+// (asl joylashuvlar — standart manzilga nisbatan siljish sifatida olinadi)
+export function mastersAround(center: LatLng): MockMaster[] {
+  const dLat = center.latitude - mockClient.location.latitude;
+  const dLng = center.longitude - mockClient.location.longitude;
+  return mockMasters.map((m) => ({
+    ...m,
+    location: { latitude: m.location.latitude + dLat, longitude: m.location.longitude + dLng },
+  }));
+}
+
+// Ustadan mijozgacha ko'chalar bo'ylab (avval shimol–janub, keyin sharq–g'arb) soxta yo'l.
+// Har bir nuqta — 5 s dagi bitta GPS yangilanishi (demo uchun tezlashtirilgan: ~120 m)
+export function buildRoute(from: LatLng, to: LatLng, stepM = 120): LatLng[] {
+  const corner = { latitude: to.latitude, longitude: from.longitude };
+  const out: LatLng[] = [];
+  const leg = (a: LatLng, b: LatLng) => {
+    const m = Math.hypot((b.latitude - a.latitude) * 111_000, (b.longitude - a.longitude) * 83_500);
+    const n = Math.max(1, Math.round(m / stepM));
+    for (let i = 0; i < n; i++) {
+      const k = i / n;
+      out.push({ latitude: a.latitude + (b.latitude - a.latitude) * k, longitude: a.longitude + (b.longitude - a.longitude) * k });
+    }
+  };
+  leg(from, corner);
+  leg(corner, to);
+  out.push(to);
+  return out;
+}

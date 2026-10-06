@@ -1,6 +1,6 @@
 // Haqiqiy xarita (Android/iOS). Veb uchun: MapBase.web.tsx
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
+import { Animated, Easing, Keyboard, Platform, StyleSheet, View } from 'react-native';
 import MapView, { AnimatedRegion, Marker, MarkerAnimated, PROVIDER_GOOGLE, type Camera } from 'react-native-maps';
 import { colors } from '@/constants/theme';
 import { bearing, type LatLng } from '@/lib/geo';
@@ -66,7 +66,7 @@ export function MapBase({
   useEffect(() => {
     if (ready.current) fit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitKey]);
+  }, [fitKey, insets.top, insets.bottom]);
 
   return (
     <View style={StyleSheet.absoluteFill}>
@@ -85,6 +85,7 @@ export function MapBase({
         toolbarEnabled={false}
         pitchEnabled={false}
         rotateEnabled={false}
+        onPress={() => Keyboard.dismiss()}
         onPanDrag={() => {
           if (!dragging.current) {
             dragging.current = true;

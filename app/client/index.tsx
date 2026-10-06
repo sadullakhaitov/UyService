@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { ChevronRight, LocateFixed, MapPin, ReceiptText, Search, User } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { Keyboard, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CenterPin, MapBase } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
@@ -11,7 +12,7 @@ import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { blur, distanceKm, type LatLng } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { getCurrentLocation, reverseGeocode } from '@/lib/location';
-import { mockMasters, TASHKENT_CENTER } from '@/mocks';
+import { mastersAround, mockMasters, TASHKENT_CENTER } from '@/mocks';
 import { useOrder, useUser } from '@/store';
 
 export default function ClientHome() {
@@ -24,7 +25,7 @@ export default function ClientHome() {
   const [center, setCenter] = useState<LatLng>(location);
 
   const nearby = useMemo(
-    () => mockMasters.filter((m) => distanceKm(m.location, location) < 3).map((m) => blur(m.location)),
+    () => mastersAround(location).filter((m) => distanceKm(m.location, location) < 3).map((m) => blur(m.location)),
     [location],
   );
 
@@ -69,7 +70,10 @@ export default function ClientHome() {
         flyFrom={TASHKENT_CENTER}
         insets={{ top: topH, bottom: sheetH }}
         nearby={nearby}
-        onMoveStart={() => setMoving(true)}
+        onMoveStart={() => {
+          Keyboard.dismiss();
+          setMoving(true);
+        }}
         onMoveEnd={onMoveEnd}
         overlay={<CenterPin lifted={moving} />}
       />
@@ -111,7 +115,7 @@ export default function ClientHome() {
 
         <View style={styles.search}>
           <Search size={20} color={colors.ink2} strokeWidth={2.2} />
-          <TextInput
+          <BottomSheetTextInput
             value={query}
             onChangeText={setQuery}
             placeholder={t('client.searchPlaceholder')}

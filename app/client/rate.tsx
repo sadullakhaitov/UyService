@@ -45,7 +45,7 @@ export default function Rate() {
         </SafeAreaView>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <Card>
           <Row label={t('rate.callFee')} value={formatSum(fee)} />
           <Row label={t('rate.work', { problem: t(`problems.${problemId}`) })} value={formatSum(WORK)} />

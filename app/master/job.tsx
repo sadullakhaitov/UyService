@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { MapPin, Phone } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Linking, StyleSheet, TextInput, View } from 'react-native';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { Linking, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase } from '@/components/map';
 import { MOVE_INTERVAL_MS } from '@/components/map/types';
@@ -114,7 +115,7 @@ function PriceInput({ label, value, onChange }: { label: string; value: string; 
       <Text variant="small" style={styles.flex}>
         {label}
       </Text>
-      <TextInput
+      <BottomSheetTextInput
         accessibilityLabel={label}
         value={value}
         onChangeText={(v) => onChange(v.replace(/\D/g, ''))}
