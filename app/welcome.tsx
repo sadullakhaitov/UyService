@@ -45,7 +45,7 @@ export default function Welcome() {
           );
         })}
         <Bubble index={6} style={styles.center}>
-          <LogoMark size={64} light />
+          <LogoMark size={70} />
         </Bubble>
       </View>
 
@@ -83,7 +83,7 @@ const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.surface, paddingHorizontal: 20 },
   art: { width: 320, height: 300, alignSelf: 'center', marginTop: 24 },
   bubble: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
-  center: { left: 106, top: 96, width: 108, height: 108, borderRadius: 54, backgroundColor: colors.primary },
+  center: { left: 106, top: 96, width: 108, height: 108, borderRadius: 54, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   texts: { alignItems: 'center', gap: 10, marginTop: 20 },
   title: { fontFamily: fonts.heavy, fontSize: 30, color: colors.ink, textAlign: 'center' },
   choose: { color: colors.ink, fontFamily: fonts.medium },

@@ -8,7 +8,7 @@ Quyida asl TZ + keyin qabul qilingan qarorlar.
 | Savol | Qaror |
 |---|---|
 | Platforma nomi | **UyService**, domen **uyservice.uz** ("UstaTop" o'rniga) |
-| Logotip | Hozircha yo'q — vaqtinchalik belgi `components/ui/Logo.tsx` (uy tomi + kalit). Haqiqiy logo kelganda faqat shu fayl almashadi |
+| Logotip | **To'rtta yaltiroq rangli kvadrat** (ko'k, yashil, pushti, to'q sariq). Ilova ichida — `assets/logo.png` (shaffof fon, `components/ui/Logo.tsx` → `LogoMark`); ilova ikonkasi — `assets/icon.png`; Android — `android-icon-foreground/background/monochrome.png`; ochilish ekrani — `splash-icon.png` (kunduzgi oq, tungi to'q fon); brauzer — `favicon.png`. Hammasi bitta asl rasmdan yasalgan |
 | Chaqiruv narxi | **50 000 so'm**, hamma kategoriya uchun bir xil — `constants/categories.ts` → `CALL_FEE` |
 | Komissiya yoki obuna | **Usta o'zi tanlaydi**: oylik obuna YOKI komissiya. Ro'yxatdan o'tishda `master/plan` ekrani, keyin "Daromad" → "Tarifni o'zgartirish". Narx/foiz: `constants/billing.ts` (⚠️ 149 000 so'm/oy va 10% — hali tasdiqlanmagan) |
 
