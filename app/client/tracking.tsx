@@ -12,7 +12,8 @@ import { bboxCorners } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { etaMin } from '@/lib/orderSimulator';
 import { mastersAround } from '@/mocks';
-import { useActiveOrder, useChats, useOrders } from '@/store';
+import { CancelSheet, CLIENT_REASONS } from '@/components/sheets/CancelSheet';
+import { useActiveOrder, useChats, useHistory, useOrders } from '@/store';
 
 export default function Tracking() {
   const insets = useSafeAreaInsets();
@@ -23,6 +24,8 @@ export default function Tracking() {
   const ensureChat = useChats((s) => s.ensure);
   const unread = useChats((s) => s.chats.find((c) => c.id === `order-${id}`)?.unread ?? 0);
   const [sheetH, setSheetH] = useState(460);
+  const [cancelling, setCancelling] = useState(false);
+  const addHistory = useHistory((s) => s.add);
 
   const location = order?.location;
   const masters = useMemo(() => (location ? mastersAround(location) : []), [location]);
@@ -51,10 +54,24 @@ export default function Tracking() {
   const s = label[status] ?? label.on_the_way;
   const onWay = status === 'on_the_way' || status === 'assigned';
 
-  const cancel = () => {
+  // Usta yo'lga chiqqan — sabab so'raladi va tarixga yoziladi (5-bosqichda ustaga ham xabar boradi)
+  const cancel = (reason: string) => {
+    setCancelling(false);
+    addHistory({
+      id: order.id,
+      categoryId: order.categoryId,
+      problemId: order.problemId,
+      masterId: order.masterId,
+      at: Date.now(),
+      price: 0,
+      status: 'cancelled',
+      address: order.address,
+      cancelReason: reason,
+    });
     remove(order.id);
     router.replace('/client');
   };
+  const openMaster = () => router.push(`/client/master?id=${master.id}&cat=${order.categoryId}`);
 
   return (
     <View style={styles.root}>
@@ -116,11 +133,11 @@ export default function Tracking() {
 
         <View style={styles.works}>
           {[0, 1, 2].map((k) => (
-            <View key={k} style={styles.work} accessibilityLabel={t('tracking.workPhoto')}>
+            <Squish key={k} accessibilityRole="button" accessibilityLabel={t('tracking.workPhoto')} onPress={openMaster} style={styles.work}>
               <ImageIcon size={22} color={colors.muted} strokeWidth={1.8} />
-            </View>
+            </Squish>
           ))}
-          <Squish accessibilityRole="button" style={styles.reviews}>
+          <Squish accessibilityRole="button" onPress={openMaster} style={styles.reviews}>
             <Text style={styles.reviewsText}>{t('tracking.reviews')}</Text>
           </Squish>
         </View>
@@ -145,7 +162,7 @@ export default function Tracking() {
         </View>
 
         <View style={styles.row}>
-          {onWay ? <Button title={t('common.cancel')} kind="secondary" onPress={cancel} style={styles.flex} /> : null}
+          {onWay ? <Button title={t('common.cancel')} kind="secondary" onPress={() => setCancelling(true)} style={styles.flex} /> : null}
           {status === 'in_progress' || status === 'arrived' ? (
             <Button
               title={t('common.demoNext')}
@@ -164,6 +181,14 @@ export default function Tracking() {
           <Text style={styles.anotherText}>{t('tracking.another')}</Text>
         </Squish>
       </Sheet>
+
+      <CancelSheet
+        visible={cancelling}
+        reasons={CLIENT_REASONS}
+        warning={t('cancel.clientWarning')}
+        onClose={() => setCancelling(false)}
+        onConfirm={cancel}
+      />
     </View>
   );
 }

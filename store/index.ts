@@ -6,7 +6,7 @@ import type { BillingPlan } from '@/constants/billing';
 import type { CategoryId } from '@/constants/categories';
 import type { LatLng } from '@/lib/geo';
 import { startDispatch, type DispatchState } from '@/lib/dispatch';
-import { mockChats, mockClient, mockFavorites, mockMasterSelf } from '@/mocks';
+import { mockChats, mockClient, mockFavorites, mockHistory, mockMasterSelf, type HistoryItem } from '@/mocks';
 
 export type Role = 'client' | 'master';
 
@@ -27,11 +27,14 @@ type UserState = {
   language: Lang | null;
   /** Bo'sh — ro'yxatdan o'tmagan (mehmon). Ro'yxatdan faqat usta chaqirganda o'tiladi */
   phone: string;
+  /** Mijozning ismi (ixtiyoriy) — usta buyurtmada shu ismni ko'radi */
+  name: string;
   role: Role | null;
   billingPlan: BillingPlan | null;
   favorites: string[];
   setLanguage: (lang: Lang) => void;
   setPhone: (phone: string) => void;
+  setName: (name: string) => void;
   setRole: (role: Role) => void;
   setBillingPlan: (plan: BillingPlan) => void;
   toggleFavorite: (masterId: string, on?: boolean) => void;
@@ -43,11 +46,13 @@ export const useUser = create<UserState>()(
     (set) => ({
   language: null,
   phone: '',
+  name: '',
   role: null,
   billingPlan: null,
   favorites: mockFavorites,
   setLanguage: (language) => set({ language }),
   setPhone: (phone) => set({ phone }),
+  setName: (name) => set({ name }),
   setRole: (role) => set({ role }),
   setBillingPlan: (billingPlan) => set({ billingPlan }),
   toggleFavorite: (id, on) =>
@@ -334,3 +339,15 @@ export const useOrders = create<OrdersState>((set) => ({
 }));
 
 export const useActiveOrder = (id: string | undefined) => useOrders((s) => s.orders.find((o) => o.id === id));
+
+/** Buyurtmalar tarixi: yakunlangan va bekor qilingan buyurtmalar, qo'yilgan baho (telefonda saqlanadi; 5-bosqichda orders + reviews) */
+type HistoryState = { items: HistoryItem[]; add: (item: HistoryItem) => void };
+export const useHistory = create<HistoryState>()(
+  persist(
+    (set) => ({
+      items: mockHistory,
+      add: (item) => set((s) => ({ items: [item, ...s.items.filter((x) => x.id !== item.id)] })),
+    }),
+    { name: 'uyservice-history', storage: createJSONStorage(() => AsyncStorage) },
+  ),
+);

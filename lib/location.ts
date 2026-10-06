@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import type { LatLng } from './geo';
+import { yandexReverse } from './yandex';
 
 // Joriy joylashuv; ruxsat bo'lmasa yoki xato bo'lsa — null (ilova soxta manzil bilan davom etadi)
 export async function getCurrentLocation(): Promise<LatLng | null> {
@@ -13,8 +14,10 @@ export async function getCurrentLocation(): Promise<LatLng | null> {
   }
 }
 
-// Koordinatadan manzil matni
+// Koordinatadan manzil matni: Yandex (kalit bo'lsa), aks holda telefonning o'z xizmati
 export async function reverseGeocode(p: LatLng): Promise<string | null> {
+  const ya = await yandexReverse(p);
+  if (ya) return ya;
   try {
     const [r] = await Location.reverseGeocodeAsync(p);
     if (!r) return null;

@@ -38,7 +38,12 @@
     "roleMaster": "I'm a handyman",
     "roleMasterHint": "Get orders and earn",
     "loginToOrder": "Confirm your number to call a handyman",
-    "loginToMaster": "Confirm your number to work as a handyman"
+    "loginToMaster": "Confirm your number to work as a handyman",
+    "codeWrong": "Wrong code. Please try again",
+    "sendFailed": "Could not send the code. Check your internet and try again",
+    "termsBefore": "By continuing you agree to the ",
+    "termsAnd": " and the ",
+    "termsAfter": ""
   },
   "categories": {
     "plumber": "Plumber",
@@ -163,7 +168,8 @@
     "again": "Call again",
     "empty": "No orders yet",
     "statusCompleted": "Completed",
-    "statusCancelled": "Cancelled"
+    "statusCancelled": "Cancelled",
+    "noMaster": "No handyman assigned"
   },
   "master": {
     "online": "Online",
@@ -341,7 +347,8 @@
     "beMaster": "Work as a handyman",
     "beMasterHint": "Get orders and earn",
     "language": "Language",
-    "logout": "Log out"
+    "logout": "Log out",
+    "namePlaceholder": "Your name"
   },
   "address": {
     "title": "Find address",
@@ -447,5 +454,49 @@
   "settings": {
     "notifications": "Notifications",
     "notificationsHint": "Your phone will alert you about new orders"
+  },
+  "cancel": {
+    "title": "Why are you cancelling?",
+    "reasonLabel": "Cancelled",
+    "confirm": "Cancel the order",
+    "keep": "Go back",
+    "masterBtn": "Drop this order",
+    "clientWarning": "The handyman is already on the way. Frequent cancellations slow down future searches.",
+    "masterWarning": "Activity drops by {{n}} points and the order goes to another handyman. Call the client first.",
+    "reasons": {
+      "changedMind": "Changed my mind",
+      "tooLong": "The handyman is taking too long",
+      "foundOther": "Found another handyman",
+      "wrongAddress": "Wrong address",
+      "other": "Other reason",
+      "clientNoAnswer": "The client does not answer",
+      "tooFar": "Too far away",
+      "emergency": "Emergency (car broke down etc.)",
+      "wrongProblem": "Different problem, I cannot do it"
+    }
+  },
+  "reviews": {
+    "title": "About the handyman",
+    "you": "You",
+    "count": "{{n}} reviews",
+    "jobs": "jobs done",
+    "onTime": "on time",
+    "praised": "Most praised for",
+    "empty": "No reviews yet"
+  },
+  "offline": {
+    "title": "No internet",
+    "text": "Everything resumes once you are back online",
+    "cantOrder": "You need internet to call a handyman. Turn on Wi-Fi or mobile data."
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "text": "We have been notified. Please try again.",
+    "retry": "Try again"
+  },
+  "legal": {
+    "section": "Documents",
+    "terms": "Terms of use",
+    "privacy": "Privacy policy"
   }
 }

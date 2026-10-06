@@ -2,13 +2,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 import { CalendarClock, Camera, MapPin, ShieldCheck, X } from 'lucide-react-native';
-import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Divider, Row, ScreenHeader, Squish, Text } from '@/components/ui';
 import { getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { formatDay, formatRange, formatSchedule, formatSum, formatTime, t } from '@/lib/i18n';
 import { askNotifications } from '@/lib/notify';
+import { isOnline } from '@/lib/useOnline';
 import { DAYS_AHEAD, dayOffsetOf, slotsFor } from '@/lib/schedule';
 import { useOrder, useOrders, useUser } from '@/store';
 
@@ -29,7 +30,12 @@ export default function OrderScreen() {
     if (!res.canceled) setDraft({ photos: [...photos, ...res.assets.map((a) => a.uri)].slice(0, MAX_PHOTOS) });
   };
 
-  const submit = () => {
+  const submit = async () => {
+    // Internet yo'q — buyurtma ustaga yetib bormaydi
+    if (!(await isOnline())) {
+      Alert.alert(t('offline.title'), t('offline.cantOrder'));
+      return;
+    }
     // Ro'yxatdan faqat shu yerda o'tiladi: mijoz hamma narsani tanlab bo'lgach
     if (!phone) {
       router.push('/phone?next=order');

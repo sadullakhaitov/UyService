@@ -5,16 +5,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, RatingBadge, ScreenHeader, Squish, Text } from '@/components/ui';
 import { getCategory } from '@/constants/categories';
 import { colors, fonts, radius } from '@/constants/theme';
-import { formatSum, t } from '@/lib/i18n';
-import { mockHistory, mockMasters } from '@/mocks';
-import { useOrder } from '@/store';
+import type { CategoryId } from '@/constants/categories';
+import { formatDate, formatSum, t } from '@/lib/i18n';
+import { mockMasters } from '@/mocks';
+import { useHistory, useOrder } from '@/store';
 
 export default function History() {
   const { reset, setDraft } = useOrder();
+  const items = useHistory((s) => s.items);
 
-  const again = (categoryId: (typeof mockHistory)[number]['categoryId'], problemId: string, masterId: string) => {
+  const again = (categoryId: CategoryId, problemId: string, masterId: string | null) => {
     reset();
-    setDraft({ categoryId, problemId, preferredMasterId: masterId });
+    setDraft({ categoryId, problemId, preferredMasterId: masterId, scheduledAt: null });
     router.push('/client/order');
   };
 
@@ -22,12 +24,12 @@ export default function History() {
     <SafeAreaView edges={['top']} style={styles.root}>
       <ScreenHeader title={t('history.title')} />
       <FlatList
-        data={mockHistory}
+        data={items}
         keyExtractor={(o) => o.id}
         contentContainerStyle={styles.list}
         ListEmptyComponent={<Text variant="small">{t('history.empty')}</Text>}
         renderItem={({ item }) => {
-          const m = mockMasters.find((x) => x.id === item.masterId)!;
+          const m = mockMasters.find((x) => x.id === item.masterId);
           const c = getCategory(item.categoryId);
           const Icon = c.icon;
           const done = item.status === 'completed';
@@ -41,7 +43,10 @@ export default function History() {
                   <Text variant="bodyBold">
                     {t(`categories.${item.categoryId}`)} · {t(`problems.${item.problemId}`)}
                   </Text>
-                  <Text variant="caption">{item.date}</Text>
+                  <Text variant="caption" numberOfLines={1}>
+                    {formatDate(new Date(item.at))}
+                    {item.address ? ` · ${item.address}` : ''}
+                  </Text>
                 </View>
                 <View style={[styles.badge, { backgroundColor: done ? colors.successSoft : colors.field }]}>
                   <Text style={[styles.badgeText, { color: done ? colors.success : colors.ink2 }]}>
@@ -49,14 +54,19 @@ export default function History() {
                   </Text>
                 </View>
               </View>
+              {item.comment || item.cancelReason ? (
+                <Text variant="small" style={styles.note} numberOfLines={2}>
+                  {item.cancelReason ? `${t('cancel.reasonLabel')}: ${t(`cancel.reasons.${item.cancelReason}`)}` : `“${item.comment}”`}
+                </Text>
+              ) : null}
               <View style={styles.bottom}>
-                <Avatar initials={m.initials} size={34} />
+                {m ? <Avatar initials={m.initials} size={34} /> : null}
                 <View style={styles.flex}>
-                  <Text style={styles.name}>{m.name}</Text>
+                  <Text style={styles.name}>{m?.name ?? t('history.noMaster')}</Text>
                   {done ? <Text variant="caption">{formatSum(item.price)}</Text> : null}
                 </View>
                 {item.stars ? <RatingBadge value={item.stars} /> : null}
-                <Squish accessibilityRole="button" onPress={() => again(item.categoryId, item.problemId, m.id)} style={styles.again}>
+                <Squish accessibilityRole="button" onPress={() => again(item.categoryId, item.problemId, m?.id ?? null)} style={styles.again}>
                   <RotateCcw size={16} color={colors.primary} strokeWidth={2.4} />
                   <Text style={styles.againText}>{t('history.again')}</Text>
                 </Squish>
@@ -80,6 +90,7 @@ const styles = StyleSheet.create({
   badgeText: { fontFamily: fonts.bold, fontSize: 12 },
   bottom: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.line },
   name: { fontFamily: fonts.bold, fontSize: 14, color: colors.ink },
+  note: { color: colors.ink, fontStyle: 'italic' },
   again: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.primarySoft },
   againText: { fontFamily: fonts.bold, fontSize: 13, color: colors.primary },
 });

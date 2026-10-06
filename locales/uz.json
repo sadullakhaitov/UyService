@@ -38,7 +38,12 @@
     "roleMaster": "Men ustaman",
     "roleMasterHint": "Buyurtma olish va daromad qilish",
     "loginToOrder": "Usta chaqirish uchun raqamingizni tasdiqlang",
-    "loginToMaster": "Usta bo'lib ishlash uchun raqamingizni tasdiqlang"
+    "loginToMaster": "Usta bo'lib ishlash uchun raqamingizni tasdiqlang",
+    "codeWrong": "Kod noto'g'ri. Qayta kiriting",
+    "sendFailed": "Kod yuborilmadi. Internetni tekshirib, qayta urinib ko'ring",
+    "termsBefore": "Davom etish orqali ",
+    "termsAnd": " va ",
+    "termsAfter": " bilan rozilik bildirasiz"
   },
   "categories": {
     "plumber": "Santexnik",
@@ -163,7 +168,8 @@
     "again": "Qayta chaqirish",
     "empty": "Hali buyurtma yo'q",
     "statusCompleted": "Bajarildi",
-    "statusCancelled": "Bekor qilingan"
+    "statusCancelled": "Bekor qilingan",
+    "noMaster": "Usta biriktirilmagan"
   },
   "master": {
     "online": "Onlayn",
@@ -341,7 +347,8 @@
     "beMaster": "Usta bo'lib ishlash",
     "beMasterHint": "Buyurtma oling va daromad qiling",
     "language": "Til",
-    "logout": "Chiqish"
+    "logout": "Chiqish",
+    "namePlaceholder": "Ismingiz"
   },
   "address": {
     "title": "Manzilni qidirish",
@@ -447,5 +454,49 @@
   "settings": {
     "notifications": "Bildirishnomalar",
     "notificationsHint": "Yangi buyurtma kelganda telefon xabar beradi"
+  },
+  "cancel": {
+    "title": "Nega bekor qilyapsiz?",
+    "reasonLabel": "Bekor qilindi",
+    "confirm": "Buyurtmani bekor qilish",
+    "keep": "Ortga",
+    "masterBtn": "Buyurtmadan voz kechish",
+    "clientWarning": "Usta allaqachon yo'lga chiqqan. Tez-tez bekor qilish keyingi buyurtmalarda usta topishni sekinlashtiradi.",
+    "masterWarning": "Aktivlik {{n}} ballga tushadi va buyurtma boshqa ustaga o'tadi. Mijozga oldin qo'ng'iroq qiling.",
+    "reasons": {
+      "changedMind": "Fikrim o'zgardi",
+      "tooLong": "Usta juda uzoq kelyapti",
+      "foundOther": "Boshqa usta topdim",
+      "wrongAddress": "Manzil noto'g'ri ko'rsatilgan",
+      "other": "Boshqa sabab",
+      "clientNoAnswer": "Mijoz javob bermayapti",
+      "tooFar": "Juda uzoq ekan",
+      "emergency": "Favqulodda holat (mashina buzildi va h.k.)",
+      "wrongProblem": "Muammo boshqacha, men qila olmayman"
+    }
+  },
+  "reviews": {
+    "title": "Usta haqida",
+    "you": "Siz",
+    "count": "{{n}} ta sharh",
+    "jobs": "bajarilgan ish",
+    "onTime": "vaqtida kelgan",
+    "praised": "Mijozlar ko'proq maqtagan",
+    "empty": "Hali sharh yo'q"
+  },
+  "offline": {
+    "title": "Internet yo'q",
+    "text": "Ulanish tiklanishi bilan hammasi davom etadi",
+    "cantOrder": "Usta chaqirish uchun internet kerak. Wi-Fi yoki mobil internetni yoqing."
+  },
+  "errors": {
+    "title": "Nimadir noto'g'ri ketdi",
+    "text": "Xato haqida xabar oldik. Qayta urinib ko'ring.",
+    "retry": "Qayta urinish"
+  },
+  "legal": {
+    "section": "Hujjatlar",
+    "terms": "Foydalanish shartlari",
+    "privacy": "Maxfiylik siyosati"
   }
 }

@@ -5,6 +5,7 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts, radius } from '@/constants/theme';
+import { sendCode } from '@/lib/auth';
 import { t } from '@/lib/i18n';
 
 // 90 123 45 67
@@ -15,11 +16,23 @@ export default function PhoneScreen() {
   const [digits, setDigits] = useState('');
   const [focused, setFocused] = useState(false);
   const { next } = useLocalSearchParams<{ next?: string }>();
+  const [sending, setSending] = useState(false);
+  const [failed, setFailed] = useState(false);
   const ready = digits.length === 9;
 
-  const submit = () => {
-    if (!ready) return;
-    router.push({ pathname: '/code', params: { phone: `+998 ${format(digits)}`, next: next ?? '' } });
+  // SMS kod yuboriladi (Supabase sozlanmagan bo'lsa — soxta), keyin kod ekrani
+  const submit = async () => {
+    if (!ready || sending) return;
+    setSending(true);
+    setFailed(false);
+    const phone = `+998 ${format(digits)}`;
+    const res = await sendCode(phone);
+    setSending(false);
+    if (!res.ok) {
+      setFailed(true);
+      return;
+    }
+    router.push({ pathname: '/code', params: { phone, next: next ?? '' } });
   };
 
   return (
@@ -27,9 +40,17 @@ export default function PhoneScreen() {
       compact={Boolean(next)}
       footer={
         <>
-          <Button title={t('auth.getCode')} big disabled={!ready} onPress={submit} />
+          <Button title={t('auth.getCode')} big disabled={!ready} loading={sending} onPress={submit} />
           <Text variant="caption" style={styles.terms}>
-            {t('auth.terms')}
+            {t('auth.termsBefore')}
+            <Text variant="caption" style={styles.link} onPress={() => router.push('/legal/terms')}>
+              {t('legal.terms')}
+            </Text>
+            {t('auth.termsAnd')}
+            <Text variant="caption" style={styles.link} onPress={() => router.push('/legal/privacy')}>
+              {t('legal.privacy')}
+            </Text>
+            {t('auth.termsAfter')}
           </Text>
         </>
       }
@@ -51,13 +72,21 @@ export default function PhoneScreen() {
           placeholder="90 123 45 67"
           placeholderTextColor={colors.muted}
           value={format(digits)}
-          onChangeText={(v) => setDigits(v.replace(/\D/g, '').slice(0, 9))}
+          onChangeText={(v) => {
+            setDigits(v.replace(/\D/g, '').slice(0, 9));
+            setFailed(false);
+          }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onSubmitEditing={submit}
           style={styles.input}
         />
       </View>
+      {failed ? (
+        <Text variant="small" style={styles.error}>
+          {t('auth.sendFailed')}
+        </Text>
+      ) : null}
     </AuthShell>
   );
 }
@@ -80,4 +109,6 @@ const styles = StyleSheet.create({
   sep: { width: 1.5, height: 24, backgroundColor: colors.line },
   input: { flex: 1, fontFamily: fonts.bold, fontSize: 18, color: colors.ink, letterSpacing: 0.5, height: '100%' },
   terms: { textAlign: 'center' },
+  link: { color: colors.primary, textDecorationLine: 'underline' },
+  error: { color: colors.danger },
 });

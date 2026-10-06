@@ -1,0 +1,44 @@
+# Supabase CLI sozlamalari (npx supabase ...). Haqiqiy loyiha sozlamalari — Dashboard'da.
+project_id = "uyservice"
+
+[api]
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+
+[db]
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+file_size_limit = "10MiB"
+
+[auth]
+enabled = true
+site_url = "https://uyservice.uz"
+
+[auth.sms]
+# Telefon + SMS kod bilan kirish. SMS'ni "Send SMS hook" (functions/send-sms → Eskiz.uz) yuboradi
+enable_signup = true
+enable_confirmations = false
+template = "UyService kodi: {{ .Code }}"
+max_frequency = "60s"
+
+# Edge Function'lar foydalanuvchini o'zlari tekshiradi (Authorization yoki x-cron-secret / webhook imzosi)
+[functions.dispatch]
+verify_jwt = false
+
+[functions.offer-respond]
+verify_jwt = false
+
+[functions.offer-timeout]
+verify_jwt = false
+
+[functions.send-sms]
+verify_jwt = false

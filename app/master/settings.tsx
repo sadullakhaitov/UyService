@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Bell, LogOut } from 'lucide-react-native';
+import { Bell, ChevronRight, LogOut } from 'lucide-react-native';
 import { ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Squish, Text } from '@/components/ui';
@@ -39,6 +39,16 @@ export default function Settings() {
 
         <Text style={styles.section}>{t('account.language')}</Text>
         <LanguagePicker />
+
+        <Text style={styles.section}>{t('legal.section')}</Text>
+        <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/legal/terms')} style={styles.row}>
+          <Text style={[styles.label, styles.flex]}>{t('legal.terms')}</Text>
+          <ChevronRight size={20} color={colors.ink} />
+        </Squish>
+        <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/legal/privacy')} style={styles.row}>
+          <Text style={[styles.label, styles.flex]}>{t('legal.privacy')}</Text>
+          <ChevronRight size={20} color={colors.ink} />
+        </Squish>
 
         <Squish
           accessibilityRole="button"

@@ -5,7 +5,7 @@ import { useLocationLog } from '@/store';
 
 /**
  * Ustaning joylashuvi (har 5 s). 5-bosqichda:
- * supabase.from('master_locations').upsert({ master_id, location: `POINT(${lng} ${lat})`, updated_at: now() })
+ * lib/api.ts → publishLocation(): master_locations.upsert({ master_id, lat, lng, heading }) — PostGIS `location` ustuni bazada o'zi hisoblanadi
  */
 export function publishMasterLocation(p: LatLng) {
   useLocationLog.getState().record(p);

@@ -1,8 +1,9 @@
 // Manzilni matn bo'yicha qidirish (Toshkent ichida).
-// Hozircha bepul OpenStreetMap Nominatim (kalit shart emas, sekundiga 1 so'rovgacha).
-// Yandex kaliti qo'yilgach — Yandex Geocoder / Geosuggest'ga almashtiriladi (shu funksiya ichida).
+// Yandex kaliti bo'lsa — Yandex Geocoder (Toshkent ko'chalari to'liqroq), bo'lmasa yoki xato bo'lsa —
+// bepul OpenStreetMap Nominatim (kalit shart emas, sekundiga 1 so'rovgacha).
 import { distanceKm, type LatLng } from './geo';
 import { getLanguage } from './i18n';
+import { yandexSearch } from './yandex';
 
 export type Place = { id: string; title: string; subtitle: string; location: LatLng; distanceKm?: number };
 
@@ -13,6 +14,12 @@ const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 export async function searchAddress(query: string, near?: LatLng, signal?: AbortSignal): Promise<Place[]> {
   const q = query.trim();
   if (q.length < 3) return [];
+  const ya = await yandexSearch(q, signal);
+  if (ya?.length) {
+    return ya
+      .map((p) => ({ ...p, distanceKm: near ? distanceKm(near, p.location) : undefined }))
+      .sort((a, b) => (a.distanceKm ?? 0) - (b.distanceKm ?? 0));
+  }
   const lang = getLanguage();
   const url =
     `${NOMINATIM}?format=jsonv2&addressdetails=1&limit=8&countrycodes=uz&bounded=1&viewbox=${TASHKENT_BOX}` +

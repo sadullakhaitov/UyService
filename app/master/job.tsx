@@ -15,6 +15,8 @@ import { bboxCorners, distanceKm, type LatLng } from '@/lib/geo';
 import { remainingEtaMin, useRoute } from '@/lib/routes';
 import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
+import { CancelSheet, MASTER_REASONS } from '@/components/sheets/CancelSheet';
+import { DISPATCH } from '@/constants/dispatch';
 import { useChats, useMaster, useMasterWork, useUser, type MasterOrder } from '@/store';
 
 type Step = 'on_the_way' | 'arrived' | 'in_progress' | 'finishing' | 'completed';
@@ -31,7 +33,8 @@ export default function Job() {
 function JobView({ job }: { job: MasterOrder }) {
   const insets = useSafeAreaInsets();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
-  const { charge, addIncome } = useMaster();
+  const { charge, addIncome, bumpActivity } = useMaster();
+  const [cancelling, setCancelling] = useState(false);
   const finishJob = useMasterWork((s) => s.finishJob);
   const ensureChat = useChats((s) => s.ensure);
   const chatId = `job-${job.id}`;
@@ -160,7 +163,23 @@ function JobView({ job }: { job: MasterOrder }) {
               setStep('completed');
             }} /> : null}
         {step === 'completed' ? <Button title={t('common.continue')} big onPress={finishJob} /> : null}
+        {step === 'on_the_way' || step === 'arrived' ? (
+          <Button title={t('cancel.masterBtn')} kind="secondary" onPress={() => setCancelling(true)} />
+        ) : null}
       </Sheet>
+
+      {/* Usta bekor qilsa — aktivlik −10 (TZ, 7-bo'lim); 5-bosqichda buyurtma keyingi ustaga qaytadi */}
+      <CancelSheet
+        visible={cancelling}
+        reasons={MASTER_REASONS}
+        warning={t('cancel.masterWarning', { n: Math.abs(DISPATCH.activity.cancelled) })}
+        onClose={() => setCancelling(false)}
+        onConfirm={() => {
+          setCancelling(false);
+          bumpActivity(DISPATCH.activity.cancelled);
+          finishJob();
+        }}
+      />
     </View>
   );
 }

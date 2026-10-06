@@ -13,7 +13,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '@/constants/theme';
 import { setLanguage } from '@/lib/i18n';
+import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { useMaster, useUser } from '@/store';
+
+// Kutilmagan xato bo'lsa — oq ekran o'rniga tushunarli xabar va "Qayta urinish"
+export { ErrorBoundary } from '@/components/ui/ErrorScreen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -64,6 +68,7 @@ export default function RootLayout() {
         <StatusBar style="dark" />
         {/* Til almashtirilganda hamma ekran yangi tilda qayta chiziladi */}
         <Stack key={lang} screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }} />
+        <OfflineBanner />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

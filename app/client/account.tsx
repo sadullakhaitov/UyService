@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
-import { ChevronRight, Globe, LogIn, LogOut, ReceiptText, Wrench } from 'lucide-react-native';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ChevronRight, FileText, Globe, LogIn, LogOut, ReceiptText, Shield, Wrench } from 'lucide-react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Squish, Text } from '@/components/ui';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
@@ -10,7 +11,8 @@ import { useMaster, useUser } from '@/store';
 
 // Mijoz profili: ro'yxatdan o'tmagan bo'lsa ham ochiladi (mehmon)
 export default function Account() {
-  const { phone, logout, setRole, billingPlan } = useUser();
+  const { phone, name, setName, logout, setRole, billingPlan } = useUser();
+  const [draft, setDraft] = useState(name);
   const registered = useMaster((s) => Boolean(s.profile.submittedAt));
   const guest = !phone;
 
@@ -27,10 +29,30 @@ export default function Account() {
       <ScreenHeader title={t('account.title')} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.card}>
-          <Avatar initials={guest ? '?' : phone.slice(-2)} size={56} solid={!guest} />
+          <Avatar initials={guest ? '?' : (name.trim()[0] ?? phone.slice(-2)).toUpperCase()} size={56} solid={!guest} />
           <View style={styles.flex}>
-            <Text variant="h3">{guest ? t('account.guest') : phone}</Text>
-            {guest ? <Text variant="small">{t('account.guestHint')}</Text> : null}
+            {guest ? (
+              <>
+                <Text variant="h3">{t('account.guest')}</Text>
+                <Text variant="small">{t('account.guestHint')}</Text>
+              </>
+            ) : (
+              <>
+                <TextInput
+                  value={draft}
+                  onChangeText={setDraft}
+                  onBlur={() => setName(draft.trim())}
+                  onSubmitEditing={() => setName(draft.trim())}
+                  placeholder={t('account.namePlaceholder')}
+                  placeholderTextColor={colors.muted}
+                  accessibilityLabel={t('account.namePlaceholder')}
+                  autoCapitalize="words"
+                  returnKeyType="done"
+                  style={styles.nameInput}
+                />
+                <Text variant="small">{phone}</Text>
+              </>
+            )}
           </View>
         </View>
 
@@ -40,6 +62,10 @@ export default function Account() {
 
         <Text style={styles.section}>{t('account.language')}</Text>
         <LanguagePicker />
+
+        <Text style={styles.section}>{t('legal.section')}</Text>
+        <Row icon={FileText} label={t('legal.terms')} onPress={() => router.push('/legal/terms')} />
+        <Row icon={Shield} label={t('legal.privacy')} onPress={() => router.push('/legal/privacy')} />
 
         {!guest ? <Row icon={LogOut} label={t('account.logout')} onPress={logout} /> : null}
       </ScrollView>
@@ -69,6 +95,7 @@ const styles = StyleSheet.create({
   card: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: radius.card, backgroundColor: colors.surface },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14, borderRadius: radius.card, backgroundColor: colors.surface },
   rowIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: colors.field, alignItems: 'center', justifyContent: 'center' },
+  nameInput: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink, paddingVertical: 4, borderBottomWidth: 1.5, borderBottomColor: colors.line },
   rowLabel: { fontFamily: fonts.bold, fontSize: 16, color: colors.ink },
   section: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink, marginTop: 8 },
 });

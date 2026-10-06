@@ -59,9 +59,11 @@ app/                      ← ekranlar (Expo Router)
   client/order.tsx        ← muammo, tavsif, rasm, narx; rejalashtirishda kun va soat
   client/searching.tsx    ← usta qidirilmoqda (to'lqinlar, radius, takliflar) yoki rejalashtirilgan buyurtma
   client/chat.tsx         ← mijoz ↔ usta chati (buyurtma bo'yicha)
-  client/tracking.tsx     ← usta yo'lda
+  client/tracking.tsx     ← usta yo'lda (bekor qilish — sabab bilan, components/sheets/CancelSheet.tsx)
+  client/master.tsx       ← usta haqida: reyting, maqtovlar, sharhlar
   client/rate.tsx         ← ish tugadi, baholash
-  client/history.tsx      ← buyurtmalar tarixi
+  client/history.tsx      ← buyurtmalar tarixi (useHistory, telefonda saqlanadi: baho, izoh, bekor sababi)
+  legal/[doc].tsx         ← foydalanish shartlari va maxfiylik siyosati (constants/legal.ts, 3 tilda, ⚠️ QORALAMA — yurist tekshirishi kerak)
   master/(tabs)/          ← usta ilovasi, pastki menyu 4 bo'lim (Yandex Pro tuzilmasi)
     index.tsx             ← Buyurtmalar: xarita, filtr, zoom, aktivlik, "surib ishga chiqish"
     money.tsx             ← Pul: kunlik daromad, balans va limit / obuna, tarif
@@ -92,12 +94,20 @@ lib/                      ← i18n, geo, location, routes, supabase
   notify.ts               ← bildirishnomalar (mahalliy; ilova orqa fonda bo'lsa chiqadi)
   geocode.ts              ← manzil qidirish (hozir OSM Nominatim, keyin Yandex Geocoder)
   schedule.ts, photos.ts  ← rejalashtirish vaqtlari; rasm tanlash/suratga olish
+  yandex.ts               ← Yandex kaliti + HTTP Geocoder (qidiruv, koordinatadan manzil); kalit bo'lmasa — Nominatim / telefon xizmati
+  useOnline.ts            ← internet bormi (NetInfo); yo'q bo'lsa tepada banner (components/ui/OfflineBanner.tsx)
+  supabase.ts, auth.ts, api.ts ← Supabase mijozi (faqat .env'da kalit bo'lsa), SMS kod bilan kirish, server chaqiruvlari
 store/                    ← Zustand (foydalanuvchi, buyurtma, usta)
 constants/                ← theme, categories (+ CALL_FEE), dispatch, billing
 locales/uz.json           ← ilovadagi barcha matnlar
 mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
 design/                   ← dizayn skrinshotlari
-supabase/migrations, supabase/functions/{dispatch,offer-timeout}  ← 5–7-bosqich
+supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma
+  migrations/             ← 6 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron
+  functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
+  functions/{dispatch,offer-respond,offer-timeout,send-sms} ← Edge Functions (send-sms — Eskiz.uz orqali SMS)
+  tests/                  ← supabase_stub.sql + rls_test.sql (mahalliy Postgres+PostGIS'da 35 ta tekshiruv)
+eas.json                  ← do'kon uchun build: preview (APK), production
 ```
 
 Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `index.tsx`i bir xil `/` manzilga to'qnashgani uchun oddiy `client/` va `master/` papkalari ishlatildi.
@@ -182,10 +192,10 @@ Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, 
 2. ✅ Xarita: `MapBase` (Yandex), uchib kelish, nafas oluvchi nuqta.
 3. ✅ Mijoz ekranlari (soxta ma'lumot bilan).
 4. ✅ Animatsiyalar (to'lqinlar, miltillash, zoom, silliq usta belgisi, oqib turuvchi yo'l) — telefonda sinab ko'rish kerak.
-5. ⏳ Supabase: migratsiyalar, PostGIS, RLS, telefon + SMS (Eskiz.uz) kirish.
+5. 🟡 Supabase: migratsiyalar, PostGIS, RLS, Storage, Realtime, SMS (Eskiz.uz) — yozilgan va mahalliy sinalgan (`supabase/`); kirish ekranlari `lib/auth.ts` orqali kalit bo'lsa Supabase'ga ulanadi. Qoladi: loyihani yaratish va joylash (`supabase/README.md`), ekranlarni `lib/api.ts`ga ulash.
 6. 🟡 Usta ilovasi — ekranlar, anketa, profil bo'limlari tayyor; joylashuv har 5 s `lib/backend.ts` → `publishMasterLocation` orqali yuboriladi (hozir mahalliy, 5-bosqichda `master_locations`).
-7. 🟡 Taqsimlash: algoritm tayyor (`lib/dispatch.ts`, soxta ustalar bilan ishlaydi); `supabase/functions/dispatch`, `offer-timeout`, Realtime qoladi.
-8. ⏳ Sayqal: push, xatolar, internet yo'qligi, ikki telefonda sinov.
+7. 🟡 Taqsimlash: algoritm (`supabase/functions/_shared/dispatch.ts`) va Edge Functions tayyor; ilova hozir soxta simulyator bilan ishlaydi, Realtime'ga ulash qoladi.
+8. 🟡 Sayqal: internet yo'qligi banneri, xato ekrani (ErrorBoundary), bekor qilish sabablari tayyor; qoladi — serverdan push, ikki telefonda sinov.
 
 ## 10. Ishga tushirish
 
@@ -201,4 +211,4 @@ Xarita (Yandex, WebView) Expo Go'da ham ishlaydi; telefonda internet bo'lishi ke
 
 ## 11. Kalitlar
 
-Yandex va Supabase kalitlari `.env` faylida, git'ga yuklanmaydi. Yandex kaliti: developer.tech.yandex.ru → "JavaScript API и HTTP Геокодер"; HTTP Referer cheklovi `uyservice.uz` (telefonda xarita sahifasi shu manzil nomidan ochiladi, `MAP_BASE_URL`). Kalit bo'lmasa xarita cheklangan rejimda ishlaydi yoki umuman ochilmasligi mumkin — kalit qo'yish shart.
+Yandex va Supabase kalitlari `.env` faylida, git'ga yuklanmaydi. Eskiz.uz login/paroli ilovaga emas, Supabase secrets'ga yoziladi (`supabase/README.md`). Yandex kaliti: developer.tech.yandex.ru → "JavaScript API и HTTP Геокодер"; HTTP Referer cheklovi `uyservice.uz` (telefonda xarita sahifasi shu manzil nomidan ochiladi, `MAP_BASE_URL`). Kalit bo'lmasa xarita cheklangan rejimda ishlaydi yoki umuman ochilmasligi mumkin — kalit qo'yish shart.

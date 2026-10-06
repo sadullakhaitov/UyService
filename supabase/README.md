@@ -1,0 +1,187 @@
+# UyService — server (Supabase) ni ishga tushirish
+
+Bu papkada serverning hammasi tayyor: jadvallar, xavfsizlik qoidalari (RLS), usta qidirish funksiyalari va SMS yuborish.
+Quyidagi qadamlarni **bir marta**, tartib bilan bajaring. Hamma buyruqlar **Windows PowerShell**da,
+loyiha papkasida (`UyService`) yoziladi.
+
+> Kalitlar bo'lmasa ilova hozirgidek demo rejimda ishlayveradi — hech narsa buzilmaydi.
+
+---
+
+## 1. Supabase loyihasini yaratish
+
+1. [supabase.com](https://supabase.com) → **Start your project** → GitHub yoki email bilan kiring.
+2. **New project**:
+   - Name: `uyservice`
+   - Database Password: kuchli parol o'ylab toping va **saqlab qo'ying** (keyin kerak bo'ladi)
+   - Region: **Central EU (Frankfurt)** (Toshkentga eng yaqini; Singapore ham bo'ladi)
+3. Loyiha 1–2 daqiqada tayyor bo'ladi.
+
+## 2. Kalitlarni ilovaga yozish
+
+1. Supabase → **Project Settings** → **API** (yoki **API Keys**). Ikkita qiymatni oling:
+   - **Project URL** — `https://abcdefghijklmnop.supabase.co` ko'rinishida. Undagi `abcdefghijklmnop` — bu
+     sizning **PROJECT_REF**ingiz, quyida ko'p kerak bo'ladi.
+   - **anon public** kalit (yangi loyihalarda **publishable** kalit, `sb_publishable_...`).
+2. PowerShell'da:
+
+   ```powershell
+   Copy-Item .env.example .env   # agar .env hali bo'lmasa
+   notepad .env
+   ```
+
+3. Ochilgan faylga yozing va saqlang:
+
+   ```
+   EXPO_PUBLIC_SUPABASE_URL=https://PROJECT_REF.supabase.co
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=bu_yerga_anon_kalit
+   ```
+
+   ⚠️ **service_role** (yoki **secret**) kalitni `.env`ga hech qachon yozmang — u faqat serverda.
+
+## 3. Supabase CLI ga kirish va loyihani ulash
+
+```powershell
+npx supabase --version            # birinchi marta CLI yuklab olinadi
+npx supabase login                # brauzer ochiladi → "Authorize"
+npx supabase link --project-ref PROJECT_REF
+```
+
+`link` ma'lumotlar bazasi parolini so'raydi — 1-qadamdagi parol.
+
+## 4. Jadvallarni yaratish
+
+```powershell
+npx supabase db push
+```
+
+`Do you want to push these migrations?` → `Y`. Tekshirish: Supabase → **Table Editor** — `orders`, `masters`,
+`categories` (6 ta kategoriya) va boshqa jadvallar paydo bo'ladi.
+
+## 5. Funksiyalarni yuklash
+
+```powershell
+npx supabase functions deploy
+```
+
+Bu 4 ta funksiyani yuklaydi: `dispatch` (usta qidirish), `offer-respond` (usta javobi),
+`offer-timeout` (har 15 soniyada tekshiruv), `send-sms` (SMS kod). Docker so'rasa — oxiriga `--use-api` qo'shing:
+`npx supabase functions deploy --use-api`.
+
+## 6. Eskiz.uz (SMS)
+
+1. [my.eskiz.uz](https://my.eskiz.uz) da ro'yxatdan o'ting, shartnoma va balansni rasmiylashtiring.
+2. **Muhim:** Eskiz faqat oldindan **tasdiqlangan shablon** matnlarini yuboradi. Kabinetda SMS shablon so'rovini
+   yuboring: `UyService kodi: 123456` (kod o'rnida raqam). Tasdiqlanmaguncha faqat Eskiz'ning test matni
+   ketadi va bizning kodlarimiz yetib bormaydi.
+   Agar Eskiz boshqa matnni tasdiqlasa — `SMS_TEMPLATE` sirini o'sha matnga qo'ying (`{code}` — kod joyi).
+3. Jo'natuvchi nomi standart `4546`. O'z nomingiz (masalan `UyService`) tasdiqlansa — `ESKIZ_FROM`ga yozing.
+
+## 7. Telefon orqali kirishni yoqish
+
+1. Supabase → **Authentication** → **Sign In / Providers** → **Phone** → yoqing (**Enable Phone provider**).
+   SMS provayder so'ralsa, istalgan birini tanlab qoldiring — keyingi qadamdagi hook yoqilgach u ishlatilmaydi.
+2. Supabase → **Authentication** → **Hooks** → **Add hook** → **Send SMS hook**:
+   - Type: **HTTPS**
+   - URL: `https://PROJECT_REF.supabase.co/functions/v1/send-sms`
+   - **Generate secret** → chiqqan `v1,whsec_...` qiymatni nusxalang → **Create**.
+3. (Ixtiyoriy, sinov uchun) **Phone** sozlamalarida **Test Phone Numbers** — masalan `998901234567=123456`:
+   shu raqamga SMS ketmaydi, kod har doim `123456`.
+
+## 8. Sirlarni (secrets) yozish
+
+PowerShell'da bitta buyruq (qiymatlarni o'zingiznikiga almashtiring). **Qo'shtirnoqlar shart** —
+PowerShell vergulni boshqacha tushunadi:
+
+```powershell
+$cron = [guid]::NewGuid().ToString("N"); $cron   # tasodifiy sir — ekrandagi qiymatni saqlab qo'ying
+npx supabase secrets set "ESKIZ_EMAIL=siz@example.uz" "ESKIZ_PASSWORD=eskiz_parol" "ESKIZ_FROM=4546" "SEND_SMS_HOOK_SECRET=v1,whsec_..." "CRON_SECRET=$cron"
+```
+
+Tekshirish: `npx supabase secrets list`.
+
+## 9. Har 15 soniyada tekshiruvni yoqish (pg_cron)
+
+Javob bermagan ustadan keyingisiga o'tish, radiusni kengaytirish va rejalashtirilgan buyurtmalarni boshlash
+uchun kerak.
+
+1. Supabase → **Database** → **Extensions** → `pg_cron` va `pg_net` ni yoqing.
+2. Supabase → **SQL Editor** → yangi so'rov:
+
+   ```sql
+   select public.schedule_offer_timeout('https://PROJECT_REF.supabase.co', 'CRON_SECRET_QIYMATI');
+   ```
+
+   (`CRON_SECRET_QIYMATI` — 8-qadamdagi `$cron`.) **Run**. Tekshirish bir daqiqadan keyin:
+
+   ```sql
+   select status, return_message, start_time from cron.job_run_details order by start_time desc limit 5;
+   ```
+
+   O'chirish kerak bo'lsa: `select public.unschedule_offer_timeout();`
+
+## 10. O'zingizni admin qilish
+
+1. Ilovaga o'z raqamingiz bilan kiring (SMS kod keladi).
+2. Supabase → **SQL Editor**:
+
+   ```sql
+   update public.profiles set role = 'admin' where phone = '+998901234567';
+   ```
+
+## 11. Ustani tasdiqlash (admin)
+
+Usta anketani yuborgach `masters` jadvalida `verify_status = pending` bo'ladi.
+
+1. Hujjatlarni ko'rish: Supabase → **Storage** → `documents` → ustaning id'si nomli papka (pasport, selfi).
+2. Supabase → **Table Editor** → `masters` → kerakli qator → `verify_status` katakchasi → **approved** → **Save**.
+   Rad etish: `rejected`, sababini `verify_note`ga yozing.
+3. Buyurtma olishi uchun tarif ham ochiq bo'lishi kerak:
+   - **komissiya** tarifida `balance` kamida **20 000** (ustaning naqd to'lovidan keyin shu yerga qo'shasiz);
+   - **obuna** tarifida `subscriptions` jadvaliga qator qo'shing (`master_id`, `period_start`, `period_end`,
+     `amount = 149000`, `status = paid`) — `masters.subscription_until` o'zi uzayadi.
+
+---
+
+## Nima qayerda
+
+| Fayl | Nima |
+|---|---|
+| `migrations/…_schema.sql` | jadvallar (TZ 6-bo'lim) |
+| `migrations/…_logic.sql` | triggerlar (usta o'z reytingi/balansini o'zgartira olmaydi, ish tugaganda komissiya), `nearby_masters`, `masters_around` |
+| `migrations/…_rls.sql` | kim nimani ko'radi (RLS) |
+| `migrations/…_catalog.sql` | 6 kategoriya, 22 muammo, chaqiruv narxi 50 000 |
+| `migrations/…_storage_realtime.sql` | fayl papkalari (`documents`, `works`, `order-photos`) va Realtime |
+| `migrations/…_cron.sql` | `schedule_offer_timeout()` |
+| `functions/_shared/dispatch.ts` | usta qidirish algoritmi — **ilova bilan bitta fayl** (`lib/dispatch.ts` shuni ishlatadi) |
+| `functions/_shared/engine.ts` | algoritmni bazaga ulaydigan qadam (takliflar, aktivlik, tayinlash) |
+| `functions/*/index.ts` | `dispatch`, `offer-respond`, `offer-timeout`, `send-sms` |
+| `seed.sql` | faqat lokal sinov uchun 3 ta demo usta (`db push` uni yubormaydi) |
+| `tests/` | lokal Postgres'da RLS sinovi |
+
+Ilova tomoni: `lib/supabase.ts` (ulanish), `lib/auth.ts` (SMS kod), `lib/api.ts` (buyurtma, taklifga javob,
+joylashuv, chat — ekranlarga keyin ulanadi).
+
+### Usta qidirish qanday ishlaydi
+
+1. Mijoz buyurtma yaratadi (`orders`, status `searching`) → ilova `dispatch` funksiyasini chaqiradi.
+2. `dispatch` 10 km ichidagi mos ustalarni oladi (`nearby_masters`: onlayn, tasdiqlangan, band emas, tarifi ochiq,
+   joylashuvi 2 daqiqadan yangi) va eng yuqori ballisiga taklif yozadi (`offers`, 60 s).
+3. Usta Realtime orqali taklifni ko'radi va `offer-respond` bilan javob beradi: qabul → buyurtma `on_the_way`,
+   aktivlik +2; rad → aktivlik −5 va taklif keyingi ustaga.
+4. `offer-timeout` har 15 s: 60 s javobsiz taklif yopiladi (−5), radius 3 → 6 → 10 km, 3 daqiqada topilmasa
+   `dispatch.done = 'none'` ("Hozir bo'sh usta yo'q"). Rejalashtirilgan buyurtmalar vaqtidan 30 daqiqa oldin
+   qidiruvga chiqadi.
+
+### Dasturchi uchun: lokal sinov
+
+Docker kerak emas — oddiy PostgreSQL 16 + PostGIS yetadi:
+
+```bash
+createdb uytest
+for f in supabase/tests/supabase_stub.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/rls_test.sql; do
+  psql -v ON_ERROR_STOP=1 -q -d uytest -f "$f" || break
+done   # oxirida: NOTICE: ALL RLS TESTS PASSED
+```
+
+Funksiyalar turi: `deno check --node-modules-dir=none supabase/functions/*/index.ts`.

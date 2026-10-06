@@ -8,7 +8,7 @@ import { getCategory, WARRANTY_DAYS } from '@/constants/categories';
 import { colors, fonts, radius } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
-import { useActiveOrder, useOrders, useUser } from '@/store';
+import { useActiveOrder, useHistory, useOrders, useUser } from '@/store';
 
 const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
 
@@ -25,6 +25,7 @@ export default function Rate() {
   const problemId = order?.problemId ?? 'tap';
   const cat = getCategory(categoryId);
   const toggleFavorite = useUser((s) => s.toggleFavorite);
+  const addHistory = useHistory((s) => s.add);
   const master = mockMasters.find((m) => m.id === masterId) ?? mockMasters[0];
   const fee = getCategory(categoryId).callFee;
   const [stars, setStars] = useState(5);
@@ -35,6 +36,20 @@ export default function Rate() {
 
   const finish = () => {
     toggleFavorite(master.id, fav);
+    // Tarixga: narx, baho, teglar, izoh (5-bosqichda reviews jadvaliga ham yoziladi)
+    addHistory({
+      id: order?.id ?? `o${Date.now()}`,
+      categoryId,
+      problemId,
+      masterId: master.id,
+      at: Date.now(),
+      price: fee + WORK + PARTS,
+      status: 'completed',
+      address: order?.address,
+      stars,
+      tags,
+      comment: comment.trim() || undefined,
+    });
     if (order) remove(order.id);
     router.replace('/client');
   };

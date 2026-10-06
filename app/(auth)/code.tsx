@@ -5,7 +5,9 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts } from '@/constants/theme';
+import { sendCode, verifyCode } from '@/lib/auth';
 import { t } from '@/lib/i18n';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { useMaster, useUser } from '@/store';
 
 const LEN = 6;
@@ -15,6 +17,8 @@ export default function CodeScreen() {
   const { setPhone, setRole, billingPlan } = useUser();
   const [code, setCode] = useState('');
   const [left, setLeft] = useState(59);
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState<'auth.codeWrong' | 'auth.sendFailed' | null>(null);
   const input = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -23,9 +27,19 @@ export default function CodeScreen() {
     return () => clearTimeout(id);
   }, [left]);
 
-  // Soxta: istalgan 6 xonali kod qabul qilinadi (5-bosqichda Supabase Auth + Eskiz.uz)
-  const verify = (c = code) => {
-    if (c.length !== LEN) return;
+  // Kod tekshiriladi: Supabase Auth (SMS — Eskiz.uz); sozlanmagan bo'lsa soxta — istalgan 6 xonali kod
+  const verify = async (c = code) => {
+    if (c.length !== LEN || checking) return;
+    setChecking(true);
+    setError(null);
+    const res = await verifyCode(phone, c);
+    setChecking(false);
+    if (!res.ok) {
+      setError('auth.codeWrong');
+      setCode('');
+      input.current?.focus();
+      return;
+    }
     setPhone(phone);
     if (next === 'order') {
       // Mijoz hamma narsani tanlab bo'lgan — buyurtma ekraniga qaytamiz va u darhol yuboriladi
@@ -40,8 +54,15 @@ export default function CodeScreen() {
     }
   };
 
+  const resend = async () => {
+    setLeft(59);
+    setError(null);
+    const res = await sendCode(phone);
+    if (!res.ok) setError('auth.sendFailed');
+  };
+
   return (
-    <AuthShell compact footer={<Button title={t('common.continue')} big disabled={code.length < LEN} onPress={() => verify()} />}>
+    <AuthShell compact footer={<Button title={t('common.continue')} big disabled={code.length < LEN} loading={checking} onPress={() => verify()} />}>
       <IconButton icon={ChevronLeft} label={t('common.back')} onPress={() => router.back()} />
       <View style={styles.head}>
         <Text variant="h1">{t('auth.codeTitle')}</Text>
@@ -65,6 +86,7 @@ export default function CodeScreen() {
         onChangeText={(v) => {
           const c = v.replace(/\D/g, '').slice(0, LEN);
           setCode(c);
+          if (c) setError(null);
           if (c.length === LEN) verify(c);
         }}
         keyboardType="number-pad"
@@ -74,17 +96,25 @@ export default function CodeScreen() {
         style={styles.hidden}
       />
 
+      {error ? (
+        <Text variant="small" style={styles.error}>
+          {t(error)}
+        </Text>
+      ) : null}
+
       <View style={styles.meta}>
         {left > 0 ? (
           <Text variant="small">{t('auth.resendIn', { sec: left })}</Text>
         ) : (
-          <Pressable accessibilityRole="button" onPress={() => setLeft(59)} hitSlop={10}>
+          <Pressable accessibilityRole="button" onPress={resend} hitSlop={10}>
             <Text style={styles.link}>{t('auth.resend')}</Text>
           </Pressable>
         )}
-        <Text variant="caption" style={styles.demo}>
-          {t('auth.codeDemo')}
-        </Text>
+        {!isSupabaseConfigured ? (
+          <Text variant="caption" style={styles.demo}>
+            {t('auth.codeDemo')}
+          </Text>
+        ) : null}
       </View>
     </AuthShell>
   );
@@ -110,4 +140,5 @@ const styles = StyleSheet.create({
   meta: { gap: 8 },
   link: { fontFamily: fonts.bold, fontSize: 14, color: colors.primary },
   demo: { color: colors.accentInk },
+  error: { color: colors.danger },
 });

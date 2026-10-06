@@ -117,26 +117,98 @@ export const mockMasters: MockMaster[] = [
     priorityPoints: 0,
     acceptRate: 0.85,
   },
+  {
+    id: 'm6',
+    name: 'Shavkat Yusupov',
+    initials: 'SY',
+    categories: ['electric', 'appliance'],
+    experienceYears: 7,
+    rating: 4.8,
+    jobsCount: 226,
+    onTimePercent: 96,
+    phone: '+998 94 620 18 40',
+    location: { latitude: 41.2779, longitude: 69.2183 },
+    online: true,
+    verified: true,
+    activity: 88,
+    priorityPoints: 5,
+    acceptRate: 0.85,
+  },
+  {
+    id: 'm7',
+    name: 'Ulug\'bek Rahimov',
+    initials: 'UR',
+    categories: ['aircon', 'electric'],
+    experienceYears: 5,
+    rating: 4.7,
+    jobsCount: 154,
+    onTimePercent: 94,
+    phone: '+998 95 302 77 61',
+    location: { latitude: 41.2941, longitude: 69.1889 },
+    online: true,
+    verified: true,
+    activity: 81,
+    priorityPoints: 0,
+    acceptRate: 0.8,
+  },
+  {
+    id: 'm8',
+    name: 'Anvar Mirzayev',
+    initials: 'AM',
+    categories: ['repair', 'furniture', 'plumber'],
+    experienceYears: 12,
+    rating: 4.9,
+    jobsCount: 518,
+    onTimePercent: 97,
+    phone: '+998 90 915 43 09',
+    location: { latitude: 41.2748, longitude: 69.2001 },
+    online: true,
+    verified: true,
+    activity: 93,
+    priorityPoints: 10,
+    acceptRate: 0.85,
+  },
 ];
 
 
 export const mockFavorites = ['m1'];
 
-export type MockHistoryItem = {
+const daysAgo = (d: number) => Date.now() - d * 86_400_000;
+
+/** Buyurtmalar tarixi (yangi ilovada namuna sifatida; keyingi buyurtmalar ustiga qo'shiladi) */
+export type HistoryItem = {
   id: string;
   categoryId: CategoryId;
   problemId: string;
-  masterId: string;
-  date: string;
+  masterId: string | null;
+  at: number;
   price: number;
   status: 'completed' | 'cancelled';
+  address?: string;
   stars?: number;
+  tags?: string[];
+  comment?: string;
+  cancelReason?: string;
 };
 
-export const mockHistory: MockHistoryItem[] = [
-  { id: 'o3', categoryId: 'plumber', problemId: 'tap', masterId: 'm1', date: '28-sentyabr', price: 145_000, status: 'completed', stars: 5 },
-  { id: 'o2', categoryId: 'electric', problemId: 'socket', masterId: 'm2', date: '12-sentyabr', price: 90_000, status: 'completed', stars: 5 },
-  { id: 'o1', categoryId: 'aircon', problemId: 'acCleaning', masterId: 'm3', date: '20-avgust', price: 0, status: 'cancelled' },
+export const mockHistory: HistoryItem[] = [
+  { id: 'o3', categoryId: 'plumber', problemId: 'tap', masterId: 'm1', at: daysAgo(8), price: 145_000, status: 'completed', stars: 5, tags: ['onTime', 'clean'] },
+  { id: 'o2', categoryId: 'electric', problemId: 'socket', masterId: 'm2', at: daysAgo(24), price: 90_000, status: 'completed', stars: 5, tags: ['polite'] },
+  { id: 'o1', categoryId: 'aircon', problemId: 'acCleaning', masterId: 'm3', at: daysAgo(47), price: 0, status: 'cancelled' },
+];
+
+/** Ustalar haqidagi sharhlar (5-bosqichda reviews jadvali) */
+export type MockReview = { id: string; masterId: string; author: string; stars: number; text: string; tags: string[]; at: number };
+
+export const mockReviews: MockReview[] = [
+  { id: 'r1', masterId: 'm1', author: 'Nodira', stars: 5, text: "Kranni 20 daqiqada almashtirib berdi, juda toza ishladi.", tags: ['clean', 'fast'], at: daysAgo(3) },
+  { id: 'r2', masterId: 'm1', author: 'Javohir', stars: 5, text: 'Vaqtida keldi, narxni oldindan aytdi.', tags: ['onTime', 'fair'], at: daysAgo(11) },
+  { id: 'r3', masterId: 'm1', author: 'Gulnora', stars: 4, text: "Yaxshi usta, lekin 10 daqiqa kechikdi.", tags: ['polite'], at: daysAgo(19) },
+  { id: 'r4', masterId: 'm2', author: 'Bekzod', stars: 5, text: "Butun xonadonga yangi rozetkalar o'rnatdi.", tags: ['fast', 'fair'], at: daysAgo(5) },
+  { id: 'r5', masterId: 'm2', author: 'Sevara', stars: 5, text: 'Muloyim, tushuntirib berdi.', tags: ['polite'], at: daysAgo(30) },
+  { id: 'r6', masterId: 'm3', author: 'Otabek', stars: 5, text: 'Konditsionerni tozalab, freon quydi — endi zo\'r sovutyapti.', tags: ['clean'], at: daysAgo(6) },
+  { id: 'r7', masterId: 'm4', author: 'Dilshod', stars: 5, text: 'Shkafni bir soatda yig\'ib berdi.', tags: ['fast', 'onTime'], at: daysAgo(9) },
+  { id: 'r8', masterId: 'm5', author: 'Madina', stars: 4, text: "Quvurni almashtirdi, hammasi joyida.", tags: ['fair'], at: daysAgo(14) },
 ];
 
 // Usta rejimi uchun
