@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Check, Heart, ShieldCheck } from 'lucide-react-native';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
@@ -8,7 +8,7 @@ import { getCategory, WARRANTY_DAYS } from '@/constants/categories';
 import { colors, fonts, radius } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
-import { useOrder, useUser } from '@/store';
+import { useActiveOrder, useOrders, useUser } from '@/store';
 
 const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
 
@@ -17,7 +17,13 @@ const WORK = 70_000;
 const PARTS = 45_000;
 
 export default function Rate() {
-  const { masterId, categoryId, problemId, reset } = useOrder();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const order = useActiveOrder(id);
+  const remove = useOrders((s) => s.remove);
+  const masterId = order?.masterId;
+  const categoryId = order?.categoryId ?? 'plumber';
+  const problemId = order?.problemId ?? 'tap';
+  const cat = getCategory(categoryId);
   const toggleFavorite = useUser((s) => s.toggleFavorite);
   const master = mockMasters.find((m) => m.id === masterId) ?? mockMasters[0];
   const fee = getCategory(categoryId).callFee;
@@ -29,19 +35,19 @@ export default function Rate() {
 
   const finish = () => {
     toggleFavorite(master.id, fav);
-    reset();
+    if (order) remove(order.id);
     router.replace('/client');
   };
 
   return (
     <View style={styles.root}>
-      <View style={styles.hero}>
+      <View style={[styles.hero, { backgroundColor: cat.main }]}>
         <SafeAreaView edges={['top']} style={styles.heroInner}>
           <View style={styles.check}>
-            <Check size={28} color={colors.onPrimary} strokeWidth={2.8} />
+            <Check size={28} color={cat.onMain} strokeWidth={2.8} />
           </View>
-          <Text style={styles.heroTitle}>{t('rate.doneTitle')}</Text>
-          <Text style={styles.heroSub}>{t('rate.duration', { name: master.name, time: '1 soat 10 daqiqa' })}</Text>
+          <Text style={[styles.heroTitle, { color: cat.onMain }]}>{t('rate.doneTitle')}</Text>
+          <Text style={[styles.heroSub, { color: cat.onMain, opacity: 0.85 }]}>{t('rate.duration', { name: master.name, time: '1 soat 10 daqiqa' })}</Text>
         </SafeAreaView>
       </View>
 
@@ -96,7 +102,7 @@ export default function Rate() {
       </ScrollView>
 
       <SafeAreaView edges={['bottom']} style={styles.bottom}>
-        <Button title={t('rate.pay')} big onPress={finish} />
+        <Button title={t('rate.pay')} big color={{ bg: cat.main, fg: cat.onMain }} onPress={finish} />
         <Text variant="caption" style={styles.center}>
           {t('rate.payNote', { days: WARRANTY_DAYS })}
         </Text>

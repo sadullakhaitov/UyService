@@ -7,12 +7,13 @@ import { Button, Card, Chip, Divider, Row, ScreenHeader, Squish, Text } from '@/
 import { getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { formatRange, formatSum, t } from '@/lib/i18n';
-import { useOrder } from '@/store';
+import { useOrder, useOrders } from '@/store';
 
 const MAX_PHOTOS = 3;
 
 export default function OrderScreen() {
-  const { categoryId, problemId, description, photos, address, setDraft, setStatus } = useOrder();
+  const { categoryId, problemId, description, photos, address, setDraft } = useOrder();
+  const create = useOrders((s) => s.create);
   const category = getCategory(categoryId);
   const list = [...problemsOf(categoryId).map((p) => p.id), 'other'];
   const problem = problems.find((p) => p.id === problemId);
@@ -24,20 +25,28 @@ export default function OrderScreen() {
   };
 
   const submit = () => {
-    setStatus('searching');
-    router.replace('/client/searching');
+    const id = create();
+    router.replace(`/client/searching?id=${id}`);
   };
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
-      <ScreenHeader kicker={t('order.category')} title={t(`categories.${categoryId}`)} />
+      <ScreenHeader
+        kicker={t('order.category')}
+        title={t(`categories.${categoryId}`)}
+        right={
+          <View style={[styles.catBadge, { backgroundColor: category.tint }]}>
+            <category.icon size={24} color={category.ink} strokeWidth={2.2} />
+          </View>
+        }
+      />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <View style={styles.section}>
             <Text variant="h3">{t('order.problemTitle')}</Text>
             <View style={styles.chips}>
               {list.map((id) => (
-                <Chip key={id} label={t(`problems.${id}`)} selected={id === problemId} onPress={() => setDraft({ problemId: id })} />
+                <Chip key={id} label={t(`problems.${id}`)} selected={id === problemId} onPress={() => setDraft({ problemId: id })} color={category.main} onColor={category.onMain} />
               ))}
             </View>
           </View>
@@ -83,7 +92,7 @@ export default function OrderScreen() {
             <Row label={t('order.estimate')} value={formatRange(problem?.priceMin ?? null, problem?.priceMax ?? null)} />
             <Divider />
             <View style={styles.note}>
-              <ShieldCheck size={18} color={colors.primary} strokeWidth={2.2} />
+              <ShieldCheck size={18} color={category.ink} strokeWidth={2.2} />
               <Text variant="small" style={styles.flex}>
                 {t('order.guarantee', { days: WARRANTY_DAYS })}
               </Text>
@@ -99,7 +108,7 @@ export default function OrderScreen() {
             {address} · {t('common.cash')}
           </Text>
         </View>
-        <Button title={t('order.submit')} big onPress={submit} />
+        <Button title={t('order.submit')} big color={{ bg: category.main, fg: category.onMain }} onPress={submit} />
       </SafeAreaView>
     </SafeAreaView>
   );
@@ -108,6 +117,7 @@ export default function OrderScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
+  catBadge: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   scroll: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 24, gap: 22 },
   section: { gap: 12 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CenterPin, MapBase, type MapHandle } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, IconButton, Logo, RatingBadge, Squish, Text } from '@/components/ui';
+import { ActiveOrders } from '@/components/ui/ActiveOrders';
 import { categories, problems, type CategoryId } from '@/constants/categories';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { blur, distanceKm, type LatLng } from '@/lib/geo';
@@ -117,6 +118,7 @@ export default function ClientHome() {
       />
 
       <Sheet onHeight={setSheetH}>
+        <ActiveOrders />
         <View style={styles.address}>
           <View style={styles.addrIcon}>
             <MapPin size={18} color={colors.accent} strokeWidth={2.4} />

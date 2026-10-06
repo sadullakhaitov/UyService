@@ -11,18 +11,25 @@ export type CategoryId = 'plumber' | 'electric' | 'aircon' | 'furniture' | 'repa
 export type Category = {
   id: CategoryId;
   icon: LucideIcon;
-  tint: string; // kartochka foni
-  ink: string; // ikonka rangi
+  /** Kategoriyaning o'z rangi: tugmalar, to'lqinlar, yo'l chizig'i, usta belgisi */
+  main: string;
+  /** `main` ustidagi matn rangi */
+  onMain: string;
+  /** Och fon (kartochka, tanlangan chip foni) */
+  tint: string;
+  /** Och fondagi ikonka/matn rangi */
+  ink: string;
   callFee: number;
 };
 
+// Har bir ishning o'z rangi: santexnik — suv, elektrik — chaqmoq, konditsioner — sovuq ko'k ...
 export const categories: Category[] = [
-  { id: 'plumber', icon: Droplets, tint: '#E6F2EE', ink: '#0E5A4B', callFee: CALL_FEE },
-  { id: 'electric', icon: Zap, tint: '#FDF0E6', ink: '#B45309', callFee: CALL_FEE },
-  { id: 'aircon', icon: AirVent, tint: '#E8F0FA', ink: '#1D4E89', callFee: CALL_FEE },
-  { id: 'furniture', icon: Armchair, tint: '#F3EDE6', ink: '#7A4B23', callFee: CALL_FEE },
-  { id: 'repair', icon: PaintRoller, tint: '#EFEAF7', ink: '#5B3A9B', callFee: CALL_FEE },
-  { id: 'appliance', icon: WashingMachine, tint: '#E6F2F2', ink: '#1F6F70', callFee: CALL_FEE },
+  { id: 'plumber', icon: Droplets, main: '#0B6FB8', onMain: '#FFFFFF', tint: '#E3F1FB', ink: '#0B6FB8', callFee: CALL_FEE },
+  { id: 'electric', icon: Zap, main: '#F5B800', onMain: '#2B2100', tint: '#FFF6D6', ink: '#8A6500', callFee: CALL_FEE },
+  { id: 'aircon', icon: AirVent, main: '#0E7490', onMain: '#FFFFFF', tint: '#E0F4F8', ink: '#0E7490', callFee: CALL_FEE },
+  { id: 'furniture', icon: Armchair, main: '#8B5A2B', onMain: '#FFFFFF', tint: '#F5ECE3', ink: '#7A4B23', callFee: CALL_FEE },
+  { id: 'repair', icon: PaintRoller, main: '#6D3FC0', onMain: '#FFFFFF', tint: '#EFE8FA', ink: '#5B3A9B', callFee: CALL_FEE },
+  { id: 'appliance', icon: WashingMachine, main: '#3F5A6B', onMain: '#FFFFFF', tint: '#E8EEF2', ink: '#3F5A6B', callFee: CALL_FEE },
 ];
 
 export type Problem = {

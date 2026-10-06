@@ -9,7 +9,7 @@ import { Text } from './Text';
 const ACircle = Animated.createAnimatedComponent(Circle);
 
 // Aylana taymer: 60 → 0 kamayadi, oxirgi soniyalarda telefon tebranadi
-export function CountdownRing({ seconds, size = 132, label, onDone }: { seconds: number; size?: number; label: string; onDone: () => void }) {
+export function CountdownRing({ seconds, size = 132, label, onDone, color = colors.primary }: { seconds: number; size?: number; label: string; onDone: () => void; color?: string }) {
   const stroke = 10;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -43,7 +43,7 @@ export function CountdownRing({ seconds, size = 132, label, onDone }: { seconds:
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke={urgent ? colors.accent : colors.primary}
+          stroke={urgent ? colors.accent : color}
           strokeWidth={stroke}
           strokeLinecap="round"
           fill="none"

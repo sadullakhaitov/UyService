@@ -14,6 +14,7 @@ import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { getCurrentLocation } from '@/lib/location';
 import { useMyLocation } from '@/lib/useMyLocation';
+import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
 import { useMaster, useUser } from '@/store';
 
@@ -30,7 +31,9 @@ export default function MasterOrders() {
   const map = useRef<MapHandle>(null);
   const me = useMyLocation();
   const [initial] = useState(mockMasterSelf.location);
-  const pos = me ?? initial;
+  // Belgi faqat usta haqiqatan yurganda siljiydi
+  const live = useWatchLocation();
+  const pos = live ?? me ?? initial;
 
   // Nega buyurtmalar yopiq (Yandex Pro'dagi qizil banner kabi)
   const blocked: null | 'verify' | 'balance' | 'subscription' = !verified
@@ -73,6 +76,7 @@ export default function MasterOrders() {
         zoom={16}
         insets={{ top: topH + 60, bottom: sheetH }}
         master={pos}
+        moveDuration={1000}
         pulse={online ? { center: pos, maxRadiusM: 350 } : undefined}
       />
 

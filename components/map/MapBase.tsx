@@ -3,6 +3,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 import { Animated, Easing, Keyboard, Platform, StyleSheet, View } from 'react-native';
 import MapView, { AnimatedRegion, Circle, Marker, MarkerAnimated, PROVIDER_GOOGLE, type Camera } from 'react-native-maps';
 import { colors } from '@/constants/theme';
+import { withAlpha } from '@/lib/color';
 import { bearing, distanceKm, type LatLng } from '@/lib/geo';
 import { ClientDot } from './ClientDot';
 import { MasterIcon, NearbyIcon } from './MasterIcon';
@@ -34,6 +35,8 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
   overlay,
   pulse,
   userLocation,
+  accent = colors.primary,
+  moveDuration = MOVE_INTERVAL_MS,
 }, handle) {
   const ref = useRef<MapView>(null);
   const rings = usePulse(Boolean(pulse));
@@ -68,7 +71,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
 
   // Zoom o'zgarsa — kamera asta uzoqlashadi/yaqinlashadi
   useEffect(() => {
-    if (ready.current) ref.current?.animateCamera(cam(center, zoom), { duration: 2400 });
+    if (ready.current) ref.current?.animateCamera(cam(center, zoom), { duration: 4000 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoom]);
 
@@ -128,18 +131,18 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
                 center={pulse.center}
                 radius={pulseRadius(p, pulse.maxRadiusM)}
                 strokeWidth={2}
-                strokeColor={`rgba(14,90,75,${pulseOpacity(p)})`}
-                fillColor={`rgba(14,90,75,${pulseOpacity(p) * 0.22})`}
+                strokeColor={withAlpha(accent, pulseOpacity(p))}
+                fillColor={withAlpha(accent, pulseOpacity(p) * 0.22)}
               />
             ))
           : null}
-        {route?.length ? <RouteLine path={route} /> : null}
+        {route?.length ? <RouteLine path={route} color={accent} /> : null}
         {clientMarker ? (
           <Marker coordinate={clientMarker} anchor={{ x: 0.5, y: 0.5 }} tracksViewChanges={false}>
             <ClientDot breathing={false} />
           </Marker>
         ) : null}
-        {master ? <MovingMaster target={master} /> : null}
+        {master ? <MovingMaster target={master} color={accent} duration={moveDuration} /> : null}
       </MapView>
       {overlay ? (
         <View pointerEvents="none" style={[styles.focal, { top: insets.top, bottom: insets.bottom }]}>
@@ -151,7 +154,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
 });
 
 // Har 5 s kelgan nuqta orasida 5 s davomida silliq siljiydi va yo'nalishi bo'yicha buriladi
-function MovingMaster({ target }: { target: LatLng }) {
+function MovingMaster({ target, color, duration }: { target: LatLng; color: string; duration: number }) {
   const region = useRef(new AnimatedRegion({ ...target, latitudeDelta: 0, longitudeDelta: 0 })).current;
   const last = useRef(target);
   const [heading, setHeading] = useState(0);
@@ -175,7 +178,7 @@ function MovingMaster({ target }: { target: LatLng }) {
     }
     setHeading(bearing(from, target));
     region
-      .timing({ ...target, latitudeDelta: 0, longitudeDelta: 0, duration: MOVE_INTERVAL_MS, easing: Easing.linear, useNativeDriver: false } as never)
+      .timing({ ...target, latitudeDelta: 0, longitudeDelta: 0, duration, easing: Easing.linear, useNativeDriver: false } as never)
       .start();
   }, [target.latitude, target.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -188,7 +191,7 @@ function MovingMaster({ target }: { target: LatLng }) {
       tracksViewChanges={ios || track}
     >
       <View style={ios ? { transform: [{ rotate: `${heading}deg` }] } : undefined}>
-        <MasterIcon />
+        <MasterIcon color={color} />
       </View>
     </MarkerAnimated>
   );

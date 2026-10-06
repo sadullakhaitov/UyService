@@ -5,16 +5,15 @@ import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Linking, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase } from '@/components/map';
-import { MOVE_INTERVAL_MS } from '@/components/map/types';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Card, Divider, IconButton, Row, Text } from '@/components/ui';
 import { BILLING, platformCut } from '@/constants/billing';
 import { getCategory } from '@/constants/categories';
 import { colors, fonts, shadow } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
-import { bboxCorners } from '@/lib/geo';
-import { remainingEtaMin, resample, useRoute } from '@/lib/routes';
-import { useMyLocation } from '@/lib/useMyLocation';
+import { bboxCorners, distanceKm, type LatLng } from '@/lib/geo';
+import { remainingEtaMin, useRoute } from '@/lib/routes';
+import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockClient, mockMasters, mockOffer } from '@/mocks';
 import { useMaster, useUser } from '@/store';
 
@@ -26,39 +25,58 @@ export default function Job() {
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const charge = useMaster((s) => s.charge);
   const [step, setStep] = useState<Step>('on_the_way');
-  const [i, setI] = useState(0);
   const [sheetH, setSheetH] = useState(360);
   const [work, setWork] = useState('70000');
   const [parts, setParts] = useState('45000');
   const fee = getCategory(mockOffer.categoryId).callFee;
+  const cat = getCategory(mockOffer.categoryId);
 
-  // Usta — telefonning haqiqiy joyida; soxta mijoz undan ~1,5 km narida
-  const me = useMyLocation();
-  const [start, setStart] = useState(mockMasters[0].location);
+  // Usta belgisi — telefonning JONLI joylashuvi: usta yursa yuradi, tursa turadi (soxta harakat yo'q)
+  const live = useWatchLocation();
+  const [start, setStart] = useState<LatLng | null>(null);
   useEffect(() => {
-    if (me) setStart(me);
-  }, [me]);
+    if (live && !start) setStart(live);
+  }, [live, start]);
+  const origin0 = start ?? mockMasters[0].location;
+  const here = live ?? origin0;
+  // Soxta mijoz — ustaning birinchi joyidan ~1,5 km narida (5-bosqichda haqiqiy buyurtma manzili)
   const client = useMemo(
     () => ({
-      latitude: start.latitude + (mockClient.location.latitude - mockMasters[0].location.latitude),
-      longitude: start.longitude + (mockClient.location.longitude - mockMasters[0].location.longitude),
+      latitude: origin0.latitude + (mockClient.location.latitude - mockMasters[0].location.latitude),
+      longitude: origin0.longitude + (mockClient.location.longitude - mockMasters[0].location.longitude),
     }),
-    [start],
+    [origin0.latitude, origin0.longitude], // eslint-disable-line react-hooks/exhaustive-deps
   );
-  const route = useRoute(start, client);
-  const path = useMemo(() => (route ? resample(route.path, 60) : [start, client]), [route]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => setI(0), [path]);
 
-  // Soxta GPS: har 5 s da keyingi nuqta (haqiqiyda master_locations jadvaliga yoziladi)
+  // Yo'l: usta 150 m dan ko'p siljisa yoki yo'ldan chiqsa — yangi joydan qayta hisoblanadi
+  const [routeFrom, setRouteFrom] = useState<LatLng>(origin0);
   useEffect(() => {
-    if (step !== 'on_the_way') return;
-    const id = setInterval(() => setI((x) => Math.min(x + 1, path.length - 1)), MOVE_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [step, path]);
+    if (distanceKm(routeFrom, here) > 0.15) setRouteFrom(here);
+  }, [here.latitude, here.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setRouteFrom(origin0), [origin0.latitude, origin0.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
+  const route = useRoute(routeFrom, client);
+
+  // Qolgan yo'l: ustaga eng yaqin nuqtadan mijozgacha
+  const nearest = useMemo(() => {
+    if (!route) return 0;
+    let best = 0;
+    let bestD = Infinity;
+    route.path.forEach((p, k) => {
+      const d = distanceKm(p, here);
+      if (d < bestD) {
+        bestD = d;
+        best = k;
+      }
+    });
+    return best;
+  }, [route, here.latitude, here.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
+  const remaining = useMemo(() => (route ? [here, ...route.path.slice(nearest + 1)] : [here, client]), [route, nearest, here, client]);
+  const eta = route ? remainingEtaMin(route, remaining) : 1;
+  const fitKey = Math.floor(nearest / 6);
+  const fitTo = useMemo(() => bboxCorners([...remaining, client]), [fitKey, route]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const total = fee + (Number(work) || 0) + (Number(parts) || 0);
   const cut = platformCut(plan, total);
-  const eta = route ? remainingEtaMin(route, path.slice(i)) : 1;
   const stepIndex = STEPS.indexOf(step === 'finishing' ? 'in_progress' : step);
 
   return (
@@ -66,10 +84,12 @@ export default function Job() {
       <MapBase
         center={client}
         insets={{ top: insets.top + 80, bottom: sheetH }}
-        route={step === 'on_the_way' ? path.slice(Math.max(0, i - 1)) : undefined}
-        master={step === 'on_the_way' ? path[i] : client}
+        route={step === 'on_the_way' ? remaining : undefined}
+        master={here}
+        moveDuration={1000}
+        accent={cat.main}
         clientMarker={client}
-        fitTo={step === 'on_the_way' ? bboxCorners([...path.slice(Math.floor(i / 4) * 4), client]) : [client]}
+        fitTo={step === 'on_the_way' ? fitTo : [client]}
       />
 
       <View style={[styles.steps, shadow.float, { top: insets.top + 12 }]}>

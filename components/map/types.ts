@@ -34,6 +34,10 @@ export type MapBaseProps = {
   pulse?: { center: LatLng; maxRadiusM: number };
   /** Foydalanuvchining haqiqiy joyi — ko'k nuqta */
   userLocation?: LatLng | null;
+  /** Kategoriya rangi: to'lqinlar, yo'l chizig'i, usta belgisi */
+  accent?: string;
+  /** Usta belgisining bir nuqtadan keyingisiga siljish vaqti (ms). Haqiqiy GPS uchun qisqaroq */
+  moveDuration?: number;
 };
 
 export type MapHandle = {

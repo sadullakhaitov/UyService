@@ -47,38 +47,31 @@ export const useUser = create<UserState>((set) => ({
   logout: () => set({ phone: '', role: null }),
 }));
 
+// Buyurtma qoralamasi (yangi buyurtma yaratilayotganda) va mijoz manzili
 type OrderState = {
-  status: OrderStatus;
   categoryId: CategoryId;
   problemId: string;
   description: string;
   photos: string[];
   address: string;
   location: LatLng;
-  masterId: string | null;
   preferredMasterId: string | null; // "Mening ustalarim"dan tanlansa, taklif birinchi unga boradi
   setDraft: (p: Partial<Pick<OrderState, 'categoryId' | 'problemId' | 'description' | 'photos' | 'preferredMasterId'>>) => void;
   setAddress: (address: string, location?: LatLng) => void;
-  setStatus: (status: OrderStatus) => void;
-  assign: (masterId: string) => void;
   reset: () => void;
 };
 
 export const useOrder = create<OrderState>((set) => ({
-  status: 'draft',
   categoryId: 'plumber',
   problemId: 'tap',
   description: '',
   photos: [],
   address: mockClient.address,
   location: mockClient.location,
-  masterId: null,
   preferredMasterId: null,
   setDraft: (p) => set(p),
   setAddress: (address, location) => set((s) => ({ address, location: location ?? s.location })),
-  setStatus: (status) => set({ status }),
-  assign: (masterId) => set({ masterId, status: 'assigned' }),
-  reset: () => set({ status: 'draft', description: '', photos: [], masterId: null, preferredMasterId: null }),
+  reset: () => set({ description: '', photos: [], preferredMasterId: null }),
 }));
 
 type MasterState = {
@@ -133,3 +126,70 @@ export const useChats = create<ChatState>((set) => ({
     })),
   markRead: (chatId) => set((s) => ({ chats: s.chats.map((c) => (c.id === chatId ? { ...c, unread: 0 } : c)) })),
 }));
+
+// Faol buyurtmalar: mijoz bir vaqtda bir nechta usta chaqira oladi (masalan, santexnik va elektrik)
+export type ActiveOrder = {
+  id: string;
+  categoryId: CategoryId;
+  problemId: string;
+  description: string;
+  photos: string[];
+  address: string;
+  location: LatLng;
+  preferredMasterId: string | null;
+  status: OrderStatus;
+  masterId: string | null;
+  createdAt: number;
+  /** Qidiruv holat matni bosqichi (0..3) */
+  searchStep: number;
+  /** Bo'sh usta topilmadi */
+  none: boolean;
+  /** Usta yo'li (teng qadamlarga bo'lingan) va hozirgi qadam */
+  path: LatLng[];
+  step: number;
+  /** Yo'lning o'rtacha tezligi (m/s) — "N daqiqa" uchun */
+  speed: number;
+  phaseAt: number;
+};
+
+type OrdersState = {
+  orders: ActiveOrder[];
+  /** Joriy qoralamadan yangi buyurtma yaratadi, id qaytaradi */
+  create: () => string;
+  update: (id: string, patch: Partial<ActiveOrder>) => void;
+  remove: (id: string) => void;
+};
+
+export const useOrders = create<OrdersState>((set) => ({
+  orders: [],
+  create: () => {
+    const d = useOrder.getState();
+    const id = `o${Date.now()}`;
+    const now = Date.now();
+    const order: ActiveOrder = {
+      id,
+      categoryId: d.categoryId,
+      problemId: d.problemId,
+      description: d.description,
+      photos: d.photos,
+      address: d.address,
+      location: d.location,
+      preferredMasterId: d.preferredMasterId,
+      status: 'searching',
+      masterId: null,
+      createdAt: now,
+      searchStep: 0,
+      none: false,
+      path: [],
+      step: 0,
+      speed: 6,
+      phaseAt: now,
+    };
+    set((s) => ({ orders: [...s.orders, order] }));
+    return id;
+  },
+  update: (id, patch) => set((s) => ({ orders: s.orders.map((o) => (o.id === id ? { ...o, ...patch } : o)) })),
+  remove: (id) => set((s) => ({ orders: s.orders.filter((o) => o.id !== id) })),
+}));
+
+export const useActiveOrder = (id: string | undefined) => useOrders((s) => s.orders.find((o) => o.id === id));

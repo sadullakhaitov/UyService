@@ -89,7 +89,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 ## 4. Ekranlar
 
-**Mijoz:** Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim") → Tarix (qayta chaqirish).
+**Mijoz** (bir vaqtda bir nechta usta chaqira oladi — masalan, santexnik va elektrik; faol buyurtmalar bosh sahifada kartalar bo'lib turadi, `useOrders` + `lib/orderSimulator.ts`): Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim") → Tarix (qayta chaqirish).
 
 **Usta** (pastki menyu: Buyurtmalar · Pul · Chatlar · Profil — Yandex Pro tuzilmasi, Mejgorod yo'q):
 - Buyurtmalar: to'liq xarita, filtr (kategoriya, radius), zoom ±, joylashuv; panelda aktivlik va bugungi daromad, tarif kartasi, "surib ishga chiqish" tugmasi. Buyurtma yopiq bo'lsa tepada qizil banner (profil tekshirilmoqda / balans limitdan past / obuna tugagan).
@@ -108,10 +108,11 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 - Pin ustida pufakcha: eng yaqin ustagacha taxminiy vaqt ("3 daq"), Yandex'dagidek.
 - Mijoz belgisi: to'q sariq doira + "nafas oluvchi" halqa. Manzil xaritani surish bilan tanlanadi: markazdagi pin surilganda ko'tariladi, to'xtaganda tushadi.
 - Atrofdagi ustalar ~100 m aniqlikda (`lib/geo.ts` → `blur`).
-- Qidiruv: 3 ta to'lqin (2,4 s, 0,8 s farq, cheksiz) — xaritaning o'zida metrda chiziladi (`usePulse` + `Circle`), xarita surilsa nuqtadan ajralmaydi; usta belgilari 0,35 ↔ 1 miltillaydi; kamera 16 → 14.
+- Qidiruv: 3 ta to'lqin (4 s, 1,33 s farq, cheksiz, yumshoq paydo bo'lib so'nadi) — xaritaning o'zida metrda chiziladi (`usePulse` + `Circle`), xarita surilsa nuqtadan ajralmaydi; usta belgilari 0,35 ↔ 1 miltillaydi; kamera 16 → 14.
 - Usta yo'lda: yo'l ko'chalar bo'ylab (OSRM), soxta GPS har 5 s da yo'l bo'ylab ~60 m; nuqtalar orasida 5 s silliq interpolatsiya + burilish; "N daqiqa" qolgan yo'l uzunligidan; yo'l chizig'i yaxlit (miltillamaydi); kamera ikkalasini `fitToCoordinates`.
 - Tugmalar bosilganda biroz kichrayadi (`components/ui/Pressable.tsx`), panellar prujina bilan chiqadi.
 - Usta ilovasi: SVG aylana taymer 60 → 0, oxirgi 5 soniyada tebranish.
+- Usta tomonida belgi telefonning jonli GPS'i bo'yicha (`useWatchLocation`): usta yursa — yuradi, tursa — turadi; yo'l 150 m siljiganda qayta hisoblanadi.
 
 ## 6. Ma'lumotlar bazasi (Supabase, 5-bosqich)
 
@@ -144,6 +145,7 @@ Eng yuqori ballga taklif, 60 s taymer (usta ma'lumotlarni o'qib ulgurishi uchun)
 | Matn | `#0B2A24` asosiy, `#4E625C` ikkinchi darajali |
 | Fon | `#F6F8F7` sahifa, `#FFFFFF` kartalar |
 | Xarita foni | `#E9EEEB`, yo'llar oq |
+| Kategoriya ranglari | `constants/categories.ts` → `main/onMain/tint/ink`: santexnik — suv ko'k, elektrik — chaqmoq sariq, konditsioner — sovuq ko'k, mebel — yog'och, ta'mirlash — bo'yoq binafsha, maishiy texnika — po'lat. Shu kategoriyaga oid hamma narsa (tugma, chip, to'lqin, yo'l chizig'i, usta belgisi, ETA) o'z rangida |
 | Burchaklar | tugma 16, karta 18, panel 28 |
 | Tugma balandligi | kamida 44, asosiy tugma 56 |
 

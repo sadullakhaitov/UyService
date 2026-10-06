@@ -109,6 +109,10 @@
     "noneText": "Barcha yaqin ustalar band. Bir necha daqiqadan keyin qayta urinib ko'ring.",
     "retry": "Qayta urinish"
   },
+  "active": {
+    "searching": "Usta qidirilmoqda…",
+    "onWay": "Usta yo'lda · {{min}} daq"
+  },
   "tracking": {
     "eta": "Yetib keladi",
     "found": "Usta topildi va yo'lga chiqdi",
@@ -122,7 +126,8 @@
     "chatBtn": "Chat",
     "shareBtn": "Ulashish",
     "verified": "Tasdiqlangan usta",
-    "workPhoto": "Ish rasmi"
+    "workPhoto": "Ish rasmi",
+    "another": "Yana usta chaqirish"
   },
   "rate": {
     "doneTitle": "Ish yakunlandi",

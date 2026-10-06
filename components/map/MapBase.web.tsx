@@ -40,6 +40,8 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
   overlay,
   pulse,
   userLocation,
+  accent = colors.primary,
+  moveDuration,
 }, handle) {
   const rings = usePulse(Boolean(pulse));
   const [size, setSize] = useState({ w: 390, h: 844 });
@@ -83,7 +85,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
 
   useEffect(() => {
     if (fitTo?.length) return;
-    return animateTo({ lat: center.latitude, lng: center.longitude, zoom }, 2400);
+    return animateTo({ lat: center.latitude, lng: center.longitude, zoom }, 4000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoom]);
 
@@ -134,7 +136,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
   );
 
   const blink = useBlink(Boolean(blinkNearby), nearby?.length ?? 0);
-  const moving = useMovingPoint(master);
+  const moving = useMovingPoint(master, moveDuration);
 
 
   const toPath = (pts: LatLng[]) => pts.map((p, i) => `${i ? 'L' : 'M'}${project(p).x.toFixed(1)} ${project(p).y.toFixed(1)}`).join(' ');
@@ -193,8 +195,8 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
         <Path d={avenue} stroke={colors.mapRoad} strokeWidth={16 * scale} fill="none" strokeLinecap="round" />
         {route?.length ? (
           <>
-            <Path d={toPath(route)} stroke={colors.primaryTint} strokeWidth={10} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            <Path d={toPath(route)} stroke={colors.primary} strokeWidth={6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <Path d={toPath(route)} stroke={accent} strokeOpacity={0.25} strokeWidth={10} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <Path d={toPath(route)} stroke={accent} strokeWidth={6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </>
         ) : null}
         {pulse
@@ -207,10 +209,10 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
                   cx={c.x}
                   cy={c.y}
                   r={r}
-                  stroke={colors.primary}
+                  stroke={accent}
                   strokeOpacity={pulseOpacity(p)}
                   strokeWidth={2}
-                  fill={colors.primary}
+                  fill={accent}
                   fillOpacity={pulseOpacity(p) * 0.22}
                 />
               );
@@ -242,7 +244,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase({
           pointerEvents="none"
           style={[styles.marker, { left: project(moving.pos).x - 19, top: project(moving.pos).y - 19, transform: [{ rotate: `${moving.heading}deg` }] }]}
         >
-          <MasterIcon />
+          <MasterIcon color={accent} />
         </View>
       ) : null}
 

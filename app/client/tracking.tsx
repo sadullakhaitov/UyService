@@ -1,73 +1,56 @@
-import { router } from 'expo-router';
-import { BadgeCheck, Image as ImageIcon, Phone, Share2 } from 'lucide-react-native';
-import { useEffect, useMemo, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { BadgeCheck, ChevronLeft, Image as ImageIcon, Phone, Plus, Share2 } from 'lucide-react-native';
+import { useMemo, useState } from 'react';
 import { Linking, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase } from '@/components/map';
-import { MOVE_INTERVAL_MS } from '@/components/map/types';
 import { Sheet } from '@/components/sheets/Sheet';
-import { Avatar, Button, RatingBadge, Squish, Text } from '@/components/ui';
+import { Avatar, Button, IconButton, RatingBadge, Squish, Text } from '@/components/ui';
+import { getCategory } from '@/constants/categories';
 import { colors, fonts, radius, shadow } from '@/constants/theme';
 import { bboxCorners } from '@/lib/geo';
-import { remainingEtaMin, resample, useRoute } from '@/lib/routes';
 import { t } from '@/lib/i18n';
+import { etaMin } from '@/lib/orderSimulator';
 import { mastersAround } from '@/mocks';
-import { useOrder, type OrderStatus } from '@/store';
-
-const STEP_M = 60;
+import { useActiveOrder, useOrders } from '@/store';
 
 export default function Tracking() {
   const insets = useSafeAreaInsets();
-  const { masterId, location, categoryId, status, setStatus, reset } = useOrder();
-  const masters = useMemo(() => mastersAround(location), [location]);
-  const master = masters.find((m) => m.id === masterId) ?? masters[0];
-  // Ko'chalar bo'ylab haqiqiy yo'l (OSRM); kelguncha — taxminiy
-  const route = useRoute(master.location, location);
-  // Soxta GPS: usta har 5 s da yo'l bo'ylab ~60 m siljiydi (7-bosqichda — Supabase Realtime'dan)
-  const mockRoute = useMemo(() => (route ? resample(route.path, STEP_M) : [master.location, location]), [route]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const order = useActiveOrder(id);
+  const remove = useOrders((s) => s.remove);
+  const update = useOrders((s) => s.update);
   const [sheetH, setSheetH] = useState(460);
-  const [i, setI] = useState(0);
 
-  // Haqiqiy yo'l kelganda usta boshidan yuradi
-  useEffect(() => setI(0), [route?.real]);
+  const location = order?.location;
+  const masters = useMemo(() => (location ? mastersAround(location) : []), [location]);
+  const i = order?.step ?? 0;
+  const path = order?.path ?? [];
+  // Kamera usta, qolgan yo'l va mijozni birga ko'rsatadi (har 4 qadamda qayta moslanadi)
+  const fitTo = useMemo(
+    () => (location && path.length ? bboxCorners([...path.slice(Math.floor(i / 4) * 4), location]) : undefined),
+    [Math.floor(i / 4), path, location], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
-  // Soxta: usta joylashuvi har 5 s yangilanadi (7-bosqichda Supabase Realtime)
-  useEffect(() => {
-    if (status !== 'on_the_way') return;
-    const id = setInterval(() => setI((x) => Math.min(x + 1, mockRoute.length - 1)), MOVE_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [status, mockRoute]);
-
-  useEffect(() => {
-    if (i === mockRoute.length - 1 && status === 'on_the_way') {
-      const id = setTimeout(() => setStatus('arrived'), MOVE_INTERVAL_MS);
-      return () => clearTimeout(id);
-    }
-  }, [i, status, setStatus]);
-
-  useEffect(() => {
-    if (status !== 'arrived') return;
-    const id = setTimeout(() => setStatus('in_progress'), 4000);
-    return () => clearTimeout(id);
-  }, [status, setStatus]);
+  if (!order || !location) return null;
+  const master = masters.find((m) => m.id === order.masterId) ?? masters[0];
+  const cat = getCategory(order.categoryId);
+  const status = order.status;
 
   // Chiziq usta belgisining orqasidan boshlanadi (belgi oraliqda silliq siljiydi)
-  const remaining = mockRoute.slice(Math.max(0, i - 1));
-  const eta = route ? remainingEtaMin(route, mockRoute.slice(i)) : 1;
-  // Kamera usta, qolgan yo'l va mijozni birga ko'rsatadi (har 4 qadamda qayta moslanadi)
-  const fitTo = useMemo(() => bboxCorners([...mockRoute.slice(Math.floor(i / 4) * 4), location]), [Math.floor(i / 4), mockRoute]); // eslint-disable-line react-hooks/exhaustive-deps
+  const remaining = path.slice(Math.max(0, i - 1));
+  const eta = etaMin(order);
 
   const label: Record<string, { text: string; color: string }> = {
     on_the_way: { text: t('tracking.found'), color: colors.success },
     arrived: { text: t('tracking.arrived'), color: colors.accentInk },
-    in_progress: { text: t('tracking.inProgress'), color: colors.primary },
+    in_progress: { text: t('tracking.inProgress'), color: cat.ink },
   };
   const s = label[status] ?? label.on_the_way;
   const onWay = status === 'on_the_way' || status === 'assigned';
 
   const cancel = () => {
-    setStatus('cancelled');
-    reset();
+    remove(order.id);
     router.replace('/client');
   };
 
@@ -77,19 +60,27 @@ export default function Tracking() {
         center={location}
         insets={{ top: insets.top + 90, bottom: sheetH }}
         route={onWay ? remaining : undefined}
-        master={mockRoute[i]}
+        master={path[i]}
         clientMarker={location}
         fitTo={fitTo}
+        accent={cat.main}
       />
 
-      <View style={[styles.eta, shadow.float, { top: insets.top + 12 }]}>
+      <IconButton
+        icon={ChevronLeft}
+        label={t('common.back')}
+        floating
+        onPress={() => router.replace('/client')}
+        style={[styles.back, { top: insets.top + 12 }]}
+      />
+      <View style={[styles.eta, shadow.float, { top: insets.top + 12, backgroundColor: cat.main }]}>
         {onWay ? (
           <>
-            <Text style={styles.etaKicker}>{t('tracking.eta')}</Text>
-            <Text style={styles.etaValue}>{t('common.min', { value: eta })}</Text>
+            <Text style={[styles.etaKicker, { color: cat.onMain, opacity: 0.85 }]}>{t('tracking.eta')}</Text>
+            <Text style={[styles.etaValue, { color: cat.onMain }]}>{t('common.min', { value: eta })}</Text>
           </>
         ) : (
-          <Text style={[styles.etaValue, { fontSize: 16 }]}>{s.text}</Text>
+          <Text style={[styles.etaValue, { fontSize: 16, color: cat.onMain }]}>{s.text}</Text>
         )}
       </View>
 
@@ -100,16 +91,18 @@ export default function Tracking() {
         </View>
 
         <View style={styles.master}>
-          <Avatar initials={master.initials} size={64} />
+          <View style={[styles.avatarRing, { borderColor: cat.main }]}>
+            <Avatar initials={master.initials} size={60} />
+          </View>
           <View style={styles.flex}>
             <View style={styles.nameRow}>
               <Text variant="h3" numberOfLines={1}>
                 {master.name}
               </Text>
-              <BadgeCheck size={18} color={colors.onPrimary} fill={colors.primary} accessibilityLabel={t('tracking.verified')} />
+              <BadgeCheck size={18} color={colors.onPrimary} fill={cat.main} accessibilityLabel={t('tracking.verified')} />
             </View>
             <Text variant="small">
-              {t(`categories.${categoryId}`)} · {t('tracking.experience', { years: master.experienceYears })}
+              {t(`categories.${order.categoryId}`)} · {t('tracking.experience', { years: master.experienceYears })}
             </Text>
             <View style={styles.stats}>
               <RatingBadge value={master.rating} />
@@ -131,9 +124,10 @@ export default function Tracking() {
         </View>
 
         <View style={styles.actions}>
-          <Action icon={<Phone size={20} color={colors.primary} strokeWidth={2.2} />} label={t('tracking.callBtn')} onPress={() => Linking.openURL(`tel:${master.phone.replace(/\s/g, '')}`)} />
+          <Action icon={<Phone size={20} color={cat.ink} strokeWidth={2.2} />} tint={cat.tint} label={t('tracking.callBtn')} onPress={() => Linking.openURL(`tel:${master.phone.replace(/\s/g, '')}`)} />
           <Action
-            icon={<Share2 size={20} color={colors.primary} strokeWidth={2.2} />}
+            icon={<Share2 size={20} color={cat.ink} strokeWidth={2.2} />}
+            tint={cat.tint}
             label={t('tracking.shareBtn')}
             onPress={() => Share.share({ message: `${master.name} · ${t('tracking.eta')} ${t('common.min', { value: eta })} — UyService` })}
           />
@@ -144,22 +138,28 @@ export default function Tracking() {
           {status === 'in_progress' || status === 'arrived' ? (
             <Button
               title={t('common.demoNext')}
+              color={{ bg: cat.main, fg: cat.onMain }}
               onPress={() => {
-                setStatus('completed' as OrderStatus);
-                router.replace('/client/rate');
+                update(order.id, { status: 'completed' });
+                router.replace(`/client/rate?id=${order.id}`);
               }}
               style={styles.flex}
             />
           ) : null}
         </View>
+
+        <Squish accessibilityRole="button" onPress={() => router.replace('/client')} style={styles.another}>
+          <Plus size={18} color={colors.primary} strokeWidth={2.6} />
+          <Text style={styles.anotherText}>{t('tracking.another')}</Text>
+        </Squish>
       </Sheet>
     </View>
   );
 }
 
-function Action({ icon, label, onPress }: { icon: React.ReactNode; label: string; onPress: () => void }) {
+function Action({ icon, label, onPress, tint }: { icon: React.ReactNode; label: string; onPress: () => void; tint: string }) {
   return (
-    <Squish accessibilityRole="button" onPress={onPress} style={styles.action}>
+    <Squish accessibilityRole="button" onPress={onPress} style={[styles.action, { backgroundColor: tint }]}>
       {icon}
       <Text style={styles.actionText}>{label}</Text>
     </Squish>
@@ -169,7 +169,11 @@ function Action({ icon, label, onPress }: { icon: React.ReactNode; label: string
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
-  eta: { position: 'absolute', left: 16, backgroundColor: colors.primary, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 10 },
+  back: { position: 'absolute', left: 16 },
+  avatarRing: { borderWidth: 2.5, borderRadius: 22, padding: 2 },
+  another: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 44 },
+  anotherText: { fontFamily: fonts.bold, fontSize: 15, color: colors.primary },
+  eta: { position: 'absolute', left: 72, backgroundColor: colors.primary, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 10 },
   etaKicker: { fontFamily: fonts.medium, fontSize: 12, color: '#CFE5DD' },
   etaValue: { fontFamily: fonts.heavy, fontSize: 22, color: colors.onPrimary },
   status: { flexDirection: 'row', alignItems: 'center', gap: 8 },

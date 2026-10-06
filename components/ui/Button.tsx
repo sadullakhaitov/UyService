@@ -15,6 +15,8 @@ type Props = {
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
+  /** Kategoriya rangi bilan bo'yash */
+  color?: { bg: string; fg: string };
 };
 
 const palette: Record<Kind, { bg: string; fg: string }> = {
@@ -25,8 +27,8 @@ const palette: Record<Kind, { bg: string; fg: string }> = {
 };
 
 // Har bir ekranda bitta asosiy (yashil) tugma, qolganlari och kulrang.
-export function Button({ title, onPress, kind = 'primary', icon: Icon, big, disabled, loading, style }: Props) {
-  const p = palette[kind];
+export function Button({ title, onPress, kind = 'primary', icon: Icon, big, disabled, loading, style, color }: Props) {
+  const p = color ?? palette[kind];
   return (
     <Squish
       accessibilityRole="button"

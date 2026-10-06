@@ -4,7 +4,7 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTim
 import { colors } from '@/constants/theme';
 
 // Cheksiz yuguruvchi chiziq — qidiruv davom etayotganini bildiradi
-export function IndeterminateBar() {
+export function IndeterminateBar({ color = colors.primary }: { color?: string }) {
   const [w, setW] = useState(0);
   const x = useSharedValue(0);
   useEffect(() => {
@@ -13,7 +13,7 @@ export function IndeterminateBar() {
   const anim = useAnimatedStyle(() => ({ transform: [{ translateX: -0.4 * w + x.value * 1.4 * w }] }));
   return (
     <View style={styles.track} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
-      <Animated.View style={[styles.bar, anim]} />
+      <Animated.View style={[styles.bar, { backgroundColor: color }, anim]} />
     </View>
   );
 }

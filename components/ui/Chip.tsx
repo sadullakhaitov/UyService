@@ -3,15 +3,15 @@ import { colors, fonts, radius, size } from '@/constants/theme';
 import { Squish } from './Pressable';
 import { Text } from './Text';
 
-export function Chip({ label, selected, onPress }: { label: string; selected?: boolean; onPress?: () => void }) {
+export function Chip({ label, selected, onPress, color, onColor }: { label: string; selected?: boolean; onPress?: () => void; color?: string; onColor?: string }) {
   return (
     <Squish
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
       onPress={onPress}
-      style={[styles.chip, selected ? styles.on : styles.off]}
+      style={[styles.chip, selected ? styles.on : styles.off, selected && color ? { backgroundColor: color, borderColor: color } : null]}
     >
-      <Text style={[styles.label, { color: selected ? colors.onPrimary : colors.ink, fontFamily: selected ? fonts.bold : fonts.medium }]}>
+      <Text style={[styles.label, { color: selected ? (onColor ?? colors.onPrimary) : colors.ink, fontFamily: selected ? fonts.bold : fonts.medium }]}>
         {label}
       </Text>
     </Squish>

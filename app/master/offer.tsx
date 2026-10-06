@@ -36,7 +36,7 @@ export default function Offer() {
       </View>
 
       <View style={styles.body}>
-        <CountdownRing seconds={DISPATCH.offerTimeoutSec} label={t('offer.seconds')} onDone={decline} />
+        <CountdownRing seconds={DISPATCH.offerTimeoutSec} label={t('offer.seconds')} onDone={decline} color={cat.main} />
 
         <View style={styles.what}>
           <View style={[styles.icon, { backgroundColor: cat.tint }]}>
@@ -69,7 +69,7 @@ export default function Offer() {
       </View>
 
       <View style={styles.bottom}>
-        <Button title={t('offer.accept')} big onPress={accept} />
+        <Button title={t('offer.accept')} big color={{ bg: cat.main, fg: cat.onMain }} onPress={accept} />
         <Button title={t('offer.decline')} kind="secondary" onPress={decline} />
         <Text variant="caption" style={styles.centerText}>
           {t('offer.declineNote')}
