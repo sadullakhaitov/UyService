@@ -1,0 +1,161 @@
+// Haqiqiy xarita (Android/iOS). Veb uchun: MapBase.web.tsx
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
+import MapView, { AnimatedRegion, Marker, MarkerAnimated, PROVIDER_GOOGLE, type Camera } from 'react-native-maps';
+import { colors } from '@/constants/theme';
+import { bearing, type LatLng } from '@/lib/geo';
+import { ClientDot } from './ClientDot';
+import { MasterIcon, NearbyIcon } from './MasterIcon';
+import mapStyle from './mapStyle.json';
+import { RouteLine } from './RouteLine';
+import { DEFAULT_ZOOM, MOVE_INTERVAL_MS, type MapBaseProps } from './types';
+import { useBlink } from './useBlink';
+
+// iOS Expo Go'da Google xarita yo'q — u yerda Apple xaritasi ishlatiladi (rang uslubisiz).
+const provider = Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined;
+
+const zoomToAltitude = (z: number) => 35_200_000 / 2 ** z;
+const cam = (center: LatLng, zoom: number): Partial<Camera> => ({ center, zoom, altitude: zoomToAltitude(zoom), heading: 0, pitch: 0 });
+
+export function MapBase({
+  center,
+  zoom = DEFAULT_ZOOM,
+  flyFrom,
+  insets = { top: 0, bottom: 0 },
+  nearby,
+  blinkNearby,
+  clientMarker,
+  route,
+  master,
+  fitTo,
+  onMoveStart,
+  onMoveEnd,
+  overlay,
+}: MapBaseProps) {
+  const ref = useRef<MapView>(null);
+  const ready = useRef(false);
+  const dragging = useRef(false);
+  const blink = useBlink(Boolean(blinkNearby), nearby?.length ?? 0);
+
+  const initialCamera = useMemo(
+    () => ({ ...cam(flyFrom ?? center, flyFrom ? 12 : zoom), heading: 0, pitch: 0 }) as Camera,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const onMapReady = () => {
+    ready.current = true;
+    if (fitTo?.length) return fit();
+    if (flyFrom) setTimeout(() => ref.current?.animateCamera(cam(center, zoom), { duration: 1600 }), 250);
+  };
+
+  // Zoom o'zgarsa — kamera asta uzoqlashadi/yaqinlashadi
+  useEffect(() => {
+    if (ready.current) ref.current?.animateCamera(cam(center, zoom), { duration: 2400 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoom]);
+
+  const fitKey = fitTo?.map((p) => `${p.latitude.toFixed(4)},${p.longitude.toFixed(4)}`).join('|');
+  const fit = () => {
+    if (!fitTo?.length) return;
+    ref.current?.fitToCoordinates(fitTo, {
+      edgePadding: { top: insets.top + 80, bottom: insets.bottom + 60, left: 60, right: 60 },
+      animated: true,
+    });
+  };
+  useEffect(() => {
+    if (ready.current) fit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitKey]);
+
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      <MapView
+        ref={ref}
+        provider={provider}
+        style={StyleSheet.absoluteFill}
+        customMapStyle={mapStyle}
+        initialCamera={initialCamera}
+        mapPadding={{ top: insets.top, bottom: insets.bottom, left: 0, right: 0 }}
+        onMapReady={onMapReady}
+        showsPointsOfInterests={false}
+        showsBuildings
+        showsCompass={false}
+        showsMyLocationButton={false}
+        toolbarEnabled={false}
+        pitchEnabled={false}
+        rotateEnabled={false}
+        onPanDrag={() => {
+          if (!dragging.current) {
+            dragging.current = true;
+            onMoveStart?.();
+          }
+        }}
+        onRegionChangeComplete={(r) => {
+          if (!dragging.current) return;
+          dragging.current = false;
+          onMoveEnd?.({ latitude: r.latitude, longitude: r.longitude });
+        }}
+      >
+        {nearby?.map((p, i) => (
+          <Marker key={`n${i}`} coordinate={p} anchor={{ x: 0.5, y: 0.5 }} opacity={blink[i]} tracksViewChanges={false}>
+            <NearbyIcon />
+          </Marker>
+        ))}
+        {route?.length ? <RouteLine path={route} /> : null}
+        {clientMarker ? (
+          <Marker coordinate={clientMarker} anchor={{ x: 0.5, y: 0.5 }} tracksViewChanges={false}>
+            <ClientDot breathing={false} />
+          </Marker>
+        ) : null}
+        {master ? <MovingMaster target={master} /> : null}
+      </MapView>
+      {overlay ? (
+        <View pointerEvents="none" style={[styles.focal, { top: insets.top, bottom: insets.bottom }]}>
+          {overlay}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+// Har 5 s kelgan nuqta orasida 5 s davomida silliq siljiydi va yo'nalishi bo'yicha buriladi
+function MovingMaster({ target }: { target: LatLng }) {
+  const region = useRef(new AnimatedRegion({ ...target, latitudeDelta: 0, longitudeDelta: 0 })).current;
+  const last = useRef(target);
+  const [heading, setHeading] = useState(0);
+  const [track, setTrack] = useState(true);
+
+  useEffect(() => {
+    const id = setTimeout(() => setTrack(false), 600); // Android: SVG chizilgach kuzatishni o'chiramiz
+    return () => clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
+    const from = last.current;
+    if (from.latitude === target.latitude && from.longitude === target.longitude) return;
+    setHeading(bearing(from, target));
+    last.current = target;
+    region
+      .timing({ ...target, latitudeDelta: 0, longitudeDelta: 0, duration: MOVE_INTERVAL_MS, easing: Easing.linear, useNativeDriver: false } as never)
+      .start();
+  }, [target.latitude, target.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <MarkerAnimated
+      coordinate={region as unknown as Animated.WithAnimatedValue<LatLng>}
+      anchor={{ x: 0.5, y: 0.5 }}
+      flat
+      rotation={heading}
+      tracksViewChanges={track}
+    >
+      <MasterIcon />
+    </MarkerAnimated>
+  );
+}
+
+const styles = StyleSheet.create({
+  focal: { position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
+});
+
+export const MAP_BG = colors.map;

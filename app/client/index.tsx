@@ -1,0 +1,209 @@
+import { router } from 'expo-router';
+import { ChevronRight, LocateFixed, MapPin, ReceiptText, Search, User } from 'lucide-react-native';
+import { useMemo, useState } from 'react';
+import { StyleSheet, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CenterPin, MapBase } from '@/components/map';
+import { Sheet } from '@/components/sheets/Sheet';
+import { Avatar, IconButton, Logo, RatingBadge, Squish, Text } from '@/components/ui';
+import { categories, problems, type CategoryId } from '@/constants/categories';
+import { colors, fonts, radius, shadow } from '@/constants/theme';
+import { blur, distanceKm, type LatLng } from '@/lib/geo';
+import { t } from '@/lib/i18n';
+import { getCurrentLocation, reverseGeocode } from '@/lib/location';
+import { mockMasters, TASHKENT_CENTER } from '@/mocks';
+import { useOrder, useUser } from '@/store';
+
+export default function ClientHome() {
+  const insets = useSafeAreaInsets();
+  const [sheetH, setSheetH] = useState(520);
+  const [moving, setMoving] = useState(false);
+  const [query, setQuery] = useState('');
+  const { address, location, setAddress, setDraft, reset } = useOrder();
+  const favorites = useUser((s) => s.favorites);
+  const [center, setCenter] = useState<LatLng>(location);
+
+  const nearby = useMemo(
+    () => mockMasters.filter((m) => distanceKm(m.location, location) < 3).map((m) => blur(m.location)),
+    [location],
+  );
+
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return categories;
+    return categories.filter(
+      (c) =>
+        t(`categories.${c.id}`).toLowerCase().includes(q) ||
+        problems.some((p) => p.categoryId === c.id && t(`problems.${p.id}`).toLowerCase().includes(q)),
+    );
+  }, [query]);
+
+  const favorite = mockMasters.find((m) => favorites.includes(m.id));
+
+  const pick = (categoryId: CategoryId, preferredMasterId: string | null = null) => {
+    reset();
+    const first = problems.find((p) => p.categoryId === categoryId)!;
+    setDraft({ categoryId, problemId: first.id, preferredMasterId });
+    router.push('/client/order');
+  };
+
+  const onMoveEnd = async (c: LatLng) => {
+    setMoving(false);
+    const name = await reverseGeocode(c);
+    setAddress(name ?? address, c);
+  };
+
+  const locate = async () => {
+    const here = await getCurrentLocation();
+    if (!here) return;
+    setCenter(here);
+    onMoveEnd(here);
+  };
+
+  const topH = insets.top + 76;
+
+  return (
+    <View style={styles.root}>
+      <MapBase
+        center={center}
+        flyFrom={TASHKENT_CENTER}
+        insets={{ top: topH, bottom: sheetH }}
+        nearby={nearby}
+        onMoveStart={() => setMoving(true)}
+        onMoveEnd={onMoveEnd}
+        overlay={<CenterPin lifted={moving} />}
+      />
+
+      <View style={[styles.top, { paddingTop: insets.top + 12 }]} pointerEvents="box-none">
+        <View style={[styles.logoPill, shadow.float]}>
+          <Logo size={15} />
+        </View>
+        <View style={styles.topRight}>
+          <IconButton icon={ReceiptText} label={t('client.history')} floating onPress={() => router.push('/client/history')} />
+          <IconButton icon={User} label={t('common.profile')} floating onPress={() => router.push('/role')} />
+        </View>
+      </View>
+
+      <IconButton
+        icon={LocateFixed}
+        label={t('client.address')}
+        floating
+        onPress={locate}
+        style={[styles.locate, { bottom: sheetH + 12 }]}
+      />
+
+      <Sheet onHeight={setSheetH}>
+        <View style={styles.address}>
+          <View style={styles.addrIcon}>
+            <MapPin size={18} color={colors.accent} strokeWidth={2.4} />
+          </View>
+          <View style={styles.flex}>
+            <Text variant="caption">{t('client.address')}</Text>
+            <Text variant="bodyBold" numberOfLines={1}>
+              {moving ? t('client.addressMoving') : address}
+            </Text>
+          </View>
+          <View style={styles.online}>
+            <View style={styles.onlineDot} />
+            <Text style={styles.onlineText}>{t('client.nearbyOnline', { count: nearby.length })}</Text>
+          </View>
+        </View>
+
+        <View style={styles.search}>
+          <Search size={20} color={colors.ink2} strokeWidth={2.2} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder={t('client.searchPlaceholder')}
+            placeholderTextColor={colors.muted}
+            accessibilityLabel={t('client.searchPlaceholder')}
+            style={styles.searchInput}
+          />
+        </View>
+
+        <View style={styles.modes}>
+          <View style={[styles.mode, styles.modeOn]}>
+            <Text style={[styles.modeText, { color: colors.onPrimary }]}>{t('client.modeNow')}</Text>
+          </View>
+          <View style={styles.mode} accessibilityState={{ disabled: true }}>
+            <Text style={[styles.modeText, { color: colors.ink2 }]}>{t('client.modeLater')}</Text>
+            <View style={styles.soon}>
+              <Text style={styles.soonText}>{t('common.soon')}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.grid}>
+          {shown.map((c) => {
+            const Icon = c.icon;
+            return (
+              <Squish key={c.id} accessibilityRole="button" onPress={() => pick(c.id)} style={[styles.tile, { backgroundColor: c.tint }]}>
+                <Icon size={28} color={c.ink} strokeWidth={2} />
+                <Text style={styles.tileText} numberOfLines={1}>
+                  {t(`categories.${c.id}`)}
+                </Text>
+              </Squish>
+            );
+          })}
+        </View>
+
+        {favorite ? (
+          <Squish accessibilityRole="button" onPress={() => pick(favorite.categories[0], favorite.id)} style={styles.fav}>
+            <Avatar initials={favorite.initials} size={42} solid />
+            <View style={styles.flex}>
+              <Text variant="caption">
+                {t('client.myMasters')} · {t(`categories.${favorite.categories[0]}`)}
+              </Text>
+              <View style={styles.favRow}>
+                <Text variant="bodyBold" numberOfLines={1}>
+                  {favorite.name.split(' ')[0]} aka
+                </Text>
+                <RatingBadge value={favorite.rating} />
+              </View>
+            </View>
+            <View style={styles.favCall}>
+              <Text style={styles.favCallText}>{t('client.call')}</Text>
+              <ChevronRight size={16} color={colors.primary} strokeWidth={2.6} />
+            </View>
+          </Squish>
+        ) : null}
+      </Sheet>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.map },
+  flex: { flex: 1 },
+  top: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  topRight: { flexDirection: 'row', gap: 10 },
+  logoPill: { backgroundColor: colors.surface, paddingHorizontal: 14, height: 44, borderRadius: 14, justifyContent: 'center' },
+  locate: { position: 'absolute', right: 16 },
+  address: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  addrIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
+  online: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 30, borderRadius: 15, backgroundColor: colors.primarySoft },
+  onlineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success },
+  onlineText: { fontFamily: fonts.heavy, fontSize: 13, color: colors.primary },
+  search: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.field, borderRadius: radius.field, paddingHorizontal: 14, height: 52 },
+  searchInput: { flex: 1, fontFamily: fonts.regular, fontSize: 16, color: colors.ink, height: '100%' },
+  modes: { flexDirection: 'row', backgroundColor: colors.field, borderRadius: 14, padding: 4, gap: 4 },
+  mode: { flex: 1, height: 44, borderRadius: 11, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 },
+  modeOn: { backgroundColor: colors.primary },
+  modeText: { fontFamily: fonts.bold, fontSize: 14 },
+  soon: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, backgroundColor: colors.accentSoft },
+  soonText: { fontFamily: fonts.bold, fontSize: 10, color: colors.accentInk },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  tile: {
+    width: '31.4%',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 6,
+    borderRadius: radius.tile,
+  },
+  tileText: { fontFamily: fonts.bold, fontSize: 13, color: colors.ink },
+  fav: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.tile, borderWidth: 1.5, borderColor: colors.line },
+  favRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  favCall: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingVertical: 10, paddingLeft: 6 },
+  favCallText: { fontFamily: fonts.heavy, fontSize: 14, color: colors.primary },
+});
