@@ -64,8 +64,8 @@ npx supabase db push
 npx supabase functions deploy
 ```
 
-Bu 4 ta funksiyani yuklaydi: `dispatch` (usta qidirish), `offer-respond` (usta javobi),
-`offer-timeout` (har 15 soniyada tekshiruv), `send-sms` (SMS kod). Docker so'rasa — oxiriga `--use-api` qo'shing:
+Bu 5 ta funksiyani yuklaydi: `dispatch` (usta qidirish), `offer-respond` (usta javobi),
+`offer-timeout` (har 15 soniyada tekshiruv), `send-sms` (SMS kod), `push-send` (bildirishnomalar). Docker so'rasa — oxiriga `--use-api` qo'shing:
 `npx supabase functions deploy --use-api`.
 
 ## 6. Eskiz.uz (SMS)
@@ -120,7 +120,23 @@ uchun kerak.
 
    O'chirish kerak bo'lsa: `select public.unschedule_offer_timeout();`
 
-## 10. O'zingizni admin qilish
+## 10. Push-bildirishnomalar (ilova yopiq bo'lsa ham)
+
+1. SQL Editor'da (9-bo'limdagi `CRON_SECRET` qiymatining o'zi bilan):
+   ```sql
+   select public.configure_push('https://PROJECT_REF.supabase.co', 'CRON_SECRET_QIYMATI');
+   ```
+   Endi buyurtma o'zgarganda baza `push-send`ni darhol chaqiradi (zaxira — `offer-timeout` har 15 s).
+2. Telefon ilovasi tokenni o'zi yozadi (`lib/push.ts`), lekin buning uchun ilova **EAS orqali yig'ilgan** bo'lishi
+   kerak (Expo Go'da Android push ishlamaydi): `npx eas init` → `app.config.ts`ga `extra.eas.projectId` yoziladi;
+   Android uchun Firebase (FCM) kaliti — `npx eas credentials` → Android → Push Notifications.
+3. Tekshirish: `select kind, sent_at, error from push_outbox order by id desc limit 20;`
+
+Nima qachon ketadi: ustaga — "Yangi buyurtma" (Sozlamalarda o'chirsa bo'ladi), "Mijoz narxga rozi / rozi emas",
+"Mijoz bekor qildi"; mijozga — "Usta topildi", "Usta yetib keldi", "Usta narx taklif qildi", "Ish tugadi",
+"Hozir bo'sh usta yo'q". Matn foydalanuvchi tilida (`profiles.language`), bosilganda tegishli ekran ochiladi.
+
+## 11. O'zingizni admin qilish
 
 Birinchi adminni faqat SQL orqali tayinlash mumkin (keyingilarini admin panelning o'zidan qo'shasiz).
 
@@ -131,7 +147,7 @@ Birinchi adminni faqat SQL orqali tayinlash mumkin (keyingilarini admin panelnin
    update public.profiles set role = 'admin' where phone = '+998901234567';
    ```
 
-## 11. Admin panel
+## 12. Admin panel
 
 Manzil: **uyservice.uz/admin** (telefondagi ilovada ham `/admin`). Kirish — admin raqami + SMS kod.
 8 soat harakatsizlikdan keyin qayta kirish so'raladi. Har bir amal `admin_log` jurnaliga yoziladi.
@@ -171,11 +187,13 @@ Kerak bo'lsa SQL Editor'dan ham qilish mumkin (masalan, server ulanmasdan oldin)
 | `migrations/…_cron.sql` | `schedule_offer_timeout()` |
 | `functions/_shared/dispatch.ts` | usta qidirish algoritmi — **ilova bilan bitta fayl** (`lib/dispatch.ts` shuni ishlatadi) |
 | `functions/_shared/engine.ts` | algoritmni bazaga ulaydigan qadam (takliflar, aktivlik, tayinlash) |
-| `functions/*/index.ts` | `dispatch`, `offer-respond`, `offer-timeout`, `send-sms` |
+| `functions/_shared/push.ts` | push navbatini Expo Push API orqali yuborish, matnlar (uz/ru/en) |
+| `functions/*/index.ts` | `dispatch`, `offer-respond`, `offer-timeout`, `send-sms`, `push-send` |
 | `seed.sql` | faqat lokal sinov uchun 3 ta demo usta (`db push` uni yubormaydi) |
 | `migrations/…_admin.sql` | admin panel: bloklash, `admin_log`, `balance_ops`, `admin_*` funksiyalari va ko'rinishlari, `admin_stats` |
 | `migrations/…_price_agreement.sql` | narx kelishuvi va eshik kodi: `order_secrets` (kodni faqat mijoz ko'radi), `order_door_code`, `verify_door_code` (5 xato → 10 daq), `propose_price`, `respond_price`; ulush foizi qabul paytida qotiriladi (`orders.fee_percent`) |
-| `tests/` | lokal Postgres'da RLS sinovi (`rls_test.sql`), admin sinovi (`admin_test.sql`), narx kelishuvi sinovi (`price_test.sql`) |
+| `migrations/…_push.sql` | push navbati (`push_outbox`), triggerlar (kimga nima), `claim_push` / `finish_push`, `configure_push` |
+| `tests/` | lokal Postgres'da RLS sinovi (`rls_test.sql`), admin (`admin_test.sql`), narx kelishuvi (`price_test.sql`), push (`push_test.sql`) |
 
 Ilova tomoni: `lib/supabase.ts` (ulanish), `lib/auth.ts` (SMS kod), `lib/api.ts` (buyurtma, taklifga javob,
 joylashuv, chat — ekranlarga keyin ulanadi).
@@ -197,7 +215,7 @@ Docker kerak emas — oddiy PostgreSQL 16 + PostGIS yetadi:
 
 ```bash
 createdb uytest
-for f in supabase/tests/supabase_stub.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/rls_test.sql supabase/tests/admin_test.sql supabase/tests/price_test.sql; do
+for f in supabase/tests/supabase_stub.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/rls_test.sql supabase/tests/admin_test.sql supabase/tests/price_test.sql supabase/tests/push_test.sql; do
   psql -v ON_ERROR_STOP=1 -q -d uytest -f "$f" || break
 done   # oxirida: NOTICE: ALL RLS TESTS PASSED
 ```

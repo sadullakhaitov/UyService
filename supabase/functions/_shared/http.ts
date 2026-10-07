@@ -30,6 +30,14 @@ export async function requestUserId(db: SupabaseClient, req: Request): Promise<s
   return error ? null : (data.user?.id ?? null);
 }
 
+/** pg_cron / pg_net chaqiruvi: `x-cron-secret: <CRON_SECRET>` yoki `Authorization: Bearer <service_role key>` */
+export function isCronRequest(req: Request) {
+  const cronSecret = Deno.env.get('CRON_SECRET');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const bearer = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
+  return Boolean((cronSecret && req.headers.get('x-cron-secret') === cronSecret) || (serviceKey && bearer === serviceKey));
+}
+
 export async function isAdmin(db: SupabaseClient, userId: string) {
   const { data } = await db.from('profiles').select('role').eq('id', userId).maybeSingle();
   return data?.role === 'admin';

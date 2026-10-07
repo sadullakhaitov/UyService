@@ -1,11 +1,12 @@
 // Bildirishnomalar: "Usta topildi", "Usta yetib keldi", ustaga "Yangi buyurtma".
-// Hozir — mahalliy (telefonning o'zida, ilova orqa fonda bo'lsa chiqadi).
-// 8-bosqichda: serverdan push (Expo push token → Supabase Edge Function).
+// Mahalliy (telefonning o'zida, ilova orqa fonda bo'lsa chiqadi) — sinov rejimida.
+// Server ulanganda: serverdan push (lib/push.ts → profiles.push_token → supabase/functions/push-send).
 import * as Notifications from 'expo-notifications';
 import { router, type Href } from 'expo-router';
 import { useEffect } from 'react';
 import { AppState, Platform } from 'react-native';
 import { t } from './i18n';
+import { registerPush } from './push';
 
 let ready: Promise<boolean> | null = null;
 
@@ -27,7 +28,10 @@ function setup() {
       const cur = await Notifications.getPermissionsAsync();
       if (cur.granted) return true;
       if (!cur.canAskAgain) return false;
-      return (await Notifications.requestPermissionsAsync()).granted;
+      const granted = (await Notifications.requestPermissionsAsync()).granted;
+      // Ruxsat endi berildi — server ham shu telefonga yubora olsin
+      if (granted) void registerPush(true);
+      return granted;
     } catch {
       return false;
     }

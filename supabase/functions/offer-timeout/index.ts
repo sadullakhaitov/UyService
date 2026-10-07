@@ -3,21 +3,19 @@
 // 2) qidiruvdagi har bir buyurtma uchun bitta qadam: 60 s javobsiz taklif yopiladi (aktivlik −5),
 //    keyingi usta / radius kengaytirish / 3 daqiqadan keyin "bo'sh usta yo'q"
 // 3) yetim qolgan eski takliflar yopiladi
+// 4) push-bildirishnomalar navbati (zaxira yo'l — odatda push-send darhol yuboradi)
 // Ruxsat: `x-cron-secret: <CRON_SECRET>` yoki `Authorization: Bearer <service_role key>`.
 import { activeSearches, dispatchStep, startDueScheduled } from '../_shared/engine.ts';
-import { adminClient, corsHeaders, json } from '../_shared/http.ts';
+import { adminClient, corsHeaders, isCronRequest, json } from '../_shared/http.ts';
+import { flushPush } from '../_shared/push.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
-  const cronSecret = Deno.env.get('CRON_SECRET');
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  const bearer = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
-  const allowed = (cronSecret && req.headers.get('x-cron-secret') === cronSecret) || (serviceKey && bearer === serviceKey);
-  if (!allowed) return json({ error: 'unauthorized' }, 401);
+  if (!isCronRequest(req)) return json({ error: 'unauthorized' }, 401);
 
   const db = adminClient();
-  const result = { scheduled: 0, stepped: 0, changed: 0, errors: 0 };
+  const result = { scheduled: 0, stepped: 0, changed: 0, errors: 0, pushed: 0 };
   try {
     result.scheduled = (await startDueScheduled(db)).length;
     for (const id of await activeSearches(db)) {
@@ -37,6 +35,11 @@ Deno.serve(async (req) => {
       .update({ status: 'expired', responded_at: new Date().toISOString() })
       .eq('status', 'sent')
       .lt('expires_at', new Date(Date.now() - 30_000).toISOString());
+    try {
+      result.pushed = (await flushPush(db)).sent;
+    } catch (e) {
+      console.error('push', e);
+    }
     return json({ ok: true, ...result });
   } catch (e) {
     console.error(e);

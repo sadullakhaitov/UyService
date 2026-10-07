@@ -17,6 +17,7 @@ import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { DemoBadge, DemoBar } from '@/components/ui/DemoBanner';
 import { pageLayout } from '@/components/ui/PageFrame';
 import { useNotificationTaps } from '@/lib/notify';
+import { usePushRegistration } from '@/lib/push';
 import { ThemeRevealProvider } from '@/components/ui/ThemeReveal';
 import { useMaster, useUser } from '@/store';
 
@@ -59,6 +60,7 @@ export default function RootLayout() {
   useScheme();
   // Bildirishnoma bosilsa — tegishli buyurtma yoki taklif ochiladi
   useNotificationTaps();
+  usePushRegistration(useUser((s) => s.language), useMaster((s) => s.notifications));
   const [loaded, error] = useFonts({
     Manrope_500Medium,
     Manrope_600SemiBold,

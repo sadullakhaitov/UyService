@@ -105,6 +105,7 @@ lib/                      ← i18n, geo, location, routes, supabase
   masterFeed.ts           ← usta tomoni: takliflar oqimi, joylashuvni har 5 s yuborish, useBlocked
   backend.ts              ← serverga yoziladigan hamma narsa (hozir mahalliy, 5-bosqichda Supabase)
   notify.ts               ← bildirishnomalar (mahalliy; ilova orqa fonda bo'lsa chiqadi)
+  push.ts                 ← serverdan push: Expo push tokeni → profiles.push_token (til, "Yangi buyurtma" sozlamasi bilan); chiqishda o'chiriladi
   geocode.ts              ← manzil qidirish butun O'zbekiston bo'ylab, foydalanuvchiga yaqinlari birinchi (Yandex Geocoder, kalit bo'lmasa OSM Nominatim)
   schedule.ts, photos.ts  ← rejalashtirish vaqtlari; rasm tanlash/suratga olish
   yandex.ts               ← Yandex kaliti + HTTP Geocoder (qidiruv, koordinatadan manzil); kalit bo'lmasa — Nominatim / telefon xizmati
@@ -123,10 +124,10 @@ locales/uz.json           ← ilovadagi barcha matnlar
 mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
 design/                   ← dizayn skrinshotlari
 supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma
-  migrations/             ← 8 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi
+  migrations/             ← 9 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
-  functions/{dispatch,offer-respond,offer-timeout,send-sms} ← Edge Functions (send-sms — Eskiz.uz orqali SMS)
-  tests/                  ← supabase_stub.sql + rls_test.sql + admin_test.sql + price_test.sql (mahalliy Postgres+PostGIS'da 58 ta tekshiruv)
+  functions/{dispatch,offer-respond,offer-timeout,send-sms,push-send} ← Edge Functions (send-sms — Eskiz.uz orqali SMS; push-send — push_outbox → Expo Push API)
+  tests/                  ← supabase_stub.sql + rls_test.sql + admin_test.sql + price_test.sql + push_test.sql (mahalliy Postgres+PostGIS'da 65 ta tekshiruv)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
 wrangler.jsonc            ← sayt (uyservice.uz) Cloudflare Workers'da: build `npx expo export --platform web` → `dist`, deploy `npx wrangler deploy`; hamma yo'llar index.html'ga (SPA)
@@ -164,7 +165,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 **Rejalashtirish ("Vaqtni tanlash"):** bugun/ertaga/indinga, 08:00–21:00 har soat, eng erta — hozirdan 1,5 soat keyin. Buyurtma `scheduled` holatida turadi, usta qidirish belgilangan vaqtdan 30 daqiqa oldin avtomatik boshlanadi (`SCHEDULE_LEAD_MS`).
 
-**Bildirishnomalar:** bosilganda tegishli ekran ochiladi (`data.url`, `useNotificationTaps`); mijozga "Usta topildi", "Usta yetib keldi", "Usta narx taklif qildi", "Ish tugadi", "Bo'sh usta yo'q"; ustaga "Yangi buyurtma" (Sozlamalarda o'chirish mumkin). Ilova ekranda ochiq bo'lsa chiqmaydi.
+**Bildirishnomalar:** bosilganda tegishli ekran ochiladi (`data.url`, `useNotificationTaps`); mijozga "Usta topildi", "Usta yetib keldi", "Usta narx taklif qildi", "Ish tugadi", "Bo'sh usta yo'q"; ustaga "Yangi buyurtma" (Sozlamalarda o'chirish mumkin). Ilova ekranda ochiq bo'lsa chiqmaydi. Server ulanganda xuddi shu xabarlar serverdan push bo'lib keladi (ilova yopiq bo'lsa ham): triggerlar → `push_outbox` → `push-send` (Expo Push API), foydalanuvchi tilida; ustaga qo'shimcha "Mijoz narxga rozi / rozi emas", "Mijoz bekor qildi". Sozlash — `supabase/README.md` 10-bo'lim (EAS projectId + FCM kerak).
 
 **Kirish (mehmon birinchi):** ilova ochilganda — til tanlash, keyin darhol mijoz bosh sahifasi. Ro'yxatdan o'tish (telefon → SMS kod) faqat mijoz hamma narsani tanlab "Usta chaqirish"ni bosganda so'raladi; tasdiqlangach buyurtma avtomatik yuboriladi. Usta bo'lish — Profil → "Usta bo'lib ishlash" (raqam tasdiqlanadi → tarif). Til, raqam, rol telefonda saqlanadi (AsyncStorage). Usta ro'yxatdan o'tganda (`master/register`) ism, tajriba, kategoriyalar, pasport rasmi (+ ixtiyoriy selfi) va ish namunalarini yuklaydi; pasport va selfi ixtiyoriy — ularsiz ham buyurtma oladi, faqat ulushi +5% (`useMaster().verified`, `profile.status`: none (pasportsiz) → pending (yuklandi) → approved/rejected; ustada tepada to'q sariq eslatma "Hujjatsiz: ulush 15%"). Usta ma'lumotlari telefonda saqlanadi (`uyservice-master`), "onlayn" holati saqlanmaydi.
 
@@ -241,7 +242,7 @@ Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, 
 6. 🟡 Usta ilovasi — ekranlar, anketa, profil bo'limlari tayyor; joylashuv har 5 s `lib/backend.ts` → `publishMasterLocation` orqali yuboriladi (hozir mahalliy, 5-bosqichda `master_locations`).
 7. 🟡 Taqsimlash: algoritm (`supabase/functions/_shared/dispatch.ts`) va Edge Functions tayyor; ilova hozir soxta simulyator bilan ishlaydi, Realtime'ga ulash qoladi.
 8. ✅ Admin panel (uyservice.uz/admin): hamma bo'limlar, sinov rejimi va Supabase manbasi, server funksiyalari va sinovlari.
-9. 🟡 Sayqal: internet yo'qligi banneri, xato ekrani (ErrorBoundary), bekor qilish sabablari tayyor; qoladi — serverdan push, ikki telefonda sinov.
+9. 🟡 Sayqal: internet yo'qligi banneri, xato ekrani (ErrorBoundary), bekor qilish sabablari, serverdan push (yozilgan va sinalgan) tayyor; qoladi — ikki telefonda sinov.
 
 ## 10. Ishga tushirish
 

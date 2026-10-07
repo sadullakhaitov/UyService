@@ -1,6 +1,7 @@
 // Telefon raqam + SMS kod bilan kirish.
 // Supabase sozlangan bo'lsa — Supabase Auth (SMS'ni Eskiz.uz yuboradi: supabase/functions/send-sms),
 // aks holda soxta rejim: istalgan 6 xonali kod qabul qilinadi.
+import { unregisterPush } from './push';
 import { getSupabase } from './supabase';
 
 export type AuthResult = { ok: boolean; error?: string };
@@ -51,5 +52,6 @@ export async function currentUserId(): Promise<string | null> {
 }
 
 export async function signOut() {
+  await unregisterPush();
   await getSupabase()?.auth.signOut();
 }
