@@ -18,6 +18,7 @@ import { DemoBadge, DemoBar } from '@/components/ui/DemoBanner';
 import { pageLayout } from '@/components/ui/PageFrame';
 import { useNotificationTaps } from '@/lib/notify';
 import { usePushRegistration } from '@/lib/push';
+import { useTelegramApp } from '@/lib/telegram';
 import { ThemeRevealProvider } from '@/components/ui/ThemeReveal';
 import { useMaster, useUser } from '@/store';
 
@@ -61,6 +62,8 @@ export default function RootLayout() {
   // Bildirishnoma bosilsa — tegishli buyurtma yoki taklif ochiladi
   useNotificationTaps();
   usePushRegistration(useUser((s) => s.language), useMaster((s) => s.notifications));
+  // Telegram ichida ochilgan bo'lsa: oyna sozlamalari va avtomatik kirish
+  useTelegramApp();
   const [loaded, error] = useFonts({
     Manrope_500Medium,
     Manrope_600SemiBold,

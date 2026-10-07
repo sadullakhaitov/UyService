@@ -64,8 +64,9 @@ npx supabase db push
 npx supabase functions deploy
 ```
 
-Bu 5 ta funksiyani yuklaydi: `dispatch` (usta qidirish), `offer-respond` (usta javobi),
-`offer-timeout` (har 15 soniyada tekshiruv), `send-sms` (SMS kod), `push-send` (bildirishnomalar). Docker so'rasa — oxiriga `--use-api` qo'shing:
+Bu 7 ta funksiyani yuklaydi: `dispatch` (usta qidirish), `offer-respond` (usta javobi),
+`offer-timeout` (har 15 soniyada tekshiruv), `send-sms` (SMS kod), `push-send` (bildirishnomalar),
+`telegram-auth` va `telegram-bot` (Telegram orqali kirish, 11-bo'lim). Docker so'rasa — oxiriga `--use-api` qo'shing:
 `npx supabase functions deploy --use-api`.
 
 ## 6. Eskiz.uz (SMS)
@@ -136,7 +137,33 @@ Nima qachon ketadi: ustaga — "Yangi buyurtma" (Sozlamalarda o'chirsa bo'ladi),
 "Mijoz bekor qildi"; mijozga — "Usta topildi", "Usta yetib keldi", "Usta narx taklif qildi", "Ish tugadi",
 "Hozir bo'sh usta yo'q". Matn foydalanuvchi tilida (`profiles.language`), bosilganda tegishli ekran ochiladi.
 
-## 11. O'zingizni admin qilish
+## 11. Telegram (bot + Mini App, SMS'siz kirish)
+
+Odam botni ochadi → "Ilovani ochish" → uyservice.uz Telegram ichida ochiladi → "Telegram orqali kirish" →
+Telegram raqamni tasdiqlaydi → profilga kiradi. Keyingi safar o'zi kiradi. SMS (Eskiz) kerak emas.
+
+1. Telegram'da **@BotFather** → `/newbot` → nom va username → **token** chiqadi. Tokenni hech kimga yubormang,
+   faqat Supabase sirlariga yozasiz.
+2. Sirlar (`$tg` — tasodifiy webhook siri):
+   ```powershell
+   $tg = [guid]::NewGuid().ToString("N")
+   npx supabase secrets set "TELEGRAM_BOT_TOKEN=123456:ABC..." "TELEGRAM_WEBHOOK_SECRET=$tg" "APP_URL=https://uyservice.uz"
+   npx supabase functions deploy telegram-auth telegram-bot
+   ```
+3. Webhook (bot xabarlarini serverga yo'naltirish), PowerShell'da:
+   ```powershell
+   Invoke-RestMethod "https://api.telegram.org/bot<TOKEN>/setWebhook" -Method Post -Body @{ url = "https://PROJECT_REF.supabase.co/functions/v1/telegram-bot"; secret_token = $tg }
+   ```
+   Javobda `"ok": true` bo'lishi kerak.
+4. @BotFather → `/mybots` → bot → **Bot Settings** → **Menu Button** → URL: `https://uyservice.uz`, matn: `Ochish`.
+   (Ixtiyoriy: **Configure Mini App** → `https://uyservice.uz` — havola `t.me/<bot>/app` ko'rinishida ham ochiladi.)
+5. Supabase → **Authentication** → **Sign In / Providers** → **Email** yoqilgan bo'lsin (Telegram kirishi ichkarida
+   yashirin email `tg<id>@telegram.uyservice.uz` va bir martalik havola ishlatadi; foydalanuvchiga xat ketmaydi).
+
+Tekshirish: botga `/start` → "Ilovani ochish" → Profil → Kirish → **Telegram orqali kirish** → raqamni ulashing.
+Faqat O'zbekiston raqamlari (+998) qabul qilinadi; boshqa raqamda — SMS kod bilan kirish taklif qilinadi.
+
+## 12. O'zingizni admin qilish
 
 Birinchi adminni faqat SQL orqali tayinlash mumkin (keyingilarini admin panelning o'zidan qo'shasiz).
 
@@ -147,7 +174,7 @@ Birinchi adminni faqat SQL orqali tayinlash mumkin (keyingilarini admin panelnin
    update public.profiles set role = 'admin' where phone = '+998901234567';
    ```
 
-## 12. Admin panel
+## 13. Admin panel
 
 Manzil: **uyservice.uz/admin** (telefondagi ilovada ham `/admin`). Kirish — admin raqami + SMS kod.
 8 soat harakatsizlikdan keyin qayta kirish so'raladi. Har bir amal `admin_log` jurnaliga yoziladi.
@@ -188,7 +215,9 @@ Kerak bo'lsa SQL Editor'dan ham qilish mumkin (masalan, server ulanmasdan oldin)
 | `functions/_shared/dispatch.ts` | usta qidirish algoritmi — **ilova bilan bitta fayl** (`lib/dispatch.ts` shuni ishlatadi) |
 | `functions/_shared/engine.ts` | algoritmni bazaga ulaydigan qadam (takliflar, aktivlik, tayinlash) |
 | `functions/_shared/push.ts` | push navbatini Expo Push API orqali yuborish, matnlar (uz/ru/en) |
-| `functions/*/index.ts` | `dispatch`, `offer-respond`, `offer-timeout`, `send-sms`, `push-send` |
+| `functions/_shared/telegram.ts` | Telegram Mini App imzosini tekshirish (initData, kontakt) |
+| `functions/*/index.ts` | `dispatch`, `offer-respond`, `offer-timeout`, `send-sms`, `push-send`, `telegram-auth`, `telegram-bot` |
+| `migrations/…_telegram.sql` | `profiles.telegram_id`, `telegram_contacts` (faqat server) |
 | `seed.sql` | faqat lokal sinov uchun 3 ta demo usta (`db push` uni yubormaydi) |
 | `migrations/…_admin.sql` | admin panel: bloklash, `admin_log`, `balance_ops`, `admin_*` funksiyalari va ko'rinishlari, `admin_stats` |
 | `migrations/…_price_agreement.sql` | narx kelishuvi va eshik kodi: `order_secrets` (kodni faqat mijoz ko'radi), `order_door_code`, `verify_door_code` (5 xato → 10 daq), `propose_price`, `respond_price`; ulush foizi qabul paytida qotiriladi (`orders.fee_percent`) |

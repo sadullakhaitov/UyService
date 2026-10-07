@@ -13,6 +13,7 @@ Quyida asl TZ + keyin qabul qilingan qarorlar.
 | Sayt rejimi | Supabase kaliti yo'q ekan — **sinov rejimi** (`lib/demo.ts` → `DEMO`): tepada doim "Sinov rejimi" belgisi (`components/ui/DemoBanner.tsx`), demo tugmalar ("Keyingisi (demo)", "Demo: admin tasdiqladi", balansni to'ldirish) faqat shu rejimda ko'rinadi |
 | Pasport va selfi | **Ixtiyoriy.** Usta ularsiz ham buyurtma oladi, faqat platforma ulushi **+5 foiz punkt**: komissiya 10% → 15%, obuna 0% → 5% (balansdan). Pasport yuklanib admin tasdiqlagach qo'shimcha olib tashlanadi. `constants/billing.ts` → `UNVERIFIED_SURCHARGE_PERCENT`, `feePercent()`; server — `master_fee_percent()` |
 | Admin panel | **uyservice.uz/admin** — alohida sayt emas, shu ilovaning `app/admin/` bo'limi (kompyuter uchun yon menyu, telefonda chiqadigan menyu). Kirish: admin raqami + SMS kod (`profiles.role = 'admin'`; sinov rejimida — kompaniya raqami, istalgan 6 xonali kod). Batafsil — 4-bo'lim "Admin" |
+| Telegram | **Bot + Mini App**: botdagi "Ochish" tugmasi uyservice.uz'ni Telegram ichida ochadi; "Telegram orqali kirish" — raqamni Telegram tasdiqlaydi, SMS kerak emas, keyingi safar o'zi kiradi (`lib/telegram.ts`, `supabase/functions/telegram-auth`, `telegram-bot`; sozlash — `supabase/README.md` 11-bo'lim). Bot tokeni faqat Supabase sirlarida (`TELEGRAM_BOT_TOKEN`), ilovada/git'da emas |
 | Komissiya yoki obuna | **Usta o'zi tanlaydi**: oylik obuna YOKI komissiya. Ro'yxatdan o'tishda `master/plan` ekrani, keyin "Daromad" → "Tarifni o'zgartirish". Narx/foiz: `constants/billing.ts` (⚠️ 149 000 so'm/oy va 10% — hali tasdiqlanmagan) |
 
 ## 1. Loyiha haqida qisqacha
@@ -107,6 +108,8 @@ lib/                      ← i18n, geo, location, routes, supabase
   masterFeed.ts           ← usta tomoni: takliflar oqimi, joylashuvni har 5 s yuborish, useBlocked
   backend.ts              ← ustaning joylashuvi (server rejimida master_locations ga)
   notify.ts               ← bildirishnomalar (mahalliy; ilova orqa fonda bo'lsa chiqadi)
+  telegram.ts             ← Telegram Mini App: oyna sozlamalari, avtomatik kirish, requestContact → telegram-auth → sessiya (sinovda — soxta kirish)
+  afterSignIn.ts          ← raqam tasdiqlangach (SMS yoki Telegram) qayerga o'tish
   push.ts                 ← serverdan push: Expo push tokeni → profiles.push_token (til, "Yangi buyurtma" sozlamasi bilan); chiqishda o'chiriladi
   geocode.ts              ← manzil qidirish butun O'zbekiston bo'ylab, foydalanuvchiga yaqinlari birinchi (Yandex Geocoder, kalit bo'lmasa OSM Nominatim)
   schedule.ts, photos.ts  ← rejalashtirish vaqtlari; rasm tanlash/suratga olish
@@ -126,10 +129,10 @@ locales/uz.json           ← ilovadagi barcha matnlar
 mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
 design/                   ← dizayn skrinshotlari
 supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma
-  migrations/             ← 9 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push
+  migrations/             ← 11 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push, ochiq sharhlar, Telegram
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
-  functions/{dispatch,offer-respond,offer-timeout,send-sms,push-send} ← Edge Functions (send-sms — Eskiz.uz orqali SMS; push-send — push_outbox → Expo Push API)
-  tests/                  ← run.sh — hammasi: supabase_stub.sql + rls/admin/price/push_test.sql (65 ta tekshiruv) + e2e/ (usta qidirish va push, Deno + PostgREST)
+  functions/{dispatch,offer-respond,offer-timeout,send-sms,push-send,telegram-auth,telegram-bot} ← Edge Functions (send-sms — Eskiz.uz orqali SMS; push-send — push_outbox → Expo Push API; telegram-* — Telegram orqali kirish va bot)
+  tests/                  ← run.sh — hammasi: supabase_stub.sql + rls/admin/price/push/telegram_test.sql + unit/ (Telegram imzosi) + e2e/ (usta qidirish va push, Deno + PostgREST)
 .github/workflows/ci.yml  ← har push'da: typecheck, deno check, server sinovlari (Postgres+PostGIS+PostgREST)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
@@ -170,7 +173,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 **Bildirishnomalar:** bosilganda tegishli ekran ochiladi (`data.url`, `useNotificationTaps`); mijozga "Usta topildi", "Usta yetib keldi", "Usta narx taklif qildi", "Ish tugadi", "Bo'sh usta yo'q"; ustaga "Yangi buyurtma" (Sozlamalarda o'chirish mumkin). Ilova ekranda ochiq bo'lsa chiqmaydi. Server ulanganda xuddi shu xabarlar serverdan push bo'lib keladi (ilova yopiq bo'lsa ham): triggerlar → `push_outbox` → `push-send` (Expo Push API), foydalanuvchi tilida; ustaga qo'shimcha "Mijoz narxga rozi / rozi emas", "Mijoz bekor qildi". Sozlash — `supabase/README.md` 10-bo'lim (EAS projectId + FCM kerak).
 
-**Kirish (mehmon birinchi):** ilova ochilganda — til tanlash, keyin darhol mijoz bosh sahifasi. Ro'yxatdan o'tish (telefon → SMS kod) faqat mijoz hamma narsani tanlab "Usta chaqirish"ni bosganda so'raladi; tasdiqlangach buyurtma avtomatik yuboriladi. Usta bo'lish — Profil → "Usta bo'lib ishlash" (raqam tasdiqlanadi → tarif). Til, raqam, rol telefonda saqlanadi (AsyncStorage). Usta ro'yxatdan o'tganda (`master/register`) ism, tajriba, kategoriyalar, pasport rasmi (+ ixtiyoriy selfi) va ish namunalarini yuklaydi; pasport va selfi ixtiyoriy — ularsiz ham buyurtma oladi, faqat ulushi +5% (`useMaster().verified`, `profile.status`: none (pasportsiz) → pending (yuklandi) → approved/rejected; ustada tepada to'q sariq eslatma "Hujjatsiz: ulush 15%"). Usta ma'lumotlari telefonda saqlanadi (`uyservice-master`), "onlayn" holati saqlanmaydi.
+**Kirish (mehmon birinchi):** ilova ochilganda — til tanlash, keyin darhol mijoz bosh sahifasi. Telegram ichida ochilsa — raqam ekranida birinchi "Telegram orqali kirish" (SMS'siz), server rejimida bog'langan foydalanuvchi ochilishi bilan o'zi kiradi. Ro'yxatdan o'tish (telefon → SMS kod) faqat mijoz hamma narsani tanlab "Usta chaqirish"ni bosganda so'raladi; tasdiqlangach buyurtma avtomatik yuboriladi. Usta bo'lish — Profil → "Usta bo'lib ishlash" (raqam tasdiqlanadi → tarif). Til, raqam, rol telefonda saqlanadi (AsyncStorage). Usta ro'yxatdan o'tganda (`master/register`) ism, tajriba, kategoriyalar, pasport rasmi (+ ixtiyoriy selfi) va ish namunalarini yuklaydi; pasport va selfi ixtiyoriy — ularsiz ham buyurtma oladi, faqat ulushi +5% (`useMaster().verified`, `profile.status`: none (pasportsiz) → pending (yuklandi) → approved/rejected; ustada tepada to'q sariq eslatma "Hujjatsiz: ulush 15%"). Usta ma'lumotlari telefonda saqlanadi (`uyservice-master`), "onlayn" holati saqlanmaydi.
 
 ## 5. Xarita va animatsiyalar
 

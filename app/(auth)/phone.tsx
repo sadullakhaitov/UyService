@@ -6,6 +6,8 @@ import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { sendCode } from '@/lib/auth';
+import { afterSignIn } from '@/lib/afterSignIn';
+import { inTelegram, requestTelegramContact, telegramSignIn } from '@/lib/telegram';
 import { t } from '@/lib/i18n';
 
 // Brauzer: avtomatik to'ldirilganda maydon foni (colors.field) saqlanadi — app/_layout.tsx'dagi CSS
@@ -30,6 +32,30 @@ export default function PhoneScreen() {
   const ready = digits.length === 9 && !badCode;
   const input = useRef<TextInput>(null);
 
+  // Telegram ichida: bir bosishda kirish — raqamni Telegram tasdiqlaydi (SMS kerak emas)
+  const tgMode = inTelegram();
+  const [tgBusy, setTgBusy] = useState(false);
+  const [tgError, setTgError] = useState<'auth.tgDenied' | 'auth.tgNotUz' | 'auth.tgFailed' | null>(null);
+  const telegramLogin = async () => {
+    if (tgBusy) return;
+    setTgBusy(true);
+    setTgError(null);
+    // Avval Telegram allaqachon bog'langanmi (raqam qayta so'ralmaydi), bo'lmasa — raqamni ulashish
+    let r = await telegramSignIn();
+    if (!r.ok && r.need === 'contact') {
+      const contact = await requestTelegramContact();
+      if (!contact) {
+        setTgBusy(false);
+        setTgError('auth.tgDenied');
+        return;
+      }
+      r = await telegramSignIn(contact, 12_000);
+    }
+    setTgBusy(false);
+    if (r.ok) afterSignIn(r.phone, next, r.name);
+    else setTgError(r.error === 'phone_not_uz' ? 'auth.tgNotUz' : 'auth.tgFailed');
+  };
+
   // SMS kod yuboriladi (Supabase sozlanmagan bo'lsa — soxta), keyin kod ekrani
   const submit = async () => {
     if (!ready || sending) return;
@@ -47,10 +73,11 @@ export default function PhoneScreen() {
 
   return (
     <AuthShell
-      compact={Boolean(next)}
+      compact={Boolean(next) || tgMode}
       footer={
         <>
-          <Button title={t('auth.getCode')} big disabled={!ready} loading={sending} onPress={submit} />
+          {tgMode ? <Button title={t('auth.tgLogin')} big loading={tgBusy} onPress={telegramLogin} /> : null}
+          <Button title={t('auth.getCode')} big={!tgMode} kind={tgMode ? 'secondary' : undefined} disabled={!ready} loading={sending} onPress={submit} />
           <Text variant="caption" style={styles.terms}>
             {t('auth.termsBefore')}
             <Text variant="caption" style={styles.link} onPress={() => router.push('/legal/terms')}>
@@ -79,7 +106,7 @@ export default function PhoneScreen() {
         <TextInput
           ref={input}
           accessibilityLabel={t('auth.phoneLabel')}
-          autoFocus
+          autoFocus={!tgMode}
           keyboardType="phone-pad"
           placeholder="90 123 45 67"
           placeholderTextColor={colors.muted}
@@ -103,6 +130,11 @@ export default function PhoneScreen() {
       {badCode ? (
         <Text variant="small" style={styles.error}>
           {t('auth.badOperator')}
+        </Text>
+      ) : null}
+      {tgMode ? (
+        <Text variant="small" style={tgError ? styles.error : undefined}>
+          {t(tgError ?? 'auth.tgHint')}
         </Text>
       ) : null}
       {failed ? (

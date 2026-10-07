@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Server sinovlari (lokal va GitHub Actions). Kerak: PostgreSQL 16 + PostGIS, psql.
-#   bash supabase/tests/run.sh                      — SQL sinovlar (RLS, admin, narx kelishuvi, push)
+#   bash supabase/tests/run.sh                      — SQL sinovlar (RLS, admin, narx kelishuvi, push, Telegram) + Deno unit
 #   PGRST_BIN=/yo'l/postgrest bash supabase/tests/run.sh — + E2E (usta qidirish va push, Deno + PostgREST bilan)
 # Ulanish — oddiy PG* o'zgaruvchilari (PGHOST, PGPORT, PGUSER, PGPASSWORD). Baza har safar noldan yaratiladi.
 set -euo pipefail
@@ -18,11 +18,16 @@ fresh() {
 
 echo "== SQL sinovlar"
 "${P[@]}" -d postgres -c "drop database if exists $DB" -c "create database $DB" >/dev/null
-for f in tests/supabase_stub.sql migrations/*.sql seed.sql tests/rls_test.sql tests/admin_test.sql tests/price_test.sql tests/push_test.sql; do
+for f in tests/supabase_stub.sql migrations/*.sql seed.sql tests/rls_test.sql tests/admin_test.sql tests/price_test.sql tests/push_test.sql tests/telegram_test.sql; do
   "${P[@]}" -d "$DB" -f "$f" 2>&1 | sed -n 's/.*NOTICE:  \(PASS.*\)/  \1/p; /ERROR\|FAIL/p'
   test "${PIPESTATUS[0]}" -eq 0 || { echo "XATO: $f"; exit 1; }
 done
 echo "SQL: hammasi o'tdi"
+
+if [ -n "${DENO_BIN:-}" ] || command -v deno >/dev/null; then
+  echo "== Unit (Deno)"
+  "${DENO_BIN:-deno}" test --no-lock --node-modules-dir=none -q tests/unit/
+fi
 
 [ -z "${PGRST_BIN:-}" ] && exit 0
 DENO=${DENO_BIN:-deno}

@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { ChevronRight, FileText, Globe, Info, LogIn, LogOut, ReceiptText, Shield, Wrench } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Squish, Text } from '@/components/ui';
@@ -16,6 +16,8 @@ export default function Account() {
   useScheme();
   const { phone, name, setName, logout, setRole, billingPlan } = useUser();
   const [draft, setDraft] = useState(name);
+  // Ism tashqaridan o'zgarsa (masalan, Telegram orqali kirilganda) — maydon ham yangilanadi
+  useEffect(() => setDraft(name), [name]);
   const registered = useMaster((s) => Boolean(s.profile.submittedAt));
   const guest = !phone;
 

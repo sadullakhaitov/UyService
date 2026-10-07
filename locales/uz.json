@@ -44,7 +44,12 @@
     "termsBefore": "Davom etish orqali ",
     "termsAnd": " va ",
     "termsAfter": " bilan rozilik bildirasiz",
-    "badOperator": "Bunday operator kodi yo'q. Raqamni tekshiring (masalan, 90, 93, 97, 99…)"
+    "badOperator": "Bunday operator kodi yo'q. Raqamni tekshiring (masalan, 90, 93, 97, 99…)",
+    "tgLogin": "Telegram orqali kirish",
+    "tgHint": "Raqamingizni Telegram tasdiqlaydi — SMS kutish shart emas. Yoki raqamni yozib SMS kod oling.",
+    "tgDenied": "Raqam ulashilmadi. Qayta urinib ko'ring yoki SMS kod bilan kiring.",
+    "tgNotUz": "Telegram'dagi raqam O'zbekiston raqami emas. Raqamni yozib SMS kod bilan kiring.",
+    "tgFailed": "Telegram orqali kirib bo'lmadi. Qayta urinib ko'ring yoki SMS kod bilan kiring."
   },
   "categories": {
     "plumber": "Santexnik",

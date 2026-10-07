@@ -6,16 +6,15 @@ import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { sendCode, verifyCode } from '@/lib/auth';
+import { afterSignIn } from '@/lib/afterSignIn';
 import { t } from '@/lib/i18n';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import { useMaster, useUser } from '@/store';
 
 const LEN = 6;
 
 export default function CodeScreen() {
   useScheme();
   const { phone = '', next } = useLocalSearchParams<{ phone?: string; next?: string }>();
-  const { setPhone, setRole, billingPlan } = useUser();
   const [code, setCode] = useState('');
   const [left, setLeft] = useState(59);
   const [checking, setChecking] = useState(false);
@@ -41,18 +40,7 @@ export default function CodeScreen() {
       input.current?.focus();
       return;
     }
-    setPhone(phone);
-    if (next === 'order') {
-      // Mijoz hamma narsani tanlab bo'lgan — buyurtma ekraniga qaytamiz va u darhol yuboriladi
-      router.dismissTo({ pathname: '/client/order', params: { autoSubmit: '1' } });
-    } else if (next === 'master') {
-      setRole('master');
-      // Birinchi marta — usta anketasi (ism, kategoriyalar, pasport, ish namunalari)
-      const registered = Boolean(useMaster.getState().profile.submittedAt);
-      router.replace(!registered ? '/master/register' : billingPlan ? '/master' : '/master/plan');
-    } else {
-      router.dismissTo('/client/account');
-    }
+    afterSignIn(phone, next);
   };
 
   const resend = async () => {

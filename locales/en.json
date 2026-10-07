@@ -44,7 +44,12 @@
     "termsBefore": "By continuing you agree to the ",
     "termsAnd": " and the ",
     "termsAfter": "",
-    "badOperator": "No such operator code. Check the number (e.g. 90, 93, 97, 99…)"
+    "badOperator": "No such operator code. Check the number (e.g. 90, 93, 97, 99…)",
+    "tgLogin": "Sign in with Telegram",
+    "tgHint": "Telegram confirms your number — no need to wait for an SMS. Or type your number to get an SMS code.",
+    "tgDenied": "The number wasn't shared. Try again or sign in with an SMS code.",
+    "tgNotUz": "Your Telegram number isn't an Uzbek number. Type your number and sign in with an SMS code.",
+    "tgFailed": "Couldn't sign in with Telegram. Try again or sign in with an SMS code."
   },
   "categories": {
     "plumber": "Plumber",
