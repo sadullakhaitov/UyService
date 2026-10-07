@@ -30,6 +30,9 @@ export default function Offer() {
   // Past ekranlarda (telefon brauzeri — manzil satri va pastki panel joy egallaydi) — ixchamroq
   const { height } = useWindowDimensions();
   const compact = height < 760;
+  // Juda past (telefon brauzeri / Telegram ichida ~500 px): belgi va sarlavha kichikroq, tugmalar yonma-yon —
+  // hammasi aylantirmasdan sig'adi, karta tugmalar ostida qolib ketmaydi
+  const tiny = height < 640;
   if (!offer) return null;
 
   const cat = getCategory(offer.categoryId);
@@ -59,25 +62,30 @@ export default function Offer() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.head}>
-        <View style={styles.newBadge}>
-          <View style={styles.newDot} />
-          <Text style={styles.newText}>{t('offer.title')}</Text>
+      {/* Juda past ekranda yorliq yashiriladi — halqa va sarlavha yetarli, joy kartaga qoladi */}
+      {tiny ? null : (
+        <View style={styles.head}>
+          <View style={styles.newBadge}>
+            <View style={styles.newDot} />
+            <Text style={styles.newText}>{t('offer.title')}</Text>
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Kontent sig'masa — aylantiriladi (taymer belgini, tugmalar kartani to'smaydi) */}
-      <ScrollView style={styles.flex} contentContainerStyle={[styles.body, compact && styles.bodyCompact]} showsVerticalScrollIndicator={false}>
-        <CountdownRing seconds={left} size={compact ? 104 : 132} label={t('offer.seconds')} onDone={decline} color={cat.main} />
+      <ScrollView style={styles.flex} contentContainerStyle={[styles.body, compact && styles.bodyCompact, tiny && styles.bodyTiny]} showsVerticalScrollIndicator={false}>
+        <CountdownRing seconds={left} size={tiny ? 96 : compact ? 104 : 132} label={t('offer.seconds')} onDone={decline} color={cat.main} />
 
         <View style={styles.what}>
-          <View style={[styles.icon, compact && styles.iconCompact, { backgroundColor: cat.tint }]}>
-            <Icon size={30} color={cat.ink} strokeWidth={2} />
-          </View>
-          <Text variant="h1" style={styles.centerText}>
+          {tiny ? null : (
+            <View style={[styles.icon, compact && styles.iconCompact, { backgroundColor: cat.tint }]}>
+              <Icon size={30} color={cat.ink} strokeWidth={2} />
+            </View>
+          )}
+          <Text variant={tiny ? 'h2' : 'h1'} style={styles.centerText}>
             {t(`problems.${offer.problemId}`)}
           </Text>
-          <Text variant="small" style={styles.centerText}>
+          <Text variant="small" style={styles.centerText} numberOfLines={tiny ? 2 : undefined}>
             {offer.description ? `${t(`categories.${offer.categoryId}`)} · ${offer.description}` : t(`categories.${offer.categoryId}`)}
           </Text>
         </View>
@@ -101,13 +109,20 @@ export default function Offer() {
         </Card>
       </ScrollView>
 
-      <View style={styles.bottom}>
-        <Button title={t('offer.accept')} big color={{ bg: cat.main, fg: cat.onMain }} onPress={accept} />
-        <Button title={t('offer.decline')} kind="secondary" onPress={decline} />
-        <Text variant="caption" style={styles.centerText}>
-          {t('offer.declineNote')}
-        </Text>
-      </View>
+      {tiny ? (
+        <View style={[styles.bottom, styles.bottomTiny]}>
+          <Button title={t('offer.decline')} kind="secondary" onPress={decline} style={styles.declineTiny} />
+          <Button title={t('offer.accept')} big color={{ bg: cat.main, fg: cat.onMain }} onPress={accept} style={styles.flex} />
+        </View>
+      ) : (
+        <View style={[styles.bottom, compact && styles.bottomLine]}>
+          <Button title={t('offer.accept')} big color={{ bg: cat.main, fg: cat.onMain }} onPress={accept} />
+          <Button title={t('offer.decline')} kind="secondary" onPress={decline} />
+          <Text variant="caption" style={styles.centerText}>
+            {t('offer.declineNote')}
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -131,6 +146,7 @@ const styles = themed(() => ({
   newText: { fontFamily: fonts.heavy, fontSize: 14, color: colors.accentInk },
   body: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20, paddingVertical: 16, gap: 18 },
   bodyCompact: { gap: 12, paddingVertical: 10 },
+  bodyTiny: { gap: 10, paddingVertical: 6 },
   what: { alignItems: 'center', gap: 8 },
   icon: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   iconCompact: { width: 52, height: 52, borderRadius: 16 },
@@ -141,4 +157,8 @@ const styles = themed(() => ({
   card: { alignSelf: 'stretch', borderRadius: radius.card },
   addr: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bottom: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 12, gap: 10, backgroundColor: colors.surface },
+  // Kontent aylantirilsa — tugmalar paneli chiziq bilan ajraladi (karta tugmalar ostiga "kirib ketgandek" ko'rinmasin)
+  bottomLine: { borderTopWidth: 1, borderTopColor: colors.line },
+  bottomTiny: { flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: colors.line },
+  declineTiny: { width: 116, height: 56 },
 }));

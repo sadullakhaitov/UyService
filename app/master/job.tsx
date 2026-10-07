@@ -1,9 +1,11 @@
 import { router } from 'expo-router';
-import { MapPin, MessageCircle, Phone } from 'lucide-react-native';
-import { useEffect, useMemo, useState } from 'react';
+import { LocateFixed, MapPin, MessageCircle, Phone } from 'lucide-react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MapBase } from '@/components/map';
+import { MapBase, type MapHandle } from '@/components/map';
+import { MapZoom } from '@/components/map/MapZoom';
+import { MAP_ATTRIBUTION_H, useWide } from '@/lib/useLayout';
 import { Sheet, SheetInput } from '@/components/sheets/Sheet';
 import { Button, Card, Divider, IconButton, Row, Text } from '@/components/ui';
 import { CALL_FEE, getCategory } from '@/constants/categories';
@@ -39,6 +41,8 @@ export default function Job() {
 function JobView({ job }: { job: MasterJob }) {
   useScheme();
   const insets = useSafeAreaInsets();
+  const wide = useWide();
+  const map = useRef<MapHandle>(null);
   const { charge, addIncome, bumpActivity } = useMaster();
   const [cancelling, setCancelling] = useState(false);
   const { finishJob, updateJob } = useMasterWork();
@@ -161,6 +165,7 @@ function JobView({ job }: { job: MasterJob }) {
   return (
     <View style={styles.root}>
       <MapBase
+        ref={map}
         center={client}
         insets={{ top: insets.top + 80, bottom: sheetH }}
         route={step === 'on_the_way' && remaining ? remaining : undefined}
@@ -170,6 +175,12 @@ function JobView({ job }: { job: MasterJob }) {
         clientMarker={client}
         fitTo={step === 'on_the_way' ? fitTo : [client]}
       />
+
+      {/* Yaqinlashtirish / uzoqlashtirish va "mening joyim" — mijoz va usta xaritalaridagidek */}
+      <View style={[styles.rightCol, { bottom: (wide ? MAP_ATTRIBUTION_H : sheetH) + 12 }]} pointerEvents="box-none">
+        <MapZoom onZoom={(d) => map.current?.zoomBy(d)} />
+        <IconButton icon={LocateFixed} label={t('client.myLocation')} floating onPress={() => map.current?.flyTo(here)} />
+      </View>
 
       <View style={[styles.steps, shadow.float, { top: insets.top + 12 }]}>
         <GlassBg radius={16} />
@@ -331,6 +342,7 @@ function PriceInput({ label, value, onChange, placeholder }: { label: string; va
 const styles = themed(() => ({
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
+  rightCol: { position: 'absolute', right: 16, gap: 12, alignItems: 'center' },
   steps: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', gap: 6, borderRadius: 16, padding: 10 },
   stepItem: { flex: 1, gap: 6 },
   stepBar: { height: 4, borderRadius: 2 },

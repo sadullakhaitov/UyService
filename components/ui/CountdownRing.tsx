@@ -53,7 +53,8 @@ export function CountdownRing({ seconds, size = 132, label, onDone, color = colo
         />
       </Svg>
       <View style={[StyleSheet.absoluteFill, styles.center]}>
-        <Text style={[styles.num, urgent && { color: colors.accentInk }]}>{left}</Text>
+        {/* Kichik halqada son ham kichrayadi va "soniya" yozuvi bilan ustma-ust tushmaydi */}
+        <Text style={[styles.num, size < 110 && { fontSize: 30, lineHeight: 36 }, urgent && { color: colors.accentInk }]}>{left}</Text>
         <Text variant="caption">{label}</Text>
       </View>
     </View>
