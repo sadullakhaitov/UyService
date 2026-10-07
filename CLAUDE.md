@@ -60,9 +60,10 @@ app/                      ← ekranlar (Expo Router)
   client/index.tsx        ← bosh sahifa: xarita + kategoriyalar, "Hozir kerak" / "Vaqtni tanlash" (/client)
   client/address.tsx      ← manzilni yozib qidirish (lib/geocode.ts)
   client/order.tsx        ← muammo, tavsif, rasm, narx; rejalashtirishda kun va soat
-  client/searching.tsx    ← usta qidirilmoqda (to'lqinlar, radius, takliflar) yoki rejalashtirilgan buyurtma
+  client/searching.tsx    ← usta qidirilmoqda (to'lqinlar, radius, takliflar) yoki rejalashtirilgan buyurtma ┐ ikkalasi bitta ekran —
   client/chat.tsx         ← mijoz ↔ usta chati (buyurtma bo'yicha)
-  client/tracking.tsx     ← usta yo'lda (bekor qilish — sabab bilan, components/sheets/CancelSheet.tsx)
+  client/tracking.tsx     ← usta yo'lda (bekor qilish — sabab bilan, components/sheets/CancelSheet.tsx) ┘ components/order/LiveOrder.tsx:
+                            bitta xarita, faqat panel almashadi (SearchingPanel ↔ TrackingPanel) — usta topilganda xarita qayta yuklanmaydi
   client/master.tsx       ← usta haqida: reyting, maqtovlar, sharhlar
   client/rate.tsx         ← ish tugadi, baholash
   client/history.tsx      ← buyurtmalar tarixi (useHistory, telefonda saqlanadi: baho, izoh, bekor sababi)
