@@ -44,6 +44,8 @@ export type MapBaseProps = {
 export type MapHandle = {
   /** Kamerani shu nuqtaga silliq uchirish */
   flyTo: (center: LatLng, zoom?: number) => void;
+  /** Kamerani shu nuqtaga silliq surish, zoom o'zgarmaydi (navigatordagidek kuzatish) */
+  panTo: (center: LatLng) => void;
   /** Zoom +1 / −1 */
   zoomBy: (delta: number) => void;
 };

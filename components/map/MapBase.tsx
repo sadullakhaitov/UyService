@@ -31,6 +31,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(prop
 
   useImperativeHandle(handle, () => ({
     flyTo: (center, zoom = DEFAULT_ZOOM) => post({ type: 'flyTo', center, zoom }),
+    panTo: (center) => post({ type: 'panTo', center }),
     zoomBy: (delta) => post({ type: 'zoomBy', delta }),
   }));
 

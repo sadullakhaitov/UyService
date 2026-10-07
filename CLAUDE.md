@@ -150,7 +150,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 - Usta yo'lda: yo'l ko'chalar bo'ylab (OSRM: routing.openstreetmap.de, javob bermasa router.project-osrm.org, bir marta qayta urinish). Haqiqiy yo'l kelguncha chiziq chizilmaydi va usta joyida turadi; 15 s ichida kelmasa (`ROUTE_WAIT_MS`) — taxminiy yo'l. `resample` yo'lning hamma burilish nuqtalarini saqlaydi (chiziq va belgi burchakni kesmaydi), qadam ≤ 12 m, har 1 s (`STEP_MS`); "N daqiqa" qolgan yo'l uzunligidan; yo'l chizig'i joyida yangilanadi (miltillamaydi); kamera har ~20 s da ikkalasini sig'diradi.
 - Tugmalar bosilganda biroz kichrayadi (`components/ui/Pressable.tsx`), panellar prujina bilan chiqadi.
 - Usta ilovasi: SVG aylana taymer 60 → 0, oxirgi 5 soniyada tebranish.
-- Usta tomonida belgi telefonning jonli GPS'i bo'yicha (`useWatchLocation`): usta yursa — yuradi, tursa — turadi; yo'l 150 m siljiganda qayta hisoblanadi.
+- Usta tomonida belgi telefonning jonli GPS'i bo'yicha (`useWatchLocation` — butun ilova uchun bitta kuzatuv; brauzerda `navigator.geolocation.watchPosition`, telefonda expo-location, har ~1 s): usta yursa — yuradi, tursa — turadi. Aniqligi 100 m dan yomon nuqtalar tashlanadi, lekin 8 s yaxshi nuqta kelmasa borini oladi (belgi qotib qolmaydi). Buyurtmalar xaritasida kamera ustaning ortidan yuradi (`MapHandle.panTo`, zoom o'zgarmaydi); xaritani qo'lda sursa — kuzatish to'xtaydi, "joylashuv" tugmasi qayta yoqadi. Ish jarayonida yo'l 150 m siljiganda qayta hisoblanadi.
 
 ## 6. Ma'lumotlar bazasi (Supabase, 5-bosqich)
 

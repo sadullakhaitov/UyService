@@ -29,6 +29,7 @@ export type MapState = {
 export type MapCommand =
   | { type: 'state'; state: MapState }
   | { type: 'flyTo'; center: LatLng; zoom: number }
+  | { type: 'panTo'; center: LatLng }
   | { type: 'zoomBy'; delta: number };
 
 /** Xarita → React */
@@ -237,6 +238,8 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
   function apply(cmd){
     try {
       if (cmd.type === 'flyTo') return moveTo(cmd.center, cmd.zoom, 900);
+      // Kuzatish rejimi: kamera ustaning ortidan yuradi, zoom foydalanuvchi qo'yganicha qoladi
+      if (cmd.type === 'panTo') return moveTo(cmd.center, map.getZoom(), 800);
       if (cmd.type === 'zoomBy') {
         var z = Math.max(9, Math.min(19, map.getZoom() + cmd.delta));
         return moveTo(focalCenter(), z, 300);

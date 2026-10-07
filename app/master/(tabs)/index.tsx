@@ -46,6 +46,12 @@ export default function MasterOrders() {
   // Belgi faqat usta haqiqatan yurganda siljiydi
   const live = useWatchLocation();
   const pos = live ?? me ?? initial;
+  // Kuzatish rejimi (navigatordagidek): usta yurganda kamera ortidan yuradi. Xaritani qo'lda sursa — to'xtaydi,
+  // "joylashuv" tugmasi qayta yoqadi
+  const follow = useRef(true);
+  useEffect(() => {
+    if (live && follow.current) map.current?.panTo(live);
+  }, [live?.latitude, live?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Nega buyurtmalar yopiq (Yandex Pro'dagi qizil banner kabi)
   const blocked = useBlocked();
@@ -60,7 +66,8 @@ export default function MasterOrders() {
   }, [me]);
 
   const locate = async () => {
-    const here = (await locateMe()) ?? me;
+    follow.current = true;
+    const here = live ?? (await locateMe()) ?? me;
     if (here) map.current?.flyTo(here, 16);
   };
 
@@ -76,6 +83,9 @@ export default function MasterOrders() {
         insets={{ top: topH + 60, bottom: sheetH }}
         master={pos}
         moveDuration={1000}
+        onMoveStart={() => {
+          follow.current = false;
+        }}
         pulse={online ? { center: pos, maxRadiusM: 350 } : undefined}
       />
 
