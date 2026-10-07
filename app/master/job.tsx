@@ -106,7 +106,8 @@ function JobView({ job }: { job: MasterJob }) {
   const fitKey = Math.floor(nearest / 6);
   const fitTo = useMemo(() => bboxCorners([...(remaining ?? [here]), client]), [fitKey, route]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const workN = Number(work) || 0;
+  // Ish narxi bo'sh qoldirilsa — chaqiruv narxi (maydonda ham shu ko'rinib turadi): faqat ehtiyot qism yozib yuborsa bo'ladi
+  const workN = work.trim() ? Number(work) || 0 : CALL_FEE;
   const partsN = Number(parts) || 0;
   // Ish narxi chaqiruvni o'z ichiga oladi; mijoz rad etsa — faqat chaqiruv (ko'rik)
   const total = step === 'completed' ? job.total : workN + partsN;
@@ -291,7 +292,7 @@ function JobView({ job }: { job: MasterJob }) {
         {step === 'arrived' ? <Button title={t('job.codeBtn')} big disabled={code.length < 4} onPress={checkCode} /> : null}
         {step === 'pricing' && job.priceStatus !== 'sent' ? (
           <>
-            <Button title={t('job.sendPrice')} big disabled={!workN} onPress={sendPrice} />
+            <Button title={t('job.sendPrice')} big onPress={sendPrice} />
             <Button title={t('job.onlyInspection', { fee: formatSum(CALL_FEE) })} kind="secondary" onPress={() => finish(CALL_FEE, 'declined')} />
           </>
         ) : null}
