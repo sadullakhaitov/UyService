@@ -1,20 +1,16 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { Check, Heart, ShieldCheck } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Divider, RatingInput, Row, Squish, Text } from '@/components/ui';
-import { getCategory, WARRANTY_DAYS } from '@/constants/categories';
+import { CALL_FEE, getCategory, WARRANTY_DAYS } from '@/constants/categories';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
 import { useActiveOrder, useHistory, useOrders, useUser } from '@/store';
 
 const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
-
-// Soxta yakuniy narx (usta "Tugatdim"da kiritadi)
-const WORK = 70_000;
-const PARTS = 45_000;
 
 export default function Rate() {
   useScheme();
@@ -28,15 +24,24 @@ export default function Rate() {
   const toggleFavorite = useUser((s) => s.toggleFavorite);
   const addHistory = useHistory((s) => s.add);
   const master = mockMasters.find((m) => m.id === masterId) ?? mockMasters[0];
-  const fee = getCategory(categoryId).callFee;
-  const [stars, setStars] = useState(5);
-  const [tags, setTags] = useState<string[]>(['onTime', 'clean']);
+  // Hech narsa oldindan belgilanmaydi — baho mijozning o'z fikri bo'lsin
+  const [stars, setStars] = useState(0);
+  const [tags, setTags] = useState<string[]>([]);
   const [comment, setComment] = useState('');
-  const [fav, setFav] = useState(true);
+  const [fav, setFav] = useState(false);
   const warranty = new Date(Date.now() + WARRANTY_DAYS * 86_400_000);
+  // Narx — usta taklif qilib mijoz rozi bo'lgani; rad etilgan bo'lsa — faqat chaqiruv (ko'rik)
+  const declined = order?.priceStatus === 'declined';
+  const total = order?.finalPrice ?? CALL_FEE;
+
+  // Buyurtma yo'q (eski havola yoki allaqachon yakunlangan) — bosh sahifaga
+  useEffect(() => {
+    if (!order) router.replace('/client');
+  }, [order]);
+  if (!order) return null;
 
   const finish = () => {
-    toggleFavorite(master.id, fav);
+    if (fav) toggleFavorite(master.id, true);
     // Tarixga: narx, baho, teglar, izoh (5-bosqichda reviews jadvaliga ham yoziladi)
     addHistory({
       id: order?.id ?? `o${Date.now()}`,
@@ -44,11 +49,12 @@ export default function Rate() {
       problemId,
       masterId: master.id,
       at: Date.now(),
-      price: fee + WORK + PARTS,
+      price: total,
       status: 'completed',
+      inspectionOnly: declined || undefined,
       address: order?.address,
-      stars,
-      tags,
+      stars: stars || undefined,
+      tags: stars ? tags : [],
       comment: comment.trim() || undefined,
     });
     if (order) remove(order.id);
@@ -62,27 +68,36 @@ export default function Rate() {
           <View style={styles.check}>
             <Check size={28} color={cat.onMain} strokeWidth={2.8} />
           </View>
-          <Text style={[styles.heroTitle, { color: cat.onMain }]}>{t('rate.doneTitle')}</Text>
-          <Text style={[styles.heroSub, { color: cat.onMain, opacity: 0.85 }]}>{t('rate.duration', { name: master.name, time: t('rate.time') })}</Text>
+          <Text style={[styles.heroTitle, { color: cat.onMain }]}>{declined ? t('rate.doneDeclined') : t('rate.doneTitle')}</Text>
+          <Text style={[styles.heroSub, { color: cat.onMain, opacity: 0.85 }]}>{t('rate.duration', { name: master.name, time: t('common.min', { value: Math.max(1, Math.round((Date.now() - order.createdAt) / 60_000)) }) })}</Text>
         </SafeAreaView>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <Card>
-          <Row label={t('rate.callFee')} value={formatSum(fee)} />
-          <Row label={t('rate.work', { problem: t(`problems.${problemId}`) })} value={formatSum(WORK)} />
-          <Row label={t('rate.parts')} value={formatSum(PARTS)} />
+          {declined ? (
+            <Row label={t('rate.inspection')} value={formatSum(CALL_FEE)} />
+          ) : (
+            <>
+              <Row label={t('rate.work', { problem: t(`problems.${problemId}`) })} value={formatSum(order.work)} />
+              {order.parts ? <Row label={t('rate.parts')} value={formatSum(order.parts)} /> : null}
+              <Text variant="caption">{t('rate.feeIncluded', { fee: formatSum(CALL_FEE) })}</Text>
+            </>
+          )}
           <Divider />
-          <Row label={t('rate.total')} value={formatSum(fee + WORK + PARTS)} strong />
-          <View style={styles.warranty}>
-            <ShieldCheck size={16} color={colors.success} strokeWidth={2.4} />
-            <Text style={styles.warrantyText}>{t('rate.warrantyUntil', { date: formatDate(warranty) })}</Text>
-          </View>
+          <Row label={t('rate.total')} value={formatSum(total)} strong />
+          {!declined ? (
+            <View style={styles.warranty}>
+              <ShieldCheck size={16} color={colors.success} strokeWidth={2.4} />
+              <Text style={styles.warrantyText}>{t('rate.warrantyUntil', { date: formatDate(warranty) })}</Text>
+            </View>
+          ) : null}
         </Card>
 
         <View style={styles.rate}>
           <Text variant="h3">{t('rate.rateTitle')}</Text>
           <RatingInput value={stars} onChange={setStars} />
+          {stars ? (
           <View style={styles.tags}>
             {TAGS.map((tag) => {
               const on = tags.includes(tag);
@@ -100,12 +115,14 @@ export default function Rate() {
               );
             })}
           </View>
+          ) : null}
           <TextInput
             value={comment}
             onChangeText={setComment}
             placeholder={t('rate.commentPlaceholder')}
             placeholderTextColor={colors.muted}
             accessibilityLabel={t('rate.commentPlaceholder')}
+            maxLength={500}
             style={styles.comment}
           />
         </View>
@@ -118,9 +135,9 @@ export default function Rate() {
       </ScrollView>
 
       <SafeAreaView edges={['bottom']} style={styles.bottom}>
-        <Button title={t('rate.pay')} big color={{ bg: cat.main, fg: cat.onMain }} onPress={finish} />
+        <Button title={t('rate.paidCash', { sum: formatSum(total) })} big color={{ bg: cat.main, fg: cat.onMain }} onPress={finish} />
         <Text variant="caption" style={styles.center}>
-          {t('rate.payNote', { days: WARRANTY_DAYS })}
+          {declined ? t('rate.declinedNote') : t('rate.payNote', { days: WARRANTY_DAYS })}
         </Text>
       </SafeAreaView>
     </View>
@@ -139,7 +156,7 @@ const styles = themed(() => ({
   warrantyText: { fontFamily: fonts.bold, fontSize: 12, color: colors.success },
   rate: { alignItems: 'center', gap: 12 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
-  tag: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 38, paddingHorizontal: 14, borderRadius: 19, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.line },
+  tag: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44, paddingHorizontal: 14, borderRadius: 22, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.line },
   tagOn: { backgroundColor: colors.primarySoft, borderColor: colors.primaryTint },
   tagText: { fontFamily: fonts.bold, fontSize: 13, color: colors.ink },
   comment: { alignSelf: 'stretch', height: 50, borderRadius: 14, borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.surface, paddingHorizontal: 14, fontFamily: fonts.regular, fontSize: 16, color: colors.ink },

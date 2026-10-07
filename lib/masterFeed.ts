@@ -12,8 +12,9 @@ import { t } from '@/lib/i18n';
 import { notify } from '@/lib/notify';
 import { estimateEtaMin } from '@/lib/routes';
 import { useWatchLocation } from '@/lib/useWatchLocation';
+import { DISPATCH } from '@/constants/dispatch';
 import { mockMasterSelf } from '@/mocks';
-import { useMaster, useMasterWork, useUser, type MasterOrder } from '@/store';
+import { makeDoorCode, useMaster, useMasterWork, useUser, type MasterOrder } from '@/store';
 
 export type Blocked = null | 'balance' | 'subscription';
 
@@ -65,33 +66,51 @@ export function makeMockOrder(here: LatLng, categories: CategoryId[], radiusKm: 
     distanceKm: Math.round(distanceKm(here, location) * 10) / 10,
     etaMin: estimateEtaMin(here, location),
     sentAt: Date.now(),
+    doorCode: makeDoorCode(),
   };
 }
 
 /** master/_layout'da bir marta ulanadi */
 export function useMasterFeed() {
   const online = useMaster((s) => s.online);
-  const { categories, radiusKm, notifications } = useMaster();
+  const { categories: filter, radiusKm, notifications, profile } = useMaster();
+  // Faqat usta ro'yxatdan o'tgan kategoriyalardan (filtr shular ichidan tanlanadi)
+  const own = profile.categories;
+  const categories = filter.filter((c) => !own.length || own.includes(c));
   const blocked = useBlocked();
   const offer = useMasterWork((s) => s.offer);
   const job = useMasterWork((s) => s.job);
   const path = usePathname();
   const live = useWatchLocation();
-  const here = useRef<LatLng>(mockMasterSelf.location);
+  const here = useRef<LatLng>(useUser.getState().lastLocation ?? mockMasterSelf.location);
   if (live) here.current = live;
 
   // Takliflar: onlayn, buyurtmalar ochiq, qo'lda taklif ham, ish ham yo'q, tarif ekranida emas
-  const canReceive = online && !blocked && !offer && !job && !path.includes('/plan') && !path.includes('/register');
+  const canReceive = online && !blocked && !offer && !job && categories.length > 0 && !path.includes('/plan') && !path.includes('/register');
   useEffect(() => {
     if (!canReceive) return;
     const id = setTimeout(() => {
       const o = makeMockOrder(here.current, categories, radiusKm);
       useMasterWork.getState().setOffer(o);
       router.push('/master/offer');
-      if (notifications) notify(t('notify.offerTitle'), `${t(`problems.${o.problemId}`)} · ${t('common.km', { value: o.distanceKm })}`);
+      if (notifications) notify(t('notify.offerTitle'), `${t(`problems.${o.problemId}`)} · ${t('common.km', { value: o.distanceKm })}`, { url: '/master/offer' });
     }, nextDelay());
     return () => clearTimeout(id);
-  }, [canReceive, categories, radiusKm, notifications]);
+  }, [canReceive, categories.join(), radiusKm, notifications]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Taklif muddati shu yerda ham kuzatiladi: usta taklif ekranidan chiqib ketsa ham 60 s dan keyin
+  // taklif o'zi yopiladi (aktivlik −5) va yangi takliflar kela boshlaydi — ilova qotib qolmaydi
+  useEffect(() => {
+    if (!offer) return;
+    const left = offer.sentAt + DISPATCH.offerTimeoutSec * 1000 - Date.now();
+    const id = setTimeout(() => {
+      const cur = useMasterWork.getState().offer;
+      if (cur?.id !== offer.id) return;
+      useMaster.getState().bumpActivity(DISPATCH.activity.declinedOrExpired);
+      useMasterWork.getState().setOffer(null);
+    }, Math.max(0, left));
+    return () => clearTimeout(id);
+  }, [offer]);
 
   // Joylashuv: onlayn yoki ishda bo'lsa — har 5 s
   const sharing = online || Boolean(job);

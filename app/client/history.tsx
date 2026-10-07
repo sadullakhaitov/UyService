@@ -51,7 +51,7 @@ export default function History() {
                 </View>
                 <View style={[styles.badge, { backgroundColor: done ? colors.successSoft : colors.field }]}>
                   <Text style={[styles.badgeText, { color: done ? colors.success : colors.ink2 }]}>
-                    {done ? t('history.statusCompleted') : t('history.statusCancelled')}
+                    {item.inspectionOnly ? t('history.statusInspection') : done ? t('history.statusCompleted') : t('history.statusCancelled')}
                   </Text>
                 </View>
               </View>
@@ -67,7 +67,7 @@ export default function History() {
                   {done ? <Text variant="caption">{formatSum(item.price)}</Text> : null}
                 </View>
                 {item.stars ? <RatingBadge value={item.stars} /> : null}
-                <Squish accessibilityRole="button" onPress={() => again(item.categoryId, item.problemId, m?.id ?? null)} style={styles.again}>
+                <Squish accessibilityRole="button" onPress={() => again(item.categoryId, item.problemId, item.status === 'completed' ? (m?.id ?? null) : null)} style={styles.again}>
                   <RotateCcw size={16} color={colors.primary} strokeWidth={2.4} />
                   <Text style={styles.againText}>{t('history.again')}</Text>
                 </Squish>

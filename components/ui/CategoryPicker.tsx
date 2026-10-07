@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { categories, type CategoryId } from '@/constants/categories';
-import { fonts, radius, themed, useScheme } from '@/constants/theme';
+import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { Squish } from './Pressable';
 import { Text } from './Text';
@@ -43,5 +43,5 @@ const styles = themed(() => ({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   tile: { width: '31.4%', alignItems: 'center', gap: 8, paddingVertical: 16, paddingHorizontal: 6, borderRadius: radius.tile, borderWidth: 1.5 },
   text: { fontFamily: fonts.bold, fontSize: 13 },
-  check: { position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  check: { position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.onPrimary, alignItems: 'center', justifyContent: 'center' },
 }));

@@ -6,7 +6,7 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Text } from '@/components/ui/Text';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
-import { useChats } from '@/store';
+import { chatSubtitle, chatTitle, msgText, useChats } from '@/store';
 
 // Chat oynasi: usta ↔ qo'llab-quvvatlash / mijoz, mijoz ↔ usta. Hozir mahalliy, 5-bosqichda Supabase Realtime
 export function ChatView({ id, accent = colors.primary, onAccent = colors.onPrimary }: { id: string; accent?: string; onAccent?: string }) {
@@ -36,7 +36,7 @@ export function ChatView({ id, accent = colors.primary, onAccent = colors.onPrim
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.root}>
-      <ScreenHeader title={chat.title} kicker={chat.subtitle} />
+      <ScreenHeader title={chatTitle(chat)} kicker={chatSubtitle(chat)} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <FlatList
           ref={list}
@@ -47,7 +47,7 @@ export function ChatView({ id, accent = colors.primary, onAccent = colors.onPrim
           onContentSizeChange={() => list.current?.scrollToEnd({ animated: true })}
           renderItem={({ item }) => (
             <View style={[styles.bubble, item.mine ? [styles.mine, { backgroundColor: accent }] : styles.theirs]}>
-              <Text style={[styles.msg, item.mine && { color: onAccent }]}>{item.text}</Text>
+              <Text style={[styles.msg, item.mine && { color: onAccent }]}>{msgText(item)}</Text>
             </View>
           )}
         />

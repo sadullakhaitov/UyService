@@ -1,19 +1,54 @@
 import { Copy, Gift, Share2 } from 'lucide-react-native';
-import { ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
 import { INVITE_BONUS } from '@/constants/billing';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
+import { notice } from '@/lib/dialog';
 import { formatSum, t } from '@/lib/i18n';
 import { useUser } from '@/store';
+
+/** Raqamdan yasalgan, lekin raqamni oshkor qilmaydigan kod (5-bosqichda server beradi) */
+function inviteCode(phone: string) {
+  let h = 5381;
+  for (const ch of phone.replace(/\D/g, '') || '0') h = (h * 33 + ch.charCodeAt(0)) >>> 0;
+  return `US${h.toString(36).toUpperCase().padStart(6, '0').slice(-6)}`;
+}
+
+/** Brauzerda "ulashish" bo'lmasa — matn nusxalanadi */
+async function shareText(message: string) {
+  if (Platform.OS === 'web' && !(navigator as Navigator & { share?: unknown }).share) return copyText(message);
+  try {
+    await Share.share({ message });
+  } catch {
+    // foydalanuvchi bekor qildi
+  }
+}
+
+async function copyText(text: string) {
+  if (Platform.OS === 'web' && navigator.clipboard) {
+    try {
+      await navigator.clipboard.writeText(text);
+      notice(t('invite.copied'));
+      return;
+    } catch {
+      // ruxsat yo'q — quyida ulashish oynasi
+    }
+  }
+  try {
+    await Share.share({ message: text });
+  } catch {
+    // bekor qilindi
+  }
+}
 
 // Do'st taklif qilish: kod va havola (5-bosqichda referrals jadvali)
 export default function Invite() {
   useScheme();
   const phone = useUser((s) => s.phone);
-  const code = `US${(phone.replace(/\D/g, '').slice(-4) || '0000')}`;
+  const code = inviteCode(phone);
   const link = `https://uyservice.uz/usta?ref=${code}`;
-  const share = () => Share.share({ message: t('invite.message', { code, link }) });
+  const share = () => shareText(t('invite.message', { code, link }));
 
   return (
     <SafeAreaView style={styles.root}>
@@ -43,7 +78,7 @@ export default function Invite() {
       </ScrollView>
       <View style={styles.bottom}>
         <Button title={t('invite.share')} icon={Share2} big onPress={share} />
-        <Button title={t('invite.copyLink')} icon={Copy} kind="secondary" onPress={() => Share.share({ message: link })} />
+        <Button title={t('invite.copyLink')} icon={Copy} kind="secondary" onPress={() => copyText(link)} />
       </View>
     </SafeAreaView>
   );

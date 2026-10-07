@@ -189,6 +189,8 @@ export type HistoryItem = {
   tags?: string[];
   comment?: string;
   cancelReason?: string;
+  /** Mijoz narxga rozi bo'lmadi — faqat chaqiruv (ko'rik) to'landi */
+  inspectionOnly?: boolean;
 };
 
 export const mockHistory: HistoryItem[] = [
@@ -227,21 +229,24 @@ const minAgo = (m: number) => Date.now() - m * 60_000;
 export const mockChats = [
   {
     id: 'support',
-    title: "UyService qo'llab-quvvatlash",
-    subtitle: 'Savolingiz bormi? Yozing',
+    // i18n: sarlavha va matnlar — tarjima kalitlari (til almashsa, chat ham o'sha tilda)
+    i18n: true,
+    title: 'chatMock.supportTitle',
+    subtitle: 'chatMock.supportSub',
     kind: 'support' as const,
     unread: 1,
-    messages: [{ id: 's1', mine: false, text: "Assalomu alaykum! UyService'ga xush kelibsiz. Savollaringiz bo'lsa, shu yerga yozing.", at: minAgo(180) }],
+    messages: [{ id: 's1', mine: false, text: 'chatMock.supportHello', at: minAgo(180), i18n: true }],
   },
   {
     id: 'news',
-    title: 'Yangiliklar',
-    subtitle: "Konditsioner mavsumi: buyurtmalar ko'paydi",
+    i18n: true,
+    title: 'chatMock.newsTitle',
+    subtitle: 'chatMock.newsSub',
     kind: 'news' as const,
     unread: 2,
     messages: [
-      { id: 'n1', mine: false, text: "Yangi: endi taklifni ko'rib chiqish uchun 60 soniya beriladi.", at: minAgo(600) },
-      { id: 'n2', mine: false, text: "Konditsioner mavsumi: Chilonzor va Yunusobodda buyurtmalar ko'paydi.", at: minAgo(90) },
+      { id: 'n1', mine: false, text: 'chatMock.news1', at: minAgo(600), i18n: true },
+      { id: 'n2', mine: false, text: 'chatMock.news2', at: minAgo(90), i18n: true },
     ],
   },
   {

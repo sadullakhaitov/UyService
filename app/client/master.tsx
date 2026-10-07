@@ -42,7 +42,7 @@ export default function MasterInfo() {
           </View>
           <View style={styles.nameRow}>
             <Text variant="h2">{master.name}</Text>
-            <BadgeCheck size={20} color={colors.onPrimary} fill={c.main} accessibilityLabel={t('tracking.verified')} />
+            {master.verified ? <BadgeCheck size={20} color={colors.onPrimary} fill={c.main} accessibilityLabel={t('tracking.verified')} /> : null}
           </View>
           <Text variant="small">{master.categories.map((x) => t(`categories.${x}`)).join(' · ')}</Text>
         </View>

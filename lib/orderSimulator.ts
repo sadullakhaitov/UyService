@@ -3,6 +3,7 @@
 // Usta qidirish — haqiqiy algoritm (lib/dispatch.ts); soxta faqat ustalarning javobi va harakati.
 // 7-bosqichda: Supabase Edge Function (dispatch, offer-timeout) + Realtime (master_locations).
 import { useEffect } from 'react';
+import { CALL_FEE, problems } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
 import { advanceDispatch, applyActivity, respondDispatch, startDispatch, type DispatchMaster } from '@/lib/dispatch';
 import { distanceKm } from '@/lib/geo';
@@ -16,7 +17,10 @@ const TICK_MS = 500;
 /** Usta belgisi har qadamda shuncha vaqt silliq siljiydi (tracking ekrani ham shuni ishlatadi) */
 export const STEP_MS = 1000;
 const STEP_M = 12; // har qadam ≤ 12 m (~43 km/soat), burilishlar saqlanadi
-const ARRIVED_TO_WORK_MS = 4000;
+/** Usta yetib kelgach shuncha vaqtda muammoni ko'rib narx taklif qiladi (soxta) */
+const ARRIVED_TO_PRICE_MS = 6000;
+/** Ish shuncha davom etadi (soxta; sinov rejimida "Keyingisi" bilan tezlashtirish mumkin) */
+const WORK_MS = 45_000;
 /** Rejalashtirilgan buyurtmada qidiruv shuncha oldin boshlanadi */
 export const SCHEDULE_LEAD_MS = 30 * 60_000;
 
@@ -53,13 +57,47 @@ function tick(now: number) {
         if (o.step < o.path.length - 1) update(o.id, { step: o.step + 1, phaseAt: now });
         else {
           update(o.id, { status: 'arrived', phaseAt: now });
-          notify(t('notify.arrivedTitle'), t('notify.arrivedBody', { category: t(`categories.${o.categoryId}`) }));
+          notify(t('notify.arrivedTitle'), t('notify.arrivedBody', { category: t(`categories.${o.categoryId}`) }), { url: `/client/tracking?id=${o.id}` });
         }
       }
-    } else if (o.status === 'arrived' && now - o.phaseAt >= ARRIVED_TO_WORK_MS) {
-      update(o.id, { status: 'in_progress', phaseAt: now });
+    } else if (o.status === 'arrived' && o.priceStatus === 'none' && now - o.phaseAt >= ARRIVED_TO_PRICE_MS) {
+      // Usta muammoni ko'rib narx taklif qiladi (chaqiruv shu narx ichida) — mijoz rozi bo'lmaguncha ish boshlanmaydi
+      update(o.id, { ...proposePrice(o.problemId), priceStatus: 'proposed', phaseAt: now });
+      notify(t('notify.priceTitle'), t('notify.priceBody'), { url: `/client/tracking?id=${o.id}` });
+    } else if (o.status === 'in_progress' && now - o.phaseAt >= WORK_MS) {
+      completeOrder(o.id);
     }
   }
+}
+
+const round5k = (n: number) => Math.round(n / 5000) * 5000;
+
+/** Soxta narx taklifi: muammoning taxminiy narx oralig'idan (kamida chaqiruv narxi), ba'zan ehtiyot qismlar bilan */
+function proposePrice(problemId: string) {
+  const p = problems.find((x) => x.id === problemId);
+  const min = Math.max(CALL_FEE, p?.priceMin ?? 100_000);
+  const max = Math.max(min, p?.priceMax ?? 150_000);
+  const work = round5k(min + Math.random() * (max - min));
+  const parts = Math.random() < 0.5 ? round5k(20_000 + Math.random() * 40_000) : 0;
+  return { work, parts };
+}
+
+/** Mijoz narxga rozi bo'ldi — ish boshlanadi */
+export function approvePrice(id: string) {
+  useOrders.getState().update(id, { priceStatus: 'approved', status: 'in_progress', phaseAt: Date.now() });
+}
+
+/** Mijoz narxni rad etdi — faqat chaqiruv (ko'rik) to'lanadi, buyurtma yakunlanadi */
+export function declinePrice(id: string) {
+  useOrders.getState().update(id, { priceStatus: 'declined', status: 'completed', finalPrice: CALL_FEE, phaseAt: Date.now() });
+}
+
+/** Ish tugadi: yakuniy summa — kelishilgan ish narxi + ehtiyot qismlar */
+export function completeOrder(id: string) {
+  const o = useOrders.getState().orders.find((x) => x.id === id);
+  if (!o || o.status === 'completed') return;
+  useOrders.getState().update(id, { status: 'completed', finalPrice: o.work + o.parts, phaseAt: Date.now() });
+  notify(t('notify.doneTitle'), t('notify.doneBody'), { url: `/client/rate?id=${id}` });
 }
 
 export function startSearch(id: string, now = Date.now()) {
@@ -97,7 +135,11 @@ function searchTick(o: ActiveOrder, now: number, busy: Set<string | null>) {
       replies.delete(key);
     }
   }
-  if (d.done === 'accepted') return assign(o, d, now);
+  if (d.done === 'accepted') {
+    // Shu taktdagi keyingi buyurtmalar uchun usta band (bir ustaga ikki buyurtma tushmasin)
+    busy.add(assign(o, d, now));
+    return;
+  }
 
   d = advanceDispatch(d, order, masters, now);
   // Vaqti o'tgan taklif — usta aktivligi −5
@@ -106,11 +148,11 @@ function searchTick(o: ActiveOrder, now: number, busy: Set<string | null>) {
 
   if (d !== o.dispatch) {
     useOrders.getState().update(o.id, { dispatch: d, none: d.done === 'none' });
-    if (d.done === 'none') notify(t('notify.noneTitle'), t('searching.noneText'));
+    if (d.done === 'none') notify(t('notify.noneTitle'), t('searching.noneText'), { url: `/client/searching?id=${o.id}` });
   }
 }
 
-function assign(o: ActiveOrder, dispatch: ActiveOrder['dispatch'], now: number) {
+function assign(o: ActiveOrder, dispatch: ActiveOrder['dispatch'], now: number): string {
   const acc = [...dispatch.events].reverse().find((e) => e.kind === 'accepted');
   const masterId = acc && 'masterId' in acc ? acc.masterId : o.dispatch.offer?.masterId ?? '';
   const m = mastersAround(o.location).find((x) => x.id === masterId)!;
@@ -126,14 +168,14 @@ function assign(o: ActiveOrder, dispatch: ActiveOrder['dispatch'], now: number) 
     speed: fb.distanceM / fb.durationS,
     phaseAt: now,
   });
-  notify(t('notify.foundTitle'), t('notify.foundBody', { name: m.name.split(' ')[0], min: estimateEtaMin(m.location, o.location) }));
+  notify(t('notify.foundTitle'), t('notify.foundBody', { name: m.name.split(' ')[0], min: estimateEtaMin(m.location, o.location) }), { url: `/client/tracking?id=${o.id}` });
   fetchRoute(m.location, o.location).then((r) => {
     const cur = useOrders.getState().orders.find((x) => x.id === o.id);
     if (r && cur && cur.status === 'on_the_way' && !cur.routeReady) {
       // Belgi shu tezlikda yuradi: qadam ≤ 12 m har soniyada
       useOrders.getState().update(o.id, { path: resample(r.path, STEP_M), step: 0, routeReady: true, speed: STEP_M / (STEP_MS / 1000), phaseAt: Date.now() });
     }
-  });
+  });  return masterId;
 }
 
 /** Qidiruv holati (mijoz ekrani uchun) */

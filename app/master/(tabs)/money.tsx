@@ -1,34 +1,39 @@
 import { router } from 'expo-router';
 import { ChevronRight, Headset, Lock, LockOpen, CalendarDays } from 'lucide-react-native';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Squish, Text } from '@/components/ui';
 import { BALANCE_LIMIT, BILLING, feePercent, planLabel } from '@/constants/billing';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
-import { mockMasterSelf } from '@/mocks';
-import { useMaster, useUser } from '@/store';
+import { DEMO } from '@/lib/demo';
+import { notice } from '@/lib/dialog';
+import { earningOn, useMaster, useUser } from '@/store';
 
 const DAY = 86_400_000;
-
-// So'nggi 7 kun: sana raqami va o'sha kungi daromad (soxta)
-const days = Array.from({ length: 7 }, (_, i) => {
-  const d = new Date(Date.now() - (6 - i) * DAY);
-  return { date: d, label: String(d.getDate()), income: mockMasterSelf.week[i] ?? 0 };
-});
+/** Sinov rejimida "To'ldirish" tugmasi balansga shuncha qo'shadi */
+const DEMO_TOP_UP = 50_000;
 
 export default function Money() {
   useScheme();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
-  const { balance, subscriptionUntil, todayIncome, verified } = useMaster();
+  const { balance, subscriptionUntil, verified, earnings, topUp, paySubscription } = useMaster();
   const fee = feePercent(plan, verified);
   const [sel, setSel] = useState(6);
-  // Bugungi kun — haqiqiy (yakunlangan ishlardan), oldingilari soxta
-  const day = sel === 6 ? { ...days[6], income: todayIncome } : days[sel];
+  // So'nggi 7 kun — haqiqiy yakunlangan ishlardan (yangi ustada hammasi 0)
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(Date.now() - (6 - i) * DAY);
+    const e = earningOn(earnings, date);
+    return { date, label: String(date.getDate()), income: e.income, jobs: e.jobs };
+  });
+  const day = days[sel];
+  const weekJobs = days.reduce((n, d) => n + d.jobs, 0);
   const ok = balance >= BALANCE_LIMIT;
   const subActive = subscriptionUntil > Date.now();
-  const soon = () => Alert.alert(t('profile.soon'), t('money.topUpSoon'));
+  // Click/Payme ulanguncha: sinov rejimida — darhol (namunaviy), aks holda "tez kunda"
+  const onTopUp = () => (DEMO ? topUp(DEMO_TOP_UP) : notice(t('profile.soon'), t('money.topUpSoon')));
+  const onRenew = () => (DEMO ? paySubscription() : notice(t('profile.soon'), t('money.topUpSoon')));
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
@@ -63,7 +68,7 @@ export default function Money() {
             <CalendarDays size={22} color={colors.primary} strokeWidth={2.2} />
             <View style={styles.flex}>
               <Text variant="bodyBold">{t('money.jobsCard')}</Text>
-              <Text variant="small">{t('money.jobsCardSub', { count: mockMasterSelf.weekJobs })}</Text>
+              <Text variant="small">{t('money.jobsCardSub', { count: weekJobs })}</Text>
             </View>
             <ChevronRight size={20} color={colors.ink2} />
           </Squish>
@@ -93,7 +98,7 @@ export default function Money() {
                   <Text style={styles.balanceValue}>{formatSum(balance)}</Text>
                 </View>
                 <Text variant="small">{t('money.commissionNote', { percent: fee })}</Text>
-                <Button title={t('money.topUp')} onPress={soon} />
+                <Button title={DEMO ? t('money.topUpDemo', { sum: formatSum(DEMO_TOP_UP) }) : t('money.topUp')} onPress={onTopUp} />
               </View>
             </>
           ) : null}
@@ -106,7 +111,7 @@ export default function Money() {
                 </Text>
               </View>
               <Text variant="small">{t('plan.subscriptionPrice', { price: formatSum(BILLING.subscription.monthlyFee) })}</Text>
-              <Button title={t('money.renew')} onPress={soon} />
+              <Button title={DEMO ? t('money.renewDemo') : t('money.renew')} onPress={onRenew} />
             </View>
           ) : null}
 

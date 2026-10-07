@@ -19,7 +19,7 @@ import { locateMe, useMyLocation } from '@/lib/useMyLocation';
 import { MAP_ATTRIBUTION_H, useWide } from '@/lib/useLayout';
 import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
-import { useLocationLog, useMaster, useUser } from '@/store';
+import { earningOn, useLocationLog, useMaster, useMasterWork, useUser } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 
 const DAY = 86_400_000;
@@ -27,7 +27,14 @@ const DAY = 86_400_000;
 export default function MasterOrders() {
   useScheme();
   const insets = useSafeAreaInsets();
-  const { online, setOnline, activity, subscriptionUntil, todayIncome, todayJobs, verified } = useMaster();
+  const { online, setOnline, activity, subscriptionUntil, verified } = useMaster();
+  // "Bugun" — haqiqiy yakunlangan ishlardan, yarim tunda o'zi nolga tushadi
+  const today = earningOn(useMaster((s) => s.earnings));
+  const todayIncome = today.income;
+  const todayJobs = today.jobs;
+  // Taklif ekranidan chiqib ketilgan bo'lsa yoki faol ish bo'lsa — panelda karta (orqaga qaytish yo'li)
+  const pendingOffer = useMasterWork((s) => s.offer);
+  const job = useMasterWork((s) => s.job);
   const sentAt = useLocationLog((s) => s.lastAt);
   const [, setNow] = useState(0);
   useEffect(() => {
@@ -140,6 +147,31 @@ export default function MasterOrders() {
       </View>
 
       <Sheet onHeight={setSheetH} bottomInset={0} peek={70} top={topH + 60}>
+        {job ? (
+          <Squish accessibilityRole="button" onPress={() => router.push('/master/job')} style={[styles.activeCard, { borderColor: colors.primary }]}>
+            <View style={[styles.dot, { backgroundColor: colors.primary }]} />
+            <View style={styles.flex}>
+              <Text variant="caption">{t('mOrders.activeJob')}</Text>
+              <Text variant="bodyBold" numberOfLines={1}>
+                {job.clientName} · {t(`problems.${job.problemId}`)}
+              </Text>
+            </View>
+            <Text style={styles.activeGo}>{t('mOrders.open')}</Text>
+            <ChevronRight size={18} color={colors.primary} strokeWidth={2.6} />
+          </Squish>
+        ) : pendingOffer ? (
+          <Squish accessibilityRole="button" onPress={() => router.push('/master/offer')} style={[styles.activeCard, { borderColor: colors.accent }]}>
+            <View style={[styles.dot, { backgroundColor: colors.accent }]} />
+            <View style={styles.flex}>
+              <Text variant="caption">{t('offer.title')}</Text>
+              <Text variant="bodyBold" numberOfLines={1}>
+                {t(`problems.${pendingOffer.problemId}`)} · {t('common.km', { value: pendingOffer.distanceKm })}
+              </Text>
+            </View>
+            <Text style={[styles.activeGo, { color: colors.accentInk }]}>{t('mOrders.view')}</Text>
+            <ChevronRight size={18} color={colors.accentInk} strokeWidth={2.6} />
+          </Squish>
+        ) : null}
         <View style={styles.stats}>
           <View style={styles.stat}>
             <View style={[styles.statIcon, { backgroundColor: colors.accentSoft }]}>
@@ -211,17 +243,23 @@ export default function MasterOrders() {
 
 function FilterModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   useScheme();
-  const { categories: mine, radiusKm, setFilter } = useMaster();
-  const toggle = (id: (typeof mine)[number]) =>
-    setFilter({ categories: mine.includes(id) ? mine.filter((x) => x !== id) : [...mine, id] });
+  const { categories: mine, radiusKm, setFilter, profile } = useMaster();
+  // Filtrda faqat usta ro'yxatdan o'tgan kategoriyalar; kamida bittasi yoqiq qoladi
+  const own = profile.categories.length ? profile.categories : categories.map((c) => c.id);
+  const toggle = (id: (typeof mine)[number]) => {
+    const next = mine.includes(id) ? mine.filter((x) => x !== id) : [...mine, id];
+    if (next.some((c) => own.includes(c))) setFilter({ categories: next });
+  };
   return (
     <ModalSheet visible={visible} onClose={onClose}>
       <Text variant="h2">{t('mOrders.filters')}</Text>
       <Text variant="bodyBold">{t('mOrders.filterCategories')}</Text>
       <View style={styles.chips}>
-        {categories.map((c) => (
-          <Chip key={c.id} label={t(`categories.${c.id}`)} selected={mine.includes(c.id)} onPress={() => toggle(c.id)} />
-        ))}
+        {categories
+          .filter((c) => own.includes(c.id))
+          .map((c) => (
+            <Chip key={c.id} label={t(`categories.${c.id}`)} selected={mine.includes(c.id)} onPress={() => toggle(c.id)} />
+          ))}
       </View>
       <Text variant="bodyBold">{t('mOrders.filterRadius')}</Text>
       <View style={styles.chips}>
@@ -235,6 +273,8 @@ function FilterModal({ visible, onClose }: { visible: boolean; onClose: () => vo
 }
 
 const styles = themed(() => ({
+  activeCard: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.card, borderWidth: 1.5, backgroundColor: colors.surface },
+  activeGo: { fontFamily: fonts.bold, fontSize: 14, color: colors.primary },
   root: { flex: 1, backgroundColor: colors.map },
   flex: { flex: 1 },
   banner: {

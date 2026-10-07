@@ -1,12 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { Lang } from '@/lib/i18n';
+import { t, type Lang } from '@/lib/i18n';
 import type { BillingPlan } from '@/constants/billing';
 import type { CategoryId } from '@/constants/categories';
 import type { LatLng } from '@/lib/geo';
 import { startDispatch, type DispatchState } from '@/lib/dispatch';
-import { mockChats, mockFavorites, mockHistory, mockMasterSelf, TASHKENT_CENTER, type HistoryItem } from '@/mocks';
+import { signOut } from '@/lib/auth';
+import { DEMO } from '@/lib/demo';
+import { mockChats, TASHKENT_CENTER, type HistoryItem } from '@/mocks';
 
 export type Role = 'client' | 'master';
 export type ThemeMode = 'system' | 'light' | 'dark';
@@ -49,18 +51,23 @@ type UserState = {
   logout: () => void;
 };
 
+// Yangi foydalanuvchi bo'sh boshlaydi (soxta sevimli usta va tarix yo'q)
+const userDefaults = {
+  language: null as Lang | null,
+  phone: '',
+  name: '',
+  role: null as Role | null,
+  themeMode: 'system' as ThemeMode,
+  billingPlan: null as BillingPlan | null,
+  favorites: [] as string[],
+  lastLocation: null as LatLng | null,
+  lastAddress: '',
+};
+
 export const useUser = create<UserState>()(
   persist(
     (set) => ({
-  language: null,
-  phone: '',
-  name: '',
-  role: null,
-  themeMode: 'system',
-  billingPlan: null,
-  favorites: mockFavorites,
-  lastLocation: null,
-  lastAddress: '',
+  ...userDefaults,
   setLastLocation: (lastLocation, address) => set((s) => ({ lastLocation, lastAddress: address ?? s.lastAddress })),
   setLanguage: (language) => set({ language }),
   setPhone: (phone) => set({ phone }),
@@ -75,7 +82,8 @@ export const useUser = create<UserState>()(
       if (want === has) return s;
       return { favorites: want ? [...s.favorites, id] : s.favorites.filter((x) => x !== id) };
     }),
-  logout: () => set({ phone: '', role: null }),
+  // Hamma narsa tozalanadi (ism, sevimlilar, tarix, usta profili, faol buyurtmalar) — telefon boshqa odamga o'tsa ham
+  logout: () => logoutAll(),
     }),
     // Telefonda saqlanadi: til, raqam, rol, tarif, sevimli ustalar
     { name: 'uyservice-user', storage: createJSONStorage(() => AsyncStorage) },
@@ -121,6 +129,8 @@ export type MasterProfile = {
   lastName: string;
   categories: CategoryId[];
   experienceYears: number;
+  /** Profil surati (majburiy) — mijoz eshik ochishdan oldin ustaning yuzini ko'radi */
+  photo: string | null;
   passportPhoto: string | null;
   selfie: string | null;
   works: string[];
@@ -133,6 +143,7 @@ const emptyProfile: MasterProfile = {
   lastName: '',
   categories: [],
   experienceYears: 1,
+  photo: null,
   passportPhoto: null,
   selfie: null,
   works: [],
@@ -156,8 +167,12 @@ type MasterState = {
   /** Buyurtma filtri: qaysi kategoriyalar va qancha uzoqlikdan */
   categories: CategoryId[];
   radiusKm: number;
-  todayIncome: number;
-  todayJobs: number;
+  /** Kunlik daromad (oxirgi 31 kun): kalit — mahalliy sana YYYY-MM-DD; "Bugun" yarim tunda o'zi nolga tushadi */
+  earnings: DayEarning[];
+  /** Mijozlar bahosi (o'rtacha) va soni; yangi ustada — null */
+  rating: number | null;
+  ratingCount: number;
+  jobsDone: number;
   notifications: boolean;
   setOnline: (v: boolean) => void;
   bumpActivity: (delta: number) => void;
@@ -171,25 +186,42 @@ type MasterState = {
   setVerifyStatus: (status: VerifyStatus) => void;
   addPriority: (points: number, promo?: string) => void;
   addIncome: (amount: number) => void;
+  /** Balansni to'ldirish (hozircha faqat sinov rejimida; keyin Click/Payme) */
+  topUp: (amount: number) => void;
+  /** Obuna to'lovi (hozircha faqat sinov rejimida) — 30 kun */
+  paySubscription: () => void;
   setNotifications: (on: boolean) => void;
 };
+
+export type DayEarning = { day: string; income: number; jobs: number };
+/** Mahalliy sana kaliti YYYY-MM-DD */
+export const dayKey = (d: Date = new Date()) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+export const earningOn = (earnings: DayEarning[], d: Date = new Date()) => earnings.find((e) => e.day === dayKey(d)) ?? { day: dayKey(d), income: 0, jobs: 0 };
+
+// Yangi usta noldan boshlaydi: daromad, reyting, ishlar yo'q. Sinov rejimida — sinab ko'rish uchun 50 000 balans
+const masterDefaults = () => ({
+  online: false,
+  verified: false,
+  profile: emptyProfile,
+  activity: 80,
+  priorityPoints: 0,
+  usedPromos: [] as string[],
+  balance: DEMO ? 50_000 : 0,
+  subscriptionUntil: 0,
+  categories: [] as CategoryId[],
+  radiusKm: 6,
+  earnings: [] as DayEarning[],
+  rating: null as number | null,
+  ratingCount: 0,
+  jobsDone: 0,
+  notifications: true,
+});
 
 export const useMaster = create<MasterState>()(
   persist(
     (set) => ({
-      online: false,
-      verified: false,
-      profile: emptyProfile,
-      activity: mockMasterSelf.activity,
-      priorityPoints: 15,
-      usedPromos: [],
-      balance: 45_000,
-      subscriptionUntil: Date.now() + 18 * 86_400_000,
-      categories: ['plumber', 'appliance'],
-      radiusKm: 6,
-      todayIncome: mockMasterSelf.todayIncome,
-      todayJobs: mockMasterSelf.todayJobs,
-      notifications: true,
+      ...masterDefaults(),
       setOnline: (online) => set({ online }),
       bumpActivity: (d) => set((s) => ({ activity: Math.max(0, Math.min(100, s.activity + d)) })),
       setFilter: (p) => set(p),
@@ -204,14 +236,32 @@ export const useMaster = create<MasterState>()(
           online: false,
         })),
       setVerifyStatus: (status) => set((s) => ({ profile: { ...s.profile, status }, verified: status === 'approved' })),
+      topUp: (amount) => set((s) => ({ balance: s.balance + amount })),
+      paySubscription: () => set((s) => ({ subscriptionUntil: Math.max(s.subscriptionUntil, Date.now()) + 30 * 86_400_000 })),
       addPriority: (points, promo) =>
         set((s) => ({ priorityPoints: s.priorityPoints + points, usedPromos: promo ? [...s.usedPromos, promo] : s.usedPromos })),
-      addIncome: (amount) => set((s) => ({ todayIncome: s.todayIncome + amount, todayJobs: s.todayJobs + 1 })),
+      addIncome: (amount) =>
+        set((s) => {
+          const key = dayKey();
+          const today = earningOn(s.earnings);
+          const rest = s.earnings.filter((e) => e.day !== key);
+          return {
+            earnings: [...rest, { day: key, income: today.income + amount, jobs: today.jobs + 1 }].slice(-31),
+            jobsDone: s.jobsDone + 1,
+          };
+        }),
       setNotifications: (notifications) => set({ notifications }),
     }),
     {
       name: 'uyservice-master',
+      version: 2,
       storage: createJSONStorage(() => AsyncStorage),
+      // Eski (soxta statistikali) saqlangan ma'lumot — yangi tuzilishga: daromad va reyting noldan
+      migrate: (old) => {
+        const o = (old ?? {}) as Record<string, unknown>;
+        const { todayIncome: _i, todayJobs: _j, ...rest } = o;
+        return { ...masterDefaults(), ...rest, profile: { ...emptyProfile, ...((o.profile as object) ?? {}) } } as unknown as MasterState;
+      },
       // "Onlayn" holati saqlanmaydi: ilova qayta ochilganda usta o'zi ishga chiqadi
       partialize: ({ online: _online, ...rest }) => rest,
     },
@@ -231,23 +281,55 @@ export type MasterOrder = {
   distanceKm: number;
   etaMin: number;
   sentAt: number;
+  /** Eshikdagi tasdiq kodi: mijoz ilovasida ko'rinadi, usta yetib kelganda kiritadi */
+  doorCode: string;
+};
+
+/** Ish bosqichlari: yo'lda → yetib keldi (kod) → narx kelishilmoqda → ish → yakunlandi */
+export type JobStage = 'on_the_way' | 'arrived' | 'pricing' | 'in_progress' | 'completed';
+export type PriceStatus = 'none' | 'sent' | 'approved' | 'declined';
+
+export type MasterJob = MasterOrder & {
+  acceptedAt: number;
+  /** Platforma ulushi qabul qilingan paytdagi tarif bo'yicha (keyin tarif almashtirilsa ham o'zgarmaydi) */
+  feePercent: number;
+  stage: JobStage;
+  /** Usta taklif qilgan narx: ish (chaqiruv ichida) va ehtiyot qismlar */
+  work: number;
+  parts: number;
+  priceStatus: PriceStatus;
+  /** Yakuniy summa (rad etilsa — faqat chaqiruv) */
+  total: number;
 };
 
 type MasterWorkState = {
   offer: MasterOrder | null;
-  job: MasterOrder | null;
+  job: MasterJob | null;
   setOffer: (o: MasterOrder | null) => void;
-  acceptOffer: () => void;
+  acceptOffer: (feePercent: number) => void;
+  updateJob: (patch: Partial<MasterJob>) => void;
   finishJob: () => void;
 };
 
-export const useMasterWork = create<MasterWorkState>((set) => ({
-  offer: null,
-  job: null,
-  setOffer: (offer) => set({ offer }),
-  acceptOffer: () => set((s) => ({ job: s.offer, offer: null })),
-  finishJob: () => set({ job: null }),
-}));
+// Taklif va faol ish telefonda saqlanadi: ilova yopilib ochilsa ham yo'qolmaydi
+export const useMasterWork = create<MasterWorkState>()(
+  persist(
+    (set) => ({
+      offer: null,
+      job: null,
+      setOffer: (offer) => set({ offer }),
+      acceptOffer: (feePercent) =>
+        set((s) =>
+          s.offer
+            ? { job: { ...s.offer, acceptedAt: Date.now(), feePercent, stage: 'on_the_way', work: 0, parts: 0, priceStatus: 'none', total: 0 }, offer: null }
+            : s,
+        ),
+      updateJob: (patch) => set((s) => (s.job ? { job: { ...s.job, ...patch } } : s)),
+      finishJob: () => set({ job: null }),
+    }),
+    { name: 'uyservice-master-work', storage: createJSONStorage(() => AsyncStorage) },
+  ),
+);
 
 /** Ustaning joylashuvi serverga (master_locations) har 5 s yuboriladi — oxirgi yuborilgan */
 type LocationLogState = { last: LatLng | null; lastAt: number; sent: number; record: (p: LatLng) => void };
@@ -259,8 +341,13 @@ export const useLocationLog = create<LocationLogState>((set) => ({
 }));
 
 // Chatlar (soxta, mahalliy) — 5-bosqichda Supabase Realtime
-export type ChatMessage = { id: string; mine: boolean; text: string; at: number };
-export type Chat = { id: string; title: string; subtitle: string; kind: 'support' | 'news' | 'client' | 'master'; unread: number; messages: ChatMessage[] };
+/** i18n: true — matn tarjima kaliti (tizim xabarlari: qo'llab-quvvatlash, yangiliklar) */
+export type ChatMessage = { id: string; mine: boolean; text: string; at: number; i18n?: boolean };
+export type Chat = { id: string; title: string; subtitle: string; kind: 'support' | 'news' | 'client' | 'master'; unread: number; messages: ChatMessage[]; i18n?: boolean };
+
+export const chatTitle = (c: Chat) => (c.i18n ? t(c.title) : c.title);
+export const chatSubtitle = (c: Chat) => (c.i18n ? t(c.subtitle) : c.subtitle);
+export const msgText = (m: ChatMessage) => (m.i18n ? t(m.text) : m.text);
 
 type ChatState = {
   chats: Chat[];
@@ -274,8 +361,11 @@ type ChatState = {
 
 const msg = (mine: boolean, text: string): ChatMessage => ({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, mine, text, at: Date.now() });
 
+// Boshlanishda faqat qo'llab-quvvatlash va yangiliklar (soxta mijoz yozishmalari yo'q)
+const defaultChats = (): Chat[] => mockChats.filter((c) => c.kind === 'support' || c.kind === 'news').map((c) => ({ ...c, messages: [...c.messages] }));
+
 export const useChats = create<ChatState>((set) => ({
-  chats: mockChats,
+  chats: defaultChats(),
   send: (chatId, text) =>
     set((s) => ({ chats: s.chats.map((c) => (c.id === chatId ? { ...c, messages: [...c.messages, msg(true, text)] } : c)) })),
   receive: (chatId, text) =>
@@ -312,7 +402,18 @@ export type ActiveOrder = {
   /** Haqiqiy yo'l olindi (false — usta joyida, yo'l kutilmoqda) */
   routeReady?: boolean;
   phaseAt: number;
+  /** Eshikdagi tasdiq kodi — mijoz ustaga aytadi (kelgan odam o'sha usta ekanini bildiradi) */
+  doorCode: string;
+  /** Usta yetib kelib taklif qilgan narx: ish (chaqiruv ichida) + ehtiyot qismlar; mijoz rozi bo'lsa ish boshlanadi */
+  priceStatus: 'none' | 'proposed' | 'approved' | 'declined';
+  work: number;
+  parts: number;
+  /** Yakuniy summa: rozi bo'lsa — ish + qismlar, rad etsa — faqat chaqiruv */
+  finalPrice: number | null;
 };
+
+/** 4 xonali tasodifiy kod */
+export const makeDoorCode = () => String(1000 + Math.floor(Math.random() * 9000));
 
 type OrdersState = {
   orders: ActiveOrder[];
@@ -322,8 +423,11 @@ type OrdersState = {
   remove: (id: string) => void;
 };
 
-export const useOrders = create<OrdersState>((set) => ({
-  orders: [],
+// Faol buyurtmalar telefonda saqlanadi: sahifa yangilansa yoki ilova yopilsa ham yo'qolmaydi (simulyator davom etadi)
+export const useOrders = create<OrdersState>()(
+  persist(
+    (set) => ({
+  orders: [] as ActiveOrder[],
   create: () => {
     const d = useOrder.getState();
     const id = `o${Date.now()}`;
@@ -347,13 +451,21 @@ export const useOrders = create<OrdersState>((set) => ({
       step: 0,
       speed: 6,
       phaseAt: now,
+      doorCode: makeDoorCode(),
+      priceStatus: 'none',
+      work: 0,
+      parts: 0,
+      finalPrice: null,
     };
     set((s) => ({ orders: [...s.orders, order] }));
     return id;
   },
   update: (id, patch) => set((s) => ({ orders: s.orders.map((o) => (o.id === id ? { ...o, ...patch } : o)) })),
   remove: (id) => set((s) => ({ orders: s.orders.filter((o) => o.id !== id) })),
-}));
+    }),
+    { name: 'uyservice-orders', version: 2, storage: createJSONStorage(() => AsyncStorage), migrate: () => ({ orders: [] }) as unknown as OrdersState },
+  ),
+);
 
 export const useActiveOrder = (id: string | undefined) => useOrders((s) => s.orders.find((o) => o.id === id));
 
@@ -362,10 +474,11 @@ type HistoryState = { items: HistoryItem[]; add: (item: HistoryItem) => void };
 export const useHistory = create<HistoryState>()(
   persist(
     (set) => ({
-      items: mockHistory,
+      items: [] as HistoryItem[],
       add: (item) => set((s) => ({ items: [item, ...s.items.filter((x) => x.id !== item.id)] })),
     }),
-    { name: 'uyservice-history', storage: createJSONStorage(() => AsyncStorage) },
+    // version 2: eski soxta tarix (boshqa odamnikidek ko'rinardi) tozalanadi
+    { name: 'uyservice-history', version: 2, storage: createJSONStorage(() => AsyncStorage), migrate: () => ({ items: [] }) as unknown as HistoryState },
   ),
 );
 
@@ -376,3 +489,15 @@ function restoreLastPlace() {
 }
 if (useUser.persist.hasHydrated()) restoreLastPlace();
 else useUser.persist.onFinishHydration(restoreLastPlace);
+
+/** Akkauntdan chiqish: shu telefondagi hamma shaxsiy ma'lumot tozalanadi (til, ko'rinish va oxirgi joy qoladi) */
+export function logoutAll() {
+  const { language, themeMode, lastLocation, lastAddress } = useUser.getState();
+  useUser.setState({ ...userDefaults, language, themeMode, lastLocation, lastAddress });
+  useMaster.setState(masterDefaults());
+  useMasterWork.setState({ offer: null, job: null });
+  useOrders.setState({ orders: [] });
+  useHistory.setState({ items: [] });
+  useChats.setState({ chats: defaultChats() });
+  signOut().catch(() => {});
+}

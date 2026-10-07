@@ -1,15 +1,16 @@
 import { router } from 'expo-router';
-import { Clock, MapPin, Navigation } from 'lucide-react-native';
+import { Clock, Lock, Navigation } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Divider, Row, Text } from '@/components/ui';
 import { CountdownRing } from '@/components/ui/CountdownRing';
 import { getCategory, problems } from '@/constants/categories';
+import { feePercent } from '@/constants/billing';
 import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatRange, formatSum, t } from '@/lib/i18n';
-import { useMaster, useMasterWork } from '@/store';
+import { useMaster, useMasterWork, useUser } from '@/store';
 
 export default function Offer() {
   useScheme();
@@ -36,7 +37,9 @@ export default function Offer() {
   const accept = () => {
     accepted.current = true;
     bump(DISPATCH.activity.accepted);
-    acceptOffer();
+    // Ulush qabul paytidagi tarif bo'yicha qotiriladi (keyin tarif almashtirilsa ham shu ish uchun o'zgarmaydi)
+    const { verified } = useMaster.getState();
+    acceptOffer(feePercent(useUser.getState().billingPlan ?? 'commission', verified));
     router.replace('/master/job');
   };
   // Rad etish yoki 60 s o'tib ketishi — aktivlik −5, taklif keyingi ustaga o'tadi
@@ -76,11 +79,11 @@ export default function Offer() {
         </View>
 
         <Card style={styles.card}>
-          <Row label={t('job.client')} value={offer.clientName} />
+          {/* Maxfiylik: mijozning ismi va aniq manzili faqat qabul qilingandan keyin ko'rinadi */}
           <View style={styles.addr}>
-            <MapPin size={18} color={colors.accent} strokeWidth={2.4} />
-            <Text variant="bodyBold" style={styles.flex}>
-              {offer.address}
+            <Lock size={16} color={colors.ink2} strokeWidth={2.4} />
+            <Text variant="small" style={styles.flex}>
+              {t('offer.addressHidden')}
             </Text>
           </View>
           <Divider />

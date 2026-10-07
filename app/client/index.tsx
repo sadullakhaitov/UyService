@@ -90,7 +90,8 @@ export default function ClientHome() {
     );
   }, [query]);
 
-  const favorite = mockMasters.find((m) => favorites.includes(m.id));
+  // Eng oxirgi qo'shilgan sevimli usta (yangi foydalanuvchida — yo'q)
+  const favorite = [...favorites].reverse().map((id) => mockMasters.find((m) => m.id === id)).find(Boolean);
 
   const pick = (categoryId: CategoryId, preferredMasterId: string | null = null) => {
     reset();
@@ -231,7 +232,7 @@ export default function ClientHome() {
               </Text>
               <View style={styles.favRow}>
                 <Text variant="bodyBold" numberOfLines={1}>
-                  {favorite.name.split(' ')[0]} aka
+                  {t('client.masterShort', { name: favorite.name.split(' ')[0] })}
                 </Text>
                 <RatingBadge value={favorite.rating} />
               </View>

@@ -3,7 +3,10 @@
 export const DAYS_AHEAD = 3;
 export const FIRST_HOUR = 8;
 export const LAST_HOUR = 21;
-const MIN_LEAD_MS = 90 * 60_000;
+export const MIN_LEAD_MS = 90 * 60_000;
+
+/** Tanlangan vaqt hali ham mumkinmi (vaqt o'tib, eng erta muddatdan o'tib ketmaganmi) */
+export const slotStillValid = (at: number, now = Date.now()) => at - now >= MIN_LEAD_MS;
 
 const startOfDay = (offset: number) => {
   const d = new Date();

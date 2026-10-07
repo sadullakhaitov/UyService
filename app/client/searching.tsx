@@ -5,14 +5,16 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
+import { CancelSheet, CLIENT_REASONS } from '@/components/sheets/CancelSheet';
 import { Button, Card, IconButton, IndeterminateBar, Row, Text } from '@/components/ui';
+import { NotFound } from '@/components/ui/NotFound';
 import { getCategory } from '@/constants/categories';
 import { colors, themed, useScheme } from '@/constants/theme';
 import { blur } from '@/lib/geo';
 import { formatSchedule, formatSum, t } from '@/lib/i18n';
 import { SCHEDULE_LEAD_MS, searchInfo, startSearch } from '@/lib/orderSimulator';
 import { mastersAround } from '@/mocks';
-import { useActiveOrder, useOrders } from '@/store';
+import { useActiveOrder, useHistory, useOrders } from '@/store';
 
 export default function Searching() {
   useScheme();
@@ -21,6 +23,8 @@ export default function Searching() {
   const { remove } = useOrders();
   const insets = useSafeAreaInsets();
   const [sheetH, setSheetH] = useState(380);
+  const [cancelling, setCancelling] = useState(false);
+  const addHistory = useHistory((s) => s.add);
   const [zoom, setZoom] = useState(16);
   // "Javob kutilmoqda" matni uchun har soniyada yangilanadi
   const [, setNow] = useState(0);
@@ -47,13 +51,26 @@ export default function Searching() {
     [location, order?.categoryId], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
-  if (!order || !location) return null;
+  if (!order || !location) return <NotFound />;
   const cat = getCategory(order.categoryId);
   const none = order.none;
   const scheduled = order.status === 'scheduled';
   const info = searchInfo(order);
 
-  const cancel = () => {
+  // Bekor qilish ham sabab bilan va tarixga yoziladi (rejalashtirilgan buyurtma bir bosishda yo'qolib ketmasin)
+  const cancel = (reason: string) => {
+    setCancelling(false);
+    addHistory({
+      id: order.id,
+      categoryId: order.categoryId,
+      problemId: order.problemId,
+      masterId: null,
+      at: Date.now(),
+      price: 0,
+      status: 'cancelled',
+      address: order.address,
+      cancelReason: reason,
+    });
     remove(order.id);
     router.replace('/client');
   };
@@ -132,11 +149,13 @@ export default function Searching() {
         </Card>
 
         <View style={styles.actions}>
-          <Button title={t('common.cancel')} kind="secondary" onPress={cancel} style={styles.flex} />
+          <Button title={t('common.cancel')} kind="secondary" onPress={() => setCancelling(true)} style={styles.flex} />
           {none ? <Button title={t('searching.retry')} color={{ bg: cat.main, fg: cat.onMain }} onPress={retry} style={styles.flex} /> : null}
           {scheduled ? <Button title={t('schedule.searchNow')} color={{ bg: cat.main, fg: cat.onMain }} onPress={retry} style={styles.flex} /> : null}
         </View>
       </Sheet>
+
+      <CancelSheet visible={cancelling} reasons={CLIENT_REASONS} onClose={() => setCancelling(false)} onConfirm={cancel} />
     </View>
   );
 }

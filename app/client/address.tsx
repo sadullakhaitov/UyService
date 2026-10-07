@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Squish, Text } from '@/components/ui';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { searchAddress, type Place } from '@/lib/geocode';
+import { notice } from '@/lib/dialog';
 import { t } from '@/lib/i18n';
 import { getCurrentLocation, reverseGeocode } from '@/lib/location';
 import { useOrder } from '@/store';
@@ -48,10 +49,19 @@ export default function AddressSearch() {
     setAddress(p.title, p.location);
     router.back();
   };
+  const [locating, setLocating] = useState(false);
   const here = async () => {
+    if (locating) return;
+    setLocating(true);
     const p = await getCurrentLocation();
-    if (!p) return;
+    if (!p) {
+      setLocating(false);
+      // Ruxsat berilmagan yoki GPS o'chiq — jim qolmaymiz
+      notice(t('address.noLocationTitle'), t('address.noLocationText'));
+      return;
+    }
     setAddress((await reverseGeocode(p)) ?? t('client.myLocation'), p);
+    setLocating(false);
     router.back();
   };
 
@@ -88,7 +98,7 @@ export default function AddressSearch() {
         ListHeaderComponent={
           <Squish accessibilityRole="button" scaleTo={0.98} onPress={here} style={styles.row}>
             <View style={[styles.icon, { backgroundColor: colors.primarySoft }]}>
-              <LocateFixed size={20} color={colors.primary} strokeWidth={2.2} />
+              {locating ? <ActivityIndicator color={colors.primary} /> : <LocateFixed size={20} color={colors.primary} strokeWidth={2.2} />}
             </View>
             <Text style={[styles.title, { color: colors.primary }]}>{t('address.myLocation')}</Text>
           </Squish>

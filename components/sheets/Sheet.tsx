@@ -1,6 +1,6 @@
 import BottomSheet, { BottomSheetTextInput, BottomSheetView, useBottomSheetSpringConfigs } from '@gorhom/bottom-sheet';
 import { createContext, forwardRef, useContext, useEffect, useRef, type ReactNode } from 'react';
-import { Keyboard, ScrollView, StyleSheet, TextInput, View, useWindowDimensions, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { Keyboard, Platform, ScrollView, StyleSheet, TextInput, View, useWindowDimensions, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
 import { SIDE_GAP, SIDE_W, useWide } from '@/lib/useLayout';
 import { GlassBg } from '@/components/ui/Glass';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +14,8 @@ const SideCtx = createContext(false);
 /** Panel ichidagi matn maydoni: pastki panelda klaviaturaga moslashadi, kompyuterdagi yon panelda — oddiy maydon */
 export const SheetInput = forwardRef<TextInput, TextInputProps>(function SheetInput(props, ref) {
   const side = useContext(SideCtx);
-  if (side) return <TextInput ref={ref} {...props} />;
+  // Brauzerda BottomSheetTextInput fokusda xato beradi (TextInput.State yo'q) — oddiy maydon yetarli
+  if (side || Platform.OS === 'web') return <TextInput ref={ref} {...props} />;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return <BottomSheetTextInput ref={ref as any} {...props} />;
 });

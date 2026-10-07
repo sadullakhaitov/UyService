@@ -6,13 +6,15 @@ import { ScreenHeader, Squish, Text } from '@/components/ui';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
 import { ThemePicker } from '@/components/ui/ThemePicker';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
+import { confirm } from '@/lib/dialog';
 import { t } from '@/lib/i18n';
+import { guardActiveJob } from '@/lib/masterGuard';
 import { askNotifications } from '@/lib/notify';
 import { useMaster, useUser } from '@/store';
 
 export default function Settings() {
   useScheme();
-  const { notifications, setNotifications, setOnline } = useMaster();
+  const { notifications, setNotifications } = useMaster();
   const logout = useUser((s) => s.logout);
 
   return (
@@ -62,11 +64,13 @@ export default function Settings() {
         <Squish
           accessibilityRole="button"
           scaleTo={0.98}
-          onPress={() => {
-            setOnline(false);
-            logout();
-            router.replace('/client');
-          }}
+          onPress={() =>
+            guardActiveJob(async () => {
+              if (!(await confirm(t('profile.logoutTitle'), t('profile.logoutText'), t('profile.logout'), true))) return;
+              logout();
+              router.replace('/client');
+            })
+          }
           style={[styles.row, styles.logout]}
         >
           <View style={styles.icon}>

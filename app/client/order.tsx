@@ -1,16 +1,18 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
-import { CalendarClock, Camera, MapPin, ShieldCheck, X } from 'lucide-react-native';
-import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { CalendarClock, Camera, FlaskConical, Info, MapPin, ShieldCheck, X } from 'lucide-react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Divider, Row, ScreenHeader, Squish, Text } from '@/components/ui';
-import { getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
+import { CALL_FEE, getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { formatDay, formatRange, formatSchedule, formatSum, formatTime, t } from '@/lib/i18n';
+import { notice } from '@/lib/dialog';
 import { askNotifications } from '@/lib/notify';
 import { isOnline } from '@/lib/useOnline';
-import { DAYS_AHEAD, dayOffsetOf, slotsFor } from '@/lib/schedule';
+import { DEMO } from '@/lib/demo';
+import { DAYS_AHEAD, dayOffsetOf, firstSlot, slotStillValid, slotsFor } from '@/lib/schedule';
 import { useOrder, useOrders, useUser } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 
@@ -26,6 +28,10 @@ export default function OrderScreen() {
   const list = [...problemsOf(categoryId).map((p) => p.id), 'other'];
   const problem = problems.find((p) => p.id === problemId);
 
+  // Ikki marta tez bosilsa ikkita buyurtma yaratilmasin
+  const [submitting, setSubmitting] = useState(false);
+  const busy = useRef(false);
+
   const addPhoto = async () => {
     if (photos.length >= MAX_PHOTOS) return;
     const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6, allowsMultipleSelection: true, selectionLimit: MAX_PHOTOS - photos.length });
@@ -33,9 +39,28 @@ export default function OrderScreen() {
   };
 
   const submit = async () => {
+    if (busy.current) return;
+    // Manzil hali aniqlanmagan (GPS qidirilmoqda yoki ruxsat yo'q) — buyurtma noto'g'ri joyga ketmasin
+    if (!useOrder.getState().address) {
+      notice(t('order.noAddressTitle'), t('order.noAddressText'));
+      router.push('/client/address');
+      return;
+    }
+    // Rejalashtirilgan vaqt eskirgan bo'lsa (sahifa uzoq ochiq turgan) — eng yaqin mumkin bo'lgan vaqtga
+    if (scheduledAt !== null && !slotStillValid(scheduledAt)) {
+      const next = firstSlot();
+      setDraft({ scheduledAt: next });
+      notice(t('schedule.staleTitle'), t('schedule.staleText', { time: formatSchedule(next) }));
+      return;
+    }
+    busy.current = true;
+    setSubmitting(true);
     // Internet yo'q — buyurtma ustaga yetib bormaydi
-    if (!(await isOnline())) {
-      Alert.alert(t('offline.title'), t('offline.cantOrder'));
+    const online = await isOnline();
+    busy.current = false;
+    setSubmitting(false);
+    if (!online) {
+      notice(t('offline.title'), t('offline.cantOrder'));
       return;
     }
     // Ro'yxatdan faqat shu yerda o'tiladi: mijoz hamma narsani tanlab bo'lgach
@@ -44,6 +69,7 @@ export default function OrderScreen() {
       return;
     }
     askNotifications();
+    busy.current = true;
     const id = create();
     if (scheduledAt !== null) setDraft({ scheduledAt: null }); // keyingi buyurtma yana "Hozir kerak"
     router.replace(`/client/searching?id=${id}`);
@@ -87,6 +113,7 @@ export default function OrderScreen() {
               placeholder={t('order.detailsPlaceholder')}
               placeholderTextColor={colors.muted}
               accessibilityLabel={t('order.detailsTitle')}
+              maxLength={500}
               style={styles.textarea}
               textAlignVertical="top"
             />
@@ -96,14 +123,14 @@ export default function OrderScreen() {
                   <Camera size={24} color={category.ink} strokeWidth={2} />
                 </Squish>
               ) : null}
-              {photos.map((uri) => (
-                <View key={uri} style={styles.photo}>
+              {photos.map((uri, i) => (
+                <View key={`${i}-${uri}`} style={styles.photo}>
                   <Image source={{ uri }} style={StyleSheet.absoluteFill} />
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel={t('common.close')}
-                    hitSlop={8}
-                    onPress={() => setDraft({ photos: photos.filter((p) => p !== uri) })}
+                    accessibilityLabel={t('order.removePhoto')}
+                    hitSlop={12}
+                    onPress={() => setDraft({ photos: photos.filter((_, k) => k !== i) })}
                     style={styles.remove}
                   >
                     <X size={12} color={colors.onPrimary} strokeWidth={3} />
@@ -116,8 +143,18 @@ export default function OrderScreen() {
 
           <Card>
             <Row label={t('order.callFee')} value={formatSum(category.callFee)} />
-            <Row label={t('order.estimate')} value={formatRange(problem?.priceMin ?? null, problem?.priceMax ?? null)} />
+            <Row
+              label={t('order.estimate')}
+              value={formatRange(problem?.priceMin != null ? Math.max(problem.priceMin, CALL_FEE) : null, problem?.priceMax ?? null)}
+            />
             <Divider />
+            {/* Chaqiruv qoidasi — odamning eng katta savoli "narx ma'qul kelmasa nima bo'ladi?" */}
+            <View style={styles.note}>
+              <Info size={18} color={category.ink} strokeWidth={2.2} />
+              <Text variant="small" style={styles.flex}>
+                {t('order.feeRule', { fee: formatSum(CALL_FEE) })}
+              </Text>
+            </View>
             <View style={styles.note}>
               <ShieldCheck size={18} color={category.ink} strokeWidth={2.2} />
               <Text variant="small" style={styles.flex}>
@@ -125,6 +162,15 @@ export default function OrderScreen() {
               </Text>
             </View>
           </Card>
+
+          {DEMO ? (
+            <View style={styles.demo}>
+              <FlaskConical size={18} color={colors.accentInk} strokeWidth={2.2} />
+              <Text variant="small" style={[styles.flex, { color: colors.accentInk }]}>
+                {t('demo.orderNote')}
+              </Text>
+            </View>
+          ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -136,7 +182,7 @@ export default function OrderScreen() {
             {address || t('client.mapPoint')} · {scheduledAt !== null ? `${formatSchedule(scheduledAt)} · ` : ''}{t('common.cash')}
           </Text>
         </View>
-        <Button title={scheduledAt !== null ? t('schedule.submit') : t('order.submit')} big color={{ bg: category.main, fg: category.onMain }} onPress={submit} />
+        <Button title={scheduledAt !== null ? t('schedule.submit') : t('order.submit')} big loading={submitting} color={{ bg: category.main, fg: category.onMain }} onPress={submit} />
       </SafeAreaView>
     </SafeAreaView>
   );
@@ -192,10 +238,11 @@ const styles = themed(() => ({
     padding: 12,
     paddingTop: 12,
     fontFamily: fonts.regular,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.ink,
     backgroundColor: colors.surface,
   },
+  demo: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', padding: 12, borderRadius: radius.card, backgroundColor: colors.accentSoft },
   photos: { flexDirection: 'row', gap: 8 },
   addPhoto: {
     width: 68,
@@ -209,7 +256,7 @@ const styles = themed(() => ({
     justifyContent: 'center',
   },
   photo: { width: 68, height: 68, borderRadius: 14, overflow: 'hidden', backgroundColor: colors.mapBlock },
-  remove: { position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: 10, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' },
+  remove: { position: 'absolute', top: 4, right: 4, width: 26, height: 26, borderRadius: 13, backgroundColor: colors.scrim, alignItems: 'center', justifyContent: 'center' },
   note: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
   bottom: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 12, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet },
   where: { flexDirection: 'row', alignItems: 'center', gap: 8 },

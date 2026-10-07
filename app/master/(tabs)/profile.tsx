@@ -14,22 +14,22 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import Constants from 'expo-constants';
-import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Squish, Text } from '@/components/ui';
 import { planLabel } from '@/constants/billing';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
+import { confirm, notice } from '@/lib/dialog';
 import { t } from '@/lib/i18n';
-import { mockMasterSelf } from '@/mocks';
+import { guardActiveJob } from '@/lib/masterGuard';
 import { useMaster, useUser } from '@/store';
 
 
 export default function Profile() {
   useScheme();
-  const m = mockMasterSelf;
-  const { activity, categories, profile, priorityPoints, setOnline, verified } = useMaster();
-  const name = profile.firstName || m.name.split(' ')[0];
-  const initials = profile.firstName ? `${profile.firstName[0]}${profile.lastName[0] ?? ''}`.toUpperCase() : m.initials;
+  const { activity, categories, profile, priorityPoints, verified, rating } = useMaster();
+  const name = profile.firstName || t('profile.noName');
+  const initials = profile.firstName ? `${profile.firstName[0]}${profile.lastName[0] ?? ''}`.toUpperCase() : '?';
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const logout = useUser((s) => s.logout);
   const setRole = useUser((s) => s.setRole);
@@ -38,7 +38,7 @@ export default function Profile() {
     <SafeAreaView edges={['top']} style={styles.root}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/master/edit')} style={styles.head}>
-          <Avatar initials={initials} size={64} solid />
+          <Avatar initials={initials} size={64} solid photo={profile.photo} />
           <Text style={styles.name} numberOfLines={1}>
             {name}
           </Text>
@@ -51,16 +51,20 @@ export default function Profile() {
               <Wrench size={24} color={colors.onPrimary} strokeWidth={2.2} />
             </View>
             <Text style={styles.role}>{t('profile.role')}</Text>
-            <Squish accessibilityRole="button" onPress={() => {
+            <Squish accessibilityRole="button" onPress={() => guardActiveJob(() => {
                 setRole('client');
                 router.replace('/client');
-              }} style={styles.switch}>
+              })} style={styles.switch}>
               <Text style={styles.switchText}>{t('profile.switchRole')}</Text>
             </Squish>
           </View>
 
           <View style={styles.tiles}>
-            <Tile value={m.rating.toFixed(2)} label={t('profile.rating')} icon={<Star size={40} color={colors.accent} fill={colors.accent} />} />
+            <Tile
+              value={rating != null ? rating.toFixed(2) : '—'}
+              label={rating != null ? t('profile.rating') : t('profile.noRating')}
+              icon={<Star size={40} color={colors.accent} fill={rating != null ? colors.accent : 'transparent'} />}
+            />
             <Tile value={String(activity)} label={t('profile.points')} />
             <Tile value={`+${priorityPoints}`} label={t('profile.priority')} />
           </View>
@@ -76,7 +80,7 @@ export default function Profile() {
               value={planLabel(plan, verified)}
               onPress={() => router.push('/master/plan')}
             />
-            <Item label={t('profile.payment')} value={t('profile.cash')} onPress={() => Alert.alert(t('profile.payment'), t('profile.cashOnly'))} last />
+            <Item label={t('profile.payment')} value={t('profile.cash')} onPress={() => notice(t('profile.payment'), t('profile.cashOnly'))} last />
           </View>
 
           <Text style={styles.section}>{t('profile.works')}</Text>
@@ -122,11 +126,13 @@ export default function Profile() {
           <Row
             icon={LogOut}
             label={t('profile.logout')}
-            onPress={() => {
-              setOnline(false);
-              logout();
-              router.replace('/client');
-            }}
+            onPress={() =>
+              guardActiveJob(async () => {
+                if (!(await confirm(t('profile.logoutTitle'), t('profile.logoutText'), t('profile.logout'), true))) return;
+                logout();
+                router.replace('/client');
+              })
+            }
             last
           />
         </View>

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Camera, IdCard, ImagePlus, Percent, ShieldCheck } from 'lucide-react-native';
+import { Camera, IdCard, ImagePlus, Percent, ShieldCheck, UserRound } from 'lucide-react-native';
 import { feePercent, UNVERIFIED_SURCHARGE_PERCENT } from '@/constants/billing';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
@@ -9,7 +9,7 @@ import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import { PhotoTile } from '@/components/ui/PhotoTile';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
-import { pickImages, takePhoto } from '@/lib/photos';
+import { keepablePhoto, pickImages, takePhoto } from '@/lib/photos';
 import { useMaster, useUser } from '@/store';
 
 const STEPS = 4;
@@ -27,7 +27,8 @@ export default function Register() {
   const [step, setStep] = useState(0);
 
   const valid = [
-    profile.firstName.trim().length >= 2 && profile.lastName.trim().length >= 2,
+    // Profil surati majburiy: mijoz eshik ochishdan oldin ustaning yuzini ko'radi
+    profile.firstName.trim().length >= 2 && profile.lastName.trim().length >= 2 && Boolean(profile.photo),
     profile.categories.length > 0,
     true, // pasport ixtiyoriy
     true, // ish namunalari ixtiyoriy (keyin Profil → Ish namunalari)
@@ -63,6 +64,23 @@ export default function Register() {
 
           {step === 0 ? (
             <>
+              <View style={styles.photoRow}>
+                <PhotoTile
+                  uri={profile.photo}
+                  icon={UserRound}
+                  label={t('register.photo')}
+                  size={96}
+                  onAdd={async () => {
+                    const uri = await takePhoto({ front: true });
+                    if (uri) setProfile({ photo: await keepablePhoto(uri) });
+                  }}
+                  onRemove={() => setProfile({ photo: null })}
+                />
+                <View style={styles.flex}>
+                  <Text variant="bodyBold">{t('register.photo')}</Text>
+                  <Text variant="small">{t('register.photoHint')}</Text>
+                </View>
+              </View>
               <Field label={t('register.firstName')} value={profile.firstName} onChange={(v) => setProfile({ firstName: v })} />
               <Field label={t('register.lastName')} value={profile.lastName} onChange={(v) => setProfile({ lastName: v })} />
               <Text variant="bodyBold">{t('register.experience')}</Text>
@@ -191,6 +209,7 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
 }
 
 const styles = themed(() => ({
+  photoRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   progress: { flexDirection: 'row', gap: 6, paddingHorizontal: 16, marginBottom: 8 },

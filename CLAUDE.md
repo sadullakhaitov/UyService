@@ -9,7 +9,8 @@ Quyida asl TZ + keyin qabul qilingan qarorlar.
 |---|---|
 | Platforma nomi | **UyService**, domen **uyservice.uz** ("UstaTop" o'rniga) |
 | Logotip | **To'rtta yaltiroq rangli kvadrat** (ko'k, yashil, pushti, to'q sariq). Ilova ichida — `assets/logo.png` (shaffof fon, `components/ui/Logo.tsx` → `LogoMark`); ilova ikonkasi — `assets/icon.png`; Android — `android-icon-foreground/background/monochrome.png`; ochilish ekrani — `splash-icon.png` (kunduzgi oq, tungi to'q fon); brauzer — `favicon.png`. Hammasi bitta asl rasmdan yasalgan |
-| Chaqiruv narxi | **50 000 so'm**, hamma kategoriya uchun bir xil — `constants/categories.ts` → `CALL_FEE` |
+| Chaqiruv narxi | **50 000 so'm**, hamma kategoriya uchun bir xil — `constants/categories.ts` → `CALL_FEE`. **Ish qilinsa — narx ichida**: usta kelib ko'radi, narx taklif qiladi (ish ≥ 50 000 + ehtiyot qismlar), mijoz ilovada tasdiqlaydi; rozi bo'lmasa — faqat 50 000 (ko'rik), kafolat yo'q |
+| Sayt rejimi | Supabase kaliti yo'q ekan — **sinov rejimi** (`lib/demo.ts` → `DEMO`): tepada doim "Sinov rejimi" belgisi (`components/ui/DemoBanner.tsx`), demo tugmalar ("Keyingisi (demo)", "Demo: admin tasdiqladi", balansni to'ldirish) faqat shu rejimda ko'rinadi |
 | Pasport va selfi | **Ixtiyoriy.** Usta ularsiz ham buyurtma oladi, faqat platforma ulushi **+5 foiz punkt**: komissiya 10% → 15%, obuna 0% → 5% (balansdan). Pasport yuklanib admin tasdiqlagach qo'shimcha olib tashlanadi. `constants/billing.ts` → `UNVERIFIED_SURCHARGE_PERCENT`, `feePercent()`; server — `master_fee_percent()` |
 | Komissiya yoki obuna | **Usta o'zi tanlaydi**: oylik obuna YOKI komissiya. Ro'yxatdan o'tishda `master/plan` ekrani, keyin "Daromad" → "Tarifni o'zgartirish". Narx/foiz: `constants/billing.ts` (⚠️ 149 000 so'm/oy va 10% — hali tasdiqlanmagan) |
 
@@ -72,7 +73,7 @@ app/                      ← ekranlar (Expo Router)
     chats.tsx             ← Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar
     profile.tsx           ← Profil: reyting, aktivlik, kategoriyalar, tarif, hujjatlar, chiqish
   master/chat/[id].tsx    ← chat oynasi (components/chat/ChatView.tsx)
-  master/register.tsx     ← usta anketasi, 4 qadam: ism+tajriba, kategoriyalar, pasport (+selfi), ish namunalari
+  master/register.tsx     ← usta anketasi, 4 qadam: profil surati (majburiy)+ism+tajriba, kategoriyalar, pasport (+selfi), ish namunalari
   master/plan.tsx         ← tarif tanlash: obuna yoki komissiya
   master/offer.tsx        ← yangi buyurtma (useMasterWork.offer), 60 soniya taymer
   master/job.tsx          ← mijozga borish, ishni boshlash/tugatish (useMasterWork.job)
@@ -102,6 +103,9 @@ lib/                      ← i18n, geo, location, routes, supabase
   useLayout.ts            ← `useWide()` — kompyuter brauzeri (≥ 900 px): yon panel, o'rtadagi ustun, chap menyu
   useMyLocation.ts        ← telefon joyi (bitta, butun ilova uchun): avval oxirgi ma'lum joy, keyin aniq GPS; `useLocStatus`
   useOnline.ts            ← internet bormi (NetInfo); yo'q bo'lsa tepada banner (components/ui/OfflineBanner.tsx)
+  demo.ts                 ← `DEMO` — sinov rejimi (Supabase kaliti yo'q)
+  dialog.ts               ← `notice` / `confirm` — brauzerda ham ishlaydi (RN-web'da `Alert.alert` jim). `Alert` ishlatmang
+  masterGuard.ts          ← `guardActiveJob` — faol ish bo'lsa rol almashish/chiqish to'xtatiladi
   supabase.ts, auth.ts, api.ts ← Supabase mijozi (faqat .env'da kalit bo'lsa), SMS kod bilan kirish, server chaqiruvlari
 store/                    ← Zustand (foydalanuvchi, buyurtma, usta)
 constants/                ← theme, categories (+ CALL_FEE), dispatch, billing
@@ -130,11 +134,19 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 - Pul: kunlik daromad + 7 kunlik tanlov, komissiya tarifida balans va limit (`BALANCE_LIMIT`, platforma ulushi ish yakunida balansdan yechiladi), obuna tarifida obuna muddati; "Yordam" → qo'llab-quvvatlash chati.
 - Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar bilan yozishmalar (hozircha mahalliy, 5-bosqichda Realtime).
 - Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; o'qish (qo'llanma); sozlamalar (bildirishnomalar, til), chiqish. Demo promokodlar: `UYSERVICE` (+10 prioritet), `BIRINCHI` (+20 000 balans), `USTA2026`. Do'st uchun bonus `INVITE_BONUS` = 30 000 (⚠️ tasdiqlanmagan).
-- Tarif tanlash (birinchi kirishda) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → Ishni boshladim → Tugatdim + yakuniy narx, platforma ulushi tarifga qarab).
+- Tarif tanlash (birinchi kirishda) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → eshik kodi → narx yuborish → mijoz rozi bo'lsa ish → Tugatdim; mijozdan naqd olinadigan summa va platforma ulushi — qabul paytidagi foiz bo'yicha).
+
+**Narx kelishuvi va eshik kodi** (soxta mijoz/usta — `lib/orderSimulator.ts`: `approvePrice`, `declinePrice`, `completeOrder`; usta — `master/job.tsx`):
+1. Buyurtmada 4 xonali **eshik kodi** (`makeDoorCode`). Mijoz kuzatuv ekranida ko'radi; usta yetib kelgach mijozdan so'rab kiritadi — noto'g'ri bo'lsa davom etmaydi (kelgan odam o'sha usta ekani tasdiqlanadi).
+2. Usta ko'rib **narx yuboradi**: ish (chaqiruv ichida, kamida `CALL_FEE`, ko'pi bilan 10 mln, 3 mln dan oshsa qayta so'raladi) + ehtiyot qismlar. Yoki "Faqat ko'rik (50 000)".
+3. Mijoz "Roziman, boshlasin" → ish boshlanadi; "Rozi emasman" → faqat chaqiruv to'lanadi, tarixda "Faqat ko'rik".
+4. Taklifda mijoz ismi va aniq manzil qabul qilgandan keyin ko'rinadi. Platforma ulushi foizi usta taklifni **qabul qilgan paytda** qotiriladi (`MasterJob.feePercent`) — ish o'rtasida hujjat almashtirib foizni o'zgartirib bo'lmaydi.
+
+**Saqlanadigan holat** (AsyncStorage, `version` + `migrate`): mijoz buyurtmalari (`uyservice-orders`), tarix (bo'sh boshlanadi), ustaning taklifi va joriy ishi (`uyservice-master-work`) — sahifa yangilansa yo'qolmaydi. Usta daromadi kunlar bo'yicha (`earnings`, `dayKey`, `earningOn`) — "bugun" har kuni noldan. Yangi usta: reyting yo'q ("—"), balans 0 (sinovda 50 000), kategoriyalar bo'sh. Chiqish (`logoutAll`) — hamma store tozalanadi (til, mavzu, oxirgi joy qoladi), oldin tasdiq so'raladi. Usta **profil surati majburiy** (`profile.photo`, old kamera; brauzerda ≤ 320 px data: URL — `keepablePhoto`). Telefon raqami operator kodi bilan tekshiriladi (20, 33, 50, 55, 77, 88, 90, 91, 93, 94, 95, 97, 98, 99). Buyurtma topilmasa — `components/ui/NotFound.tsx`.
 
 **Rejalashtirish ("Vaqtni tanlash"):** bugun/ertaga/indinga, 08:00–21:00 har soat, eng erta — hozirdan 1,5 soat keyin. Buyurtma `scheduled` holatida turadi, usta qidirish belgilangan vaqtdan 30 daqiqa oldin avtomatik boshlanadi (`SCHEDULE_LEAD_MS`).
 
-**Bildirishnomalar:** mijozga "Usta topildi", "Usta yetib keldi", "Bo'sh usta yo'q"; ustaga "Yangi buyurtma" (Sozlamalarda o'chirish mumkin). Ilova ekranda ochiq bo'lsa chiqmaydi.
+**Bildirishnomalar:** bosilganda tegishli ekran ochiladi (`data.url`, `useNotificationTaps`); mijozga "Usta topildi", "Usta yetib keldi", "Usta narx taklif qildi", "Ish tugadi", "Bo'sh usta yo'q"; ustaga "Yangi buyurtma" (Sozlamalarda o'chirish mumkin). Ilova ekranda ochiq bo'lsa chiqmaydi.
 
 **Kirish (mehmon birinchi):** ilova ochilganda — til tanlash, keyin darhol mijoz bosh sahifasi. Ro'yxatdan o'tish (telefon → SMS kod) faqat mijoz hamma narsani tanlab "Usta chaqirish"ni bosganda so'raladi; tasdiqlangach buyurtma avtomatik yuboriladi. Usta bo'lish — Profil → "Usta bo'lib ishlash" (raqam tasdiqlanadi → tarif). Til, raqam, rol telefonda saqlanadi (AsyncStorage). Usta ro'yxatdan o'tganda (`master/register`) ism, tajriba, kategoriyalar, pasport rasmi (+ ixtiyoriy selfi) va ish namunalarini yuklaydi; pasport va selfi ixtiyoriy — ularsiz ham buyurtma oladi, faqat ulushi +5% (`useMaster().verified`, `profile.status`: none (pasportsiz) → pending (yuklandi) → approved/rejected; ustada tepada to'q sariq eslatma "Hujjatsiz: ulush 15%"). Usta ma'lumotlari telefonda saqlanadi (`uyservice-master`), "onlayn" holati saqlanmaydi.
 
@@ -191,7 +203,7 @@ Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, 
 
 - Har bir ekranda bitta asosiy (yashil) tugma, qolganlari och kulrang.
 - Panellar pastdan chiqadi, yuqori burchaklari yumaloq, tepasida tortish chizig'i.
-- Hamma matn `locales/{uz,ru,en}.json`da, kodda `t('kalit')`; yangi kalit uchala faylga qo'shiladi.
+- Hamma matn `locales/{uz,ru,en}.json`da, kodda `t('kalit')`; yangi kalit uchala faylga qo'shiladi. Son bilan o'zgaradigan matn — ko'plik obyekti `{one, few, many, other}` (ru: one/few/many, en: one/other, uz: other), son `count` (yoki `n`, `days`, `years`) parametridan olinadi. Tizim chatlari (qo'llab-quvvatlash, yangiliklar) ham kalitlar bilan (`i18n: true`, `chatTitle`/`msgText`).
 - `Text` komponenti `fontSize` berilib `lineHeight` berilmasa, uni o'zi hisoblaydi (harflar tepasi kesilmasligi uchun).
 - **Kunduzgi va tungi rejim**: `constants/theme.ts` — ikki palitra (`light`, `dark`), `colors.x` har o'qilganda joriy rejim rangini beradi. Ekran uslublari `StyleSheet.create` emas, **`themed(() => ({ ... }))`** bilan yoziladi (har rejimga bir marta yaratiladi). Rangni modul darajasida o'zgarmasga saqlamang (funksiya qiling); qattiq hex o'rniga token qo'shing. Kategoriya ranglari ham ikki variantli (`pick(day, night)`). Tanlov: Profil/Sozlamalar → "Ko'rinish" (Avtomatik / Kunduzgi / Tungi, `useUser().themeMode`). Almashganda **ekranlar yopilmaydi** — rangli har bir komponent boshida `useScheme()` chaqiradi va joyida qayta chiziladi; yangi komponent yozsangiz, uni ham qo'shing. Telegram'dagidek animatsiya: yangi rejim bosilgan joydan doira bo'lib ochiladi (`components/ui/ThemeReveal.tsx`, react-native-view-shot; brauzerda animatsiyasiz). Xarita: Yandex 2.1 da tungi xarita yo'q — xarita qatlami CSS filtr bilan qorong'ilashtiriladi (`yandex/html.ts` → `applyDark`), belgilar o'z rangida.
 - **Kompyuter brauzeri** (`useWide()`, ≥ 900 px): xaritali ekranlarda panel chapda suzuvchi shisha oyna (420 px), xarita fokus nuqtasi o'ng tomondagi bo'sh joy markazida (`MapInsets.left`); oddiy sahifalar o'rtada 600 px ustun (`PageFrame`, yonida logotip va brend foni); usta menyusi — chapda vertikal (`SideRail`); oynalar — o'rtada dialog. Telefon brauzerida — mobil ko'rinish (`public/index.html`: viewport-fit, 100dvh, kattalashmaydi). Brauzerda matn maydonlari klaviatura yopuvchi `Pressable` ichida bo'lmasin (bosilganda fokus yo'qoladi) — `AuthShell`dagi `DismissArea`ga qarang; matn maydoni shrifti ≥ 16.

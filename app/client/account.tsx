@@ -7,8 +7,9 @@ import { Avatar, ScreenHeader, Squish, Text } from '@/components/ui';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
 import { ThemePicker } from '@/components/ui/ThemePicker';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
+import { confirm } from '@/lib/dialog';
 import { t } from '@/lib/i18n';
-import { useMaster, useUser } from '@/store';
+import { useMaster, useOrders, useUser } from '@/store';
 
 // Mijoz profili: ro'yxatdan o'tmagan bo'lsa ham ochiladi (mehmon)
 export default function Account() {
@@ -17,6 +18,13 @@ export default function Account() {
   const [draft, setDraft] = useState(name);
   const registered = useMaster((s) => Boolean(s.profile.submittedAt));
   const guest = !phone;
+
+  const activeOrders = useOrders((s) => s.orders.length);
+  // Chiqishda hamma shaxsiy ma'lumot o'chadi; faol buyurtmalar bo'lsa — alohida ogohlantiramiz
+  const onLogout = async () => {
+    const text = activeOrders ? t('account.logoutActive', { count: activeOrders }) : t('profile.logoutText');
+    if (await confirm(t('profile.logoutTitle'), text, t('account.logout'), true)) logout();
+  };
 
   const beMaster = () => {
     if (guest) router.push('/phone?next=master');
@@ -31,7 +39,7 @@ export default function Account() {
       <ScreenHeader title={t('account.title')} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.card}>
-          <Avatar initials={guest ? '?' : (name.trim()[0] ?? phone.slice(-2)).toUpperCase()} size={56} solid={!guest} />
+          <Avatar initials={(name.trim()[0] ?? '?').toUpperCase()} size={56} solid={!guest} />
           <View style={styles.flex}>
             {guest ? (
               <>
@@ -73,7 +81,7 @@ export default function Account() {
         <Row icon={FileText} label={t('legal.terms')} onPress={() => router.push('/legal/terms')} />
         <Row icon={Shield} label={t('legal.privacy')} onPress={() => router.push('/legal/privacy')} />
 
-        {!guest ? <Row icon={LogOut} label={t('account.logout')} onPress={logout} /> : null}
+        {!guest ? <Row icon={LogOut} label={t('account.logout')} onPress={onLogout} /> : null}
       </ScrollView>
     </SafeAreaView>
   );

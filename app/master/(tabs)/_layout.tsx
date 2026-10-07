@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LogoMark, Squish, Text } from '@/components/ui';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
-import { mockMasterSelf } from '@/mocks';
 import { GlassBg } from '@/components/ui/Glass';
 import { useChats, useMaster } from '@/store';
 import { pageLayout } from '@/components/ui/PageFrame';
@@ -21,7 +20,7 @@ export default function MasterTabs() {
   // Mijoz rejimidagi chatlar (kind 'master') usta ilovasida ko'rinmaydi
   const unread = useChats((s) => s.chats.reduce((n, c) => n + (c.kind === 'master' ? 0 : c.unread), 0));
   const profile = useMaster((s) => s.profile);
-  const initials = profile.firstName ? `${profile.firstName[0]}${profile.lastName[0] ?? ''}`.toUpperCase() : mockMasterSelf.initials;
+  const initials = profile.firstName ? `${profile.firstName[0]}${profile.lastName[0] ?? ''}`.toUpperCase() : '?';
   const insets = useSafeAreaInsets();
   const wide = useWide();
   return (

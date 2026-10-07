@@ -43,7 +43,8 @@
     "sendFailed": "Could not send the code. Check your internet and try again",
     "termsBefore": "By continuing you agree to the ",
     "termsAnd": " and the ",
-    "termsAfter": ""
+    "termsAfter": "",
+    "badOperator": "No such operator code. Check the number (e.g. 90, 93, 97, 99…)"
   },
   "categories": {
     "plumber": "Plumber",
@@ -93,7 +94,8 @@
     "locating": "Finding your location…",
     "locDenied": "Location access not allowed",
     "pickOnMap": "Move the map to choose an address",
-    "mapPoint": "Pinned location"
+    "mapPoint": "Pinned location",
+    "masterShort": "{{name}}"
   },
   "order": {
     "category": "Category",
@@ -105,7 +107,11 @@
     "callFee": "Call-out (inspection)",
     "estimate": "Estimated work price",
     "guarantee": "The exact price is agreed after inspection. {{days}}-day work warranty.",
-    "submit": "Call a handyman"
+    "submit": "Call a handyman",
+    "feeRule": "Call fee {{fee}}. The master inspects and quotes a price — if you agree, the call fee is included; if not, you pay only {{fee}}.",
+    "noAddressTitle": "No address selected",
+    "noAddressText": "Choose where the master should come.",
+    "removePhoto": "Remove photo"
   },
   "searching": {
     "title": "Finding a handyman",
@@ -133,8 +139,14 @@
     "found": "Handyman found and on the way",
     "arrived": "Handyman has arrived",
     "inProgress": "Handyman is working",
-    "experience": "{{years}} years of experience",
-    "jobs": "{{count}} jobs",
+    "experience": {
+      "one": "{{years}} year of experience",
+      "other": "{{years}} years of experience"
+    },
+    "jobs": {
+      "one": "{{count}} job",
+      "other": "{{count}} jobs"
+    },
     "onTime": "{{percent}}% on time",
     "reviews": "Reviews",
     "callBtn": "Call",
@@ -142,7 +154,15 @@
     "shareBtn": "Share",
     "verified": "Verified handyman",
     "workPhoto": "Work photo",
-    "another": "Call another handyman"
+    "another": "Call another handyman",
+    "codeTitle": "Door code",
+    "codeHint": "Tell the master this code when they arrive — it confirms they're the real master. Don't share it in advance.",
+    "priceProposed": "The master proposed a price",
+    "priceTitle": "Master's price",
+    "priceWork": "Work (call fee included)",
+    "priceNote": "If you decline, you pay only the call fee {{fee}} and the master leaves.",
+    "priceApprove": "Agree, start",
+    "priceDecline": "Decline"
   },
   "rate": {
     "doneTitle": "Job completed",
@@ -164,8 +184,16 @@
     "addFavorite": "Add to \"My handymen\"",
     "pay": "Pay and finish",
     "payNote": "Any issue? Free repeat visit within {{days}} days",
-    "star": "{{n}} stars",
-    "time": "1 h 10 min"
+    "star": {
+      "one": "{{n}} star",
+      "other": "{{n}} stars"
+    },
+    "time": "1 h 10 min",
+    "doneDeclined": "Inspection done",
+    "inspection": "Call-out (inspection)",
+    "feeIncluded": "Call fee ({{fee}}) included",
+    "declinedNote": "No work was done, so there's no warranty",
+    "paidCash": "Paid in cash · {{sum}}"
   },
   "history": {
     "title": "Order history",
@@ -173,7 +201,8 @@
     "empty": "No orders yet",
     "statusCompleted": "Completed",
     "statusCancelled": "Cancelled",
-    "noMaster": "No handyman assigned"
+    "noMaster": "No handyman assigned",
+    "statusInspection": "Inspection only"
   },
   "master": {
     "online": "Online",
@@ -183,7 +212,10 @@
     "onlineHint": "Waiting for new orders",
     "offlineHint": "Go online to receive orders",
     "today": "Earned today",
-    "jobsToday": "{{count}} jobs today",
+    "jobsToday": {
+      "one": "{{count}} job today",
+      "other": "{{count}} jobs today"
+    },
     "activity": "Activity",
     "rating": "Rating",
     "earnings": "Earnings",
@@ -202,15 +234,16 @@
     "seconds": "seconds",
     "declineNote": "Declining lowers your activity by 5 points",
     "note1": "The problem started yesterday, the sooner the better.",
-    "note2": "We're home all day, entrance code 45#.",
-    "note3": "Photo attached, please bring the needed part."
+    "note2": "We're home all day, please call before you come.",
+    "note3": "Photo attached, please bring the needed part.",
+    "addressHidden": "The exact address and client name appear after you accept"
   },
   "job": {
     "toClient": "Route to client",
     "arrivedBtn": "I've arrived",
     "startBtn": "Started work",
     "finishBtn": "Finished",
-    "finalPrice": "Final price (excl. call-out)",
+    "finalPrice": "Work price (call fee included)",
     "partsPrice": "Parts",
     "confirm": "Confirm",
     "client": "Client",
@@ -221,7 +254,22 @@
     "stepDone": "Done",
     "platformCut": "Platform share",
     "yourIncome": "You keep",
-    "chatClient": "Message the client"
+    "chatClient": "Message the client",
+    "codeTitle": "Ask the client for the code",
+    "codeHint": "The client's app shows a 4-digit code — it confirms you're the real master.",
+    "codeBtn": "Confirm code",
+    "codeWrong": "Wrong code. Ask the client again.",
+    "codeDemo": "Test: the client's code is {{code}}",
+    "sendPrice": "Send price to client",
+    "priceWaiting": "The client is reviewing the price…",
+    "feeIncluded": "The call fee ({{fee}}) is included in the work price. If the client declines, only the call fee is paid.",
+    "priceTooLow": "The work price must be at least {{fee}} (the call fee).",
+    "priceTooHigh": "The price is too high. Check the number.",
+    "priceBigTitle": "Is the price right?",
+    "priceBigText": "Total {{sum}}. Send it to the client?",
+    "onlyInspection": "Inspection only ({{fee}})",
+    "declinedTitle": "The client declined — collect the call fee: {{fee}}",
+    "takeCash": "Collect in cash"
   },
   "earnings": {
     "title": "Earnings",
@@ -260,7 +308,10 @@
     "blockedBalance": "Orders closed — top up your balance",
     "blockedSubscription": "Subscription expired",
     "activity": "Activity",
-    "todayOrders": "{{count}} orders",
+    "todayOrders": {
+      "one": "{{count}} order",
+      "other": "{{count}} orders"
+    },
     "swipeOnline": "Go online",
     "swipeOnlineHint": "Swipe right",
     "swipeOffline": "Take a break",
@@ -279,14 +330,20 @@
     "zoomOut": "Zoom out",
     "days": "{{days}} days",
     "gpsSent": "Location sent · {{sec}} s ago",
-    "unverified": "No documents: fee {{pct}}% · With passport — {{base}}%"
+    "unverified": "No documents: fee {{pct}}% · With passport — {{base}}%",
+    "activeJob": "Active job",
+    "open": "Open",
+    "view": "View"
   },
   "money": {
     "title": "Money",
     "support": "Support",
     "today": "Today",
     "jobsCard": "Completed jobs",
-    "jobsCardSub": "{{count}} jobs this week",
+    "jobsCardSub": {
+      "one": "{{count}} job this week",
+      "other": "{{count}} jobs this week"
+    },
     "balance": "Balance",
     "limit": "Balance limit",
     "limitOk": "Cash orders available",
@@ -298,7 +355,9 @@
     "subscriptionExpired": "Expired",
     "renew": "Renew subscription",
     "plan": "Plan",
-    "commissionNote": "{{percent}}% of each job is deducted from the balance"
+    "commissionNote": "{{percent}}% of each job is deducted from the balance",
+    "topUpDemo": "Test: +{{sum}}",
+    "renewDemo": "Test: renew for 30 days"
   },
   "chats": {
     "title": "Chats",
@@ -333,7 +392,13 @@
     "version": "App version",
     "soon": "Soon",
     "soonText": "This section comes in a later stage",
-    "cashOnly": "For now clients pay cash only. Click and Payme come later."
+    "cashOnly": "For now clients pay cash only. Click and Payme come later.",
+    "activeJobTitle": "You have an active job",
+    "activeJobText": "Finish the current job first.",
+    "logoutTitle": "Log out?",
+    "logoutText": "Your data on this phone will be removed.",
+    "noName": "No name yet",
+    "noRating": "No ratings yet"
   },
   "welcome": {
     "title": "Welcome to UyService!",
@@ -353,14 +418,20 @@
     "beMasterHint": "Get orders and earn",
     "language": "Language",
     "logout": "Log out",
-    "namePlaceholder": "Your name"
+    "namePlaceholder": "Your name",
+    "logoutActive": {
+      "one": "You have {{count}} active order. Logging out removes it from this phone.",
+      "other": "You have {{count}} active orders. Logging out removes them from this phone."
+    }
   },
   "address": {
     "title": "Find address",
     "placeholder": "Street, house or place",
     "myLocation": "My location",
     "hint": "Type at least 3 letters. You can also pick on the map",
-    "empty": "Nothing found. Try another spelling or pick on the map"
+    "empty": "Nothing found. Try another spelling or pick on the map",
+    "noLocationTitle": "Couldn't get your location",
+    "noLocationText": "Allow location access in settings and turn on GPS — or search for the address."
   },
   "schedule": {
     "today": "Today",
@@ -369,7 +440,9 @@
     "hint": "The search starts automatically 30 minutes before the time",
     "submit": "Schedule the order",
     "searchStarts": "The search starts {{min}} min before",
-    "searchNow": "Search now"
+    "searchNow": "Search now",
+    "staleTitle": "That time has passed",
+    "staleText": "The chosen time is now too soon. Earliest available: {{time}}."
   },
   "notify": {
     "foundTitle": "Handyman found",
@@ -377,7 +450,12 @@
     "arrivedTitle": "Handyman has arrived",
     "arrivedBody": "{{category}} is at your door",
     "noneTitle": "No free handymen right now",
-    "offerTitle": "New order"
+    "offerTitle": "New order",
+    "channel": "Orders",
+    "priceTitle": "The master proposed a price",
+    "priceBody": "Take a look: work starts once you agree",
+    "doneTitle": "The job is done",
+    "doneBody": "Rate the master — it helps others"
   },
   "register": {
     "step": "Step {{n}} of {{total}}",
@@ -402,7 +480,9 @@
     "submit": "Submit application",
     "submitSkip": "Submit without photos",
     "reviewNote": "An admin usually reviews within 24 hours",
-    "passOptional": "Optional. You get orders without a passport too, just with a {{extra}}% higher platform fee ({{pct}}% instead of {{base}}%). You can upload it later in Profile → Documents."
+    "passOptional": "Optional. You get orders without a passport too, just with a {{extra}}% higher platform fee ({{pct}}% instead of {{base}}%). You can upload it later in Profile → Documents.",
+    "photo": "Profile photo",
+    "photoHint": "Required. The client sees your face before opening the door."
   },
   "docs": {
     "none": "No documents uploaded",
@@ -417,7 +497,9 @@
     "why": "For clients' safety, every handyman's identity is checked. Replacing a document sends it for review again.",
     "demoNote": "Demo: in the real app an admin approves in the Supabase dashboard",
     "demoApprove": "Demo: admin approved",
-    "feeNote": "Current fee {{pct}}%, after verification — {{base}}%."
+    "feeNote": "Current fee {{pct}}%, after verification — {{base}}%.",
+    "recheckTitle": "The document will be re-checked",
+    "recheckText": "If you replace the document, verification is reset and your fee is {{pct}}% until it's re-checked."
   },
   "works": {
     "count": "{{n}} / {{max}} photos"
@@ -444,7 +526,8 @@
     "step3": "After their 5th job you get {{sum}} on your balance",
     "share": "Share link",
     "copyLink": "Link only",
-    "message": "Work as a handyman on UyService — orders come to you. My code: {{code}}\n{{link}}"
+    "message": "Work as a handyman on UyService — orders come to you. My code: {{code}}\n{{link}}",
+    "copied": "Copied"
   },
   "learn": {
     "dispatchTitle": "How do orders reach me?",
@@ -454,7 +537,7 @@
     "ratingTitle": "How to raise my rating?",
     "ratingBody": "Arrive on time; message the client if late|Agree the price before starting|Leave the place clean|Add photos of your work",
     "moneyTitle": "How does money work?",
-    "moneyBody": "The client pays the call-out and labour in cash|On commission, the platform share is taken from your balance|Without a verified passport the fee is +5% (5% on subscription too)|If the balance drops below the limit, orders pause|On subscription there is no percentage — pay once a month",
+    "moneyBody": "The price is agreed in the app before work starts; the client pays in cash (call-out included)|On commission, the platform share is taken from your balance|Without a verified passport the fee is +5% (5% on subscription too)|If the balance drops below the limit, orders pause|On subscription there is no percentage — pay once a month",
     "safetyTitle": "Safety",
     "safetyBody": "Take orders only through the app|If something feels wrong, message support|Follow safety rules with electricity and gas"
   },
@@ -485,7 +568,10 @@
   "reviews": {
     "title": "About the handyman",
     "you": "You",
-    "count": "{{n}} reviews",
+    "count": {
+      "one": "{{n}} review",
+      "other": "{{n}} reviews"
+    },
     "jobs": "jobs done",
     "onTime": "on time",
     "praised": "Most praised for",
@@ -550,5 +636,26 @@
     "hours": "Hours",
     "hoursValue": "Daily {{hours}}",
     "footer": "UyService · version {{version}} · © {{year}} Uzbekistan"
+  },
+  "chatMock": {
+    "supportTitle": "UyService support",
+    "supportSub": "Got a question? Write to us",
+    "supportHello": "Hello! Welcome to UyService. If you have any questions, write here.",
+    "newsTitle": "News",
+    "newsSub": "Platform updates",
+    "news1": "New: you now get 60 seconds to review an offer.",
+    "news2": "New: the price is agreed with the client before work starts. The call fee (50,000) is included."
+  },
+  "demo": {
+    "banner": "Test mode — orders and masters are not real",
+    "short": "Test",
+    "title": "Test mode",
+    "text": "The app is in test mode: masters, orders and payments are simulated — nobody will actually come and no money is charged. Launching soon.",
+    "orderNote": "Test mode: the order isn't sent to a real master — everything is a demo."
+  },
+  "notFound": {
+    "title": "Order not found",
+    "text": "It may have been completed or cancelled.",
+    "home": "Go home"
   }
 }

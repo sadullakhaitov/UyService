@@ -25,7 +25,17 @@ export default function PlanScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <ScreenHeader title={t('plan.title')} onBack={() => (router.canGoBack() ? router.back() : router.replace('/client/account'))} />
+      <ScreenHeader
+        title={t('plan.title')}
+        onBack={() => {
+          // Tarif tanlanmay chiqilsa — mijoz rejimiga qaytamiz (usta rejimi yarim holatda qolmasin)
+          if (!current) {
+            useUser.getState().setRole('client');
+            router.replace('/client/account');
+          } else if (router.canGoBack()) router.back();
+          else router.replace('/master');
+        }}
+      />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text variant="small">{t('plan.hint')}</Text>
         {verified ? null : (

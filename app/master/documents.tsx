@@ -7,6 +7,8 @@ import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
 import { takePhoto } from '@/lib/photos';
 import { feePercent } from '@/constants/billing';
+import { DEMO } from '@/lib/demo';
+import { confirm } from '@/lib/dialog';
 import { useMaster, useUser, type VerifyStatus } from '@/store';
 
 const STATUS = (): Record<VerifyStatus, { icon: typeof Clock3; bg: string; fg: string }> => ({
@@ -23,10 +25,19 @@ export default function Documents() {
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const s = STATUS()[profile.status];
   const Icon = s.icon;
-  // Hujjat almashtirilsa — qayta tekshiruvga
-  const replace = (p: Parameters<typeof setProfile>[0]) => {
+  // Hujjat almashtirilsa — qayta tekshiruvga (tasdiqlangan usta oldindan ogohlantiriladi: tekshiruvgacha ulush yana +5%)
+  const replace = async (p: Parameters<typeof setProfile>[0]) => {
+    if (profile.status === 'approved') {
+      const ok = await confirm(t('docs.recheckTitle'), t('docs.recheckText', { pct: feePercent(plan, false) }), t('common.continue'));
+      if (!ok) return;
+    }
     setProfile(p);
     if (p.passportPhoto || profile.passportPhoto) useMaster.getState().submitProfile();
+  };
+  // Pasport o'chirilsa — tasdiq ham bekor bo'ladi (pasportsiz usta tasdiqlangan hisoblanmaydi)
+  const removePassport = () => {
+    setProfile({ passportPhoto: null });
+    setVerifyStatus('none');
   };
 
   return (
@@ -58,7 +69,7 @@ export default function Documents() {
                 const uri = await takePhoto();
                 if (uri) replace({ passportPhoto: uri });
               }}
-              onRemove={() => setProfile({ passportPhoto: null })}
+              onRemove={removePassport}
             />
             <Text variant="caption" style={styles.center}>
               {t('register.passport')}
@@ -83,7 +94,8 @@ export default function Documents() {
         </View>
         <Text variant="small">{t('docs.why')}</Text>
 
-        {profile.status === 'pending' ? (
+        {/* Faqat sinov rejimida: admin o'rniga o'zingiz tasdiqlaysiz. Server ulanganda yo'qoladi */}
+        {DEMO && profile.status === 'pending' ? (
           <View style={styles.demo}>
             <Text variant="caption" style={styles.center}>
               {t('docs.demoNote')}

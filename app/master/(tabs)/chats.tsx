@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Squish, Text } from '@/components/ui';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
-import { useChats, type Chat } from '@/store';
+import { chatTitle, msgText, useChats, type Chat } from '@/store';
 
 const time = (ms: number) => {
   const d = new Date(ms);
@@ -44,18 +44,18 @@ function ChatRow({ chat }: { chat: Chat }) {
           <Megaphone size={22} color={colors.accent} strokeWidth={2.2} />
         </View>
       ) : (
-        <Avatar initials={chat.title.slice(0, 2).toUpperCase()} size={52} />
+        <Avatar initials={chatTitle(chat).slice(0, 2).toUpperCase()} size={52} />
       )}
       <View style={styles.flex}>
         <View style={styles.top}>
           <Text variant="bodyBold" numberOfLines={1} style={styles.flex}>
-            {chat.title}
+            {chatTitle(chat)}
           </Text>
           {last ? <Text variant="caption">{time(last.at)}</Text> : null}
         </View>
         <View style={styles.top}>
           <Text variant="small" numberOfLines={1} style={styles.flex}>
-            {last ? `${last.mine ? t('chats.you') : ''}${last.text}` : t('chats.empty')}
+            {last ? `${last.mine ? t('chats.you') : ''}${msgText(last)}` : t('chats.empty')}
           </Text>
           {chat.unread ? (
             <View style={styles.badge}>

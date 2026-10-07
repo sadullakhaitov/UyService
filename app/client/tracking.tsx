@@ -1,16 +1,18 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { BadgeCheck, ChevronLeft, Image as ImageIcon, MessageCircle, Phone, Plus, Share2 } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
+import { BadgeCheck, ChevronLeft, KeyRound, MessageCircle, Phone, Plus, Share2 } from 'lucide-react-native';
+import { useEffect, useMemo, useState } from 'react';
 import { Linking, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
-import { Avatar, Button, IconButton, RatingBadge, Squish, Text } from '@/components/ui';
-import { getCategory } from '@/constants/categories';
+import { Avatar, Button, Card, Divider, IconButton, RatingBadge, Row, Squish, Text } from '@/components/ui';
+import { NotFound } from '@/components/ui/NotFound';
+import { CALL_FEE, getCategory } from '@/constants/categories';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { bboxCorners } from '@/lib/geo';
-import { t } from '@/lib/i18n';
-import { etaMin, STEP_MS } from '@/lib/orderSimulator';
+import { DEMO } from '@/lib/demo';
+import { formatSum, t } from '@/lib/i18n';
+import { approvePrice, completeOrder, declinePrice, etaMin, STEP_MS } from '@/lib/orderSimulator';
 
 // Kamera har shuncha qadamda (≈ soniyada) qayta moslanadi — tez-tez sakramasligi uchun
 const FIT_EVERY = 20;
@@ -42,7 +44,12 @@ export default function Tracking() {
     [fitStep, path, location],
   );
 
-  if (!order || !location) return null;
+  // Ish yakunlandi (yoki mijoz narxni rad etdi) — hisob-kitob va baho ekraniga
+  useEffect(() => {
+    if (order?.status === 'completed') router.replace(`/client/rate?id=${order.id}`);
+  }, [order?.status]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!order || !location) return <NotFound />;
   const master = masters.find((m) => m.id === order.masterId) ?? masters[0];
   const cat = getCategory(order.categoryId);
   const status = order.status;
@@ -53,7 +60,7 @@ export default function Tracking() {
 
   const label: Record<string, { text: string; color: string }> = {
     on_the_way: { text: t('tracking.found'), color: colors.success },
-    arrived: { text: t('tracking.arrived'), color: colors.accentInk },
+    arrived: { text: order.priceStatus === 'proposed' ? t('tracking.priceProposed') : t('tracking.arrived'), color: colors.accentInk },
     in_progress: { text: t('tracking.inProgress'), color: cat.ink },
   };
   const s = label[status] ?? label.on_the_way;
@@ -124,7 +131,8 @@ export default function Tracking() {
               <Text variant="h3" numberOfLines={1}>
                 {master.name}
               </Text>
-              <BadgeCheck size={18} color={colors.onPrimary} fill={cat.main} accessibilityLabel={t('tracking.verified')} />
+              {/* Belgi faqat hujjati haqiqatan tasdiqlangan ustada */}
+              {master.verified ? <BadgeCheck size={18} color={colors.onPrimary} fill={cat.main} accessibilityLabel={t('tracking.verified')} /> : null}
             </View>
             <Text variant="small">
               {t(`categories.${order.categoryId}`)} · {t('tracking.experience', { years: master.experienceYears })}
@@ -137,16 +145,39 @@ export default function Tracking() {
           </View>
         </View>
 
-        <View style={styles.works}>
-          {[0, 1, 2].map((k) => (
-            <Squish key={k} accessibilityRole="button" accessibilityLabel={t('tracking.workPhoto')} onPress={openMaster} style={styles.work}>
-              <ImageIcon size={22} color={colors.muted} strokeWidth={1.8} />
-            </Squish>
-          ))}
-          <Squish accessibilityRole="button" onPress={openMaster} style={styles.reviews}>
-            <Text style={styles.reviewsText}>{t('tracking.reviews')}</Text>
-          </Squish>
-        </View>
+        {/* Usta narx taklif qildi — mijoz rozi bo'lmaguncha ish boshlanmaydi */}
+        {status === 'arrived' && order.priceStatus === 'proposed' ? (
+          <Card style={[styles.price, { borderColor: cat.main }]}>
+            <Text variant="h3">{t('tracking.priceTitle')}</Text>
+            <Row label={t('tracking.priceWork')} value={formatSum(order.work)} />
+            {order.parts ? <Row label={t('rate.parts')} value={formatSum(order.parts)} /> : null}
+            <Divider />
+            <Row label={t('rate.total')} value={formatSum(order.work + order.parts)} strong />
+            <Text variant="caption">{t('tracking.priceNote', { fee: formatSum(CALL_FEE) })}</Text>
+            <Button title={t('tracking.priceApprove')} big color={{ bg: cat.main, fg: cat.onMain }} onPress={() => approvePrice(order.id)} />
+            <Button title={t('tracking.priceDecline', { fee: formatSum(CALL_FEE) })} kind="secondary" onPress={() => declinePrice(order.id)} />
+          </Card>
+        ) : null}
+
+        {/* Eshikdagi kod: usta kelganda unga aytiladi — kelgan odam aynan shu usta ekanini bildiradi */}
+        {(onWay || status === 'arrived') && order.priceStatus === 'none' ? (
+          <View style={[styles.code, { backgroundColor: cat.tint }]}>
+            <KeyRound size={22} color={cat.ink} strokeWidth={2.2} />
+            <View style={styles.flex}>
+              <Text variant="caption" style={{ color: cat.ink }}>
+                {t('tracking.codeTitle')}
+              </Text>
+              <Text variant="small" style={{ color: cat.ink }}>
+                {t('tracking.codeHint')}
+              </Text>
+            </View>
+            <Text style={[styles.codeValue, { color: cat.ink }]}>{order.doorCode}</Text>
+          </View>
+        ) : null}
+
+        <Squish accessibilityRole="button" onPress={openMaster} style={styles.reviews}>
+          <Text style={styles.reviewsText}>{t('tracking.reviews')}</Text>
+        </Squish>
 
         <View style={styles.actions}>
           <Action icon={<Phone size={20} color={cat.ink} strokeWidth={2.2} />} tint={cat.tint} label={t('tracking.callBtn')} onPress={() => Linking.openURL(`tel:${master.phone.replace(/\s/g, '')}`)} />
@@ -169,14 +200,11 @@ export default function Tracking() {
 
         <View style={styles.row}>
           {onWay ? <Button title={t('common.cancel')} kind="secondary" onPress={() => setCancelling(true)} style={styles.flex} /> : null}
-          {status === 'in_progress' || status === 'arrived' ? (
+          {DEMO && status === 'in_progress' ? (
             <Button
               title={t('common.demoNext')}
               color={{ bg: cat.main, fg: cat.onMain }}
-              onPress={() => {
-                update(order.id, { status: 'completed' });
-                router.replace(`/client/rate?id=${order.id}`);
-              }}
+              onPress={() => completeOrder(order.id)}
               style={styles.flex}
             />
           ) : null}
@@ -225,9 +253,10 @@ const styles = themed(() => ({
   master: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   stats: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
-  works: { flexDirection: 'row', gap: 8 },
-  work: { width: 72, height: 56, borderRadius: 12, backgroundColor: colors.mapBlock, alignItems: 'center', justifyContent: 'center' },
-  reviews: { flex: 1, height: 56, borderRadius: 12, borderWidth: 1.5, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
+  reviews: { height: 48, borderRadius: 12, borderWidth: 1.5, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' },
+  price: { gap: 10, borderWidth: 2 },
+  code: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: radius.card },
+  codeValue: { fontFamily: fonts.heavy, fontSize: 26, letterSpacing: 4 },
   reviewsText: { fontFamily: fonts.bold, fontSize: 13, color: colors.primary },
   actions: { flexDirection: 'row', gap: 10 },
   action: { flex: 1, height: 60, borderRadius: radius.button, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', gap: 4 },

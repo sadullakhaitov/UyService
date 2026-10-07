@@ -14,7 +14,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors, setScheme, useScheme } from '@/constants/theme';
 import { setLanguage } from '@/lib/i18n';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { DemoBadge, DemoBar } from '@/components/ui/DemoBanner';
 import { pageLayout } from '@/components/ui/PageFrame';
+import { useNotificationTaps } from '@/lib/notify';
 import { ThemeRevealProvider } from '@/components/ui/ThemeReveal';
 import { useMaster, useUser } from '@/store';
 
@@ -55,6 +57,8 @@ function applyWebColors() {
 
 export default function RootLayout() {
   useScheme();
+  // Bildirishnoma bosilsa — tegishli buyurtma yoki taklif ochiladi
+  useNotificationTaps();
   const [loaded, error] = useFonts({
     Manrope_500Medium,
     Manrope_600SemiBold,
@@ -108,6 +112,8 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
         {/* Til almashtirilganda hamma ekran yangi tilda qayta chiziladi. Rejim almashganda esa ekranlar joyida qoladi */}
+        {/* Sinov rejimi (server ulanmagan): brauzerda — tepada chiziq, telefonda — kichik yorliq */}
+        <DemoBar />
         <ThemeRevealProvider>
           <Stack
             key={lang}
@@ -116,6 +122,7 @@ export default function RootLayout() {
             screenLayout={rootLayout}
           />
           <OfflineBanner />
+          <DemoBadge />
         </ThemeRevealProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

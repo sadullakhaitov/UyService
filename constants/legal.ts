@@ -81,7 +81,7 @@ const termsUz: LegalText = {
     {
       h: '6. Narxlar va to\'lovlar',
       p: [
-        `Hozircha to'lov faqat naqd pulda, to'g'ridan-to'g'ri ustaga amalga oshiriladi. Chaqiruv narxi (usta kelib ko'rishi) — ${fee} so'm, barcha kategoriyalar uchun bir xil. Ilovada ko'rsatilgan ish narxlari taxminiy; yakuniy narx joyida kelishiladi.`,
+        `Hozircha to'lov faqat naqd pulda, to'g'ridan-to'g'ri ustaga amalga oshiriladi. Chaqiruv narxi (usta kelib ko'rishi) — ${fee} so'm, barcha kategoriyalar uchun bir xil. Ilovada ko'rsatilgan ish narxlari taxminiy; usta joyida ko'rib narx taklif qiladi va mijoz ilovada tasdiqlaydi. Mijoz rozi bo'lsa, chaqiruv narxi ish narxi ichida bo'ladi; rozi bo'lmasa, faqat chaqiruv narxi to'lanadi.`,
         `Usta Platformadan foydalanish uchun ikki tarifdan birini tanlaydi: oylik obuna — oyiga ${subFee} so'm, yoki komissiya — har bir ish narxining ${pct}% (chaqiruv narxi ham kiradi). Komissiya tarifida Operator ulushi ustaning Platformadagi balansidan yechiladi; balans ${limit} so'mdan past bo'lsa, yangi buyurtmalar vaqtincha yopiladi. Tarifni ilovaning "Pul" bo'limida o'zgartirish mumkin.`,
         `Operator tariflar narxini o'zgartirishi mumkin; bu haqda ustalar kamida 14 kun oldin xabardor qilinadi.`,
       ],
@@ -171,7 +171,7 @@ const termsRu: LegalText = {
     {
       h: '6. Цены и оплата',
       p: [
-        `Сейчас оплата только наличными, напрямую мастеру. Стоимость вызова (выезд и осмотр) — ${fee} сум, одинаково для всех категорий. Цены работ в приложении ориентировочные; итоговая цена согласуется на месте.`,
+        `Сейчас оплата только наличными, напрямую мастеру. Стоимость вызова (выезд и осмотр) — ${fee} сум, одинаково для всех категорий. Цены работ в приложении ориентировочные; мастер осматривает на месте и предлагает цену, клиент подтверждает её в приложении. Если клиент согласен, вызов входит в стоимость работы; если нет — оплачивается только вызов.`,
         `За пользование Платформой мастер выбирает один из двух тарифов: месячная подписка — ${subFee} сум в месяц, или комиссия — ${pct}% от стоимости каждой работы (включая стоимость вызова). На тарифе с комиссией доля Оператора списывается с баланса мастера на Платформе; если баланс ниже ${limit} сум, новые заказы временно закрываются. Тариф можно сменить в разделе «Деньги».`,
         `Оператор может изменять стоимость тарифов, уведомив мастеров не менее чем за 14 дней.`,
       ],
@@ -261,7 +261,7 @@ const termsEn: LegalText = {
     {
       h: '6. Prices and payment',
       p: [
-        `For now, payment is cash only, made directly to the master. The call-out fee (visit and inspection) is ${fee} UZS, the same for all categories. Prices shown in the app are estimates; the final price is agreed on site.`,
+        `For now, payment is cash only, made directly to the master. The call-out fee (visit and inspection) is ${fee} UZS, the same for all categories. Prices shown in the app are estimates; the master inspects on site and proposes a price, which the client approves in the app. If the client agrees, the call-out fee is included in the work price; if not, only the call-out fee is paid.`,
         `To use the Platform, a master chooses one of two plans: a monthly subscription of ${subFee} UZS per month, or a commission of ${pct}% of each job's price (including the call-out fee). On the commission plan, the Operator's share is deducted from the master's Platform balance; if the balance falls below ${limit} UZS, new orders are paused. The plan can be changed in the "Money" section of the app.`,
         `The Operator may change plan prices with at least 14 days' notice to masters.`,
       ],

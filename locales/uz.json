@@ -43,7 +43,8 @@
     "sendFailed": "Kod yuborilmadi. Internetni tekshirib, qayta urinib ko'ring",
     "termsBefore": "Davom etish orqali ",
     "termsAnd": " va ",
-    "termsAfter": " bilan rozilik bildirasiz"
+    "termsAfter": " bilan rozilik bildirasiz",
+    "badOperator": "Bunday operator kodi yo'q. Raqamni tekshiring (masalan, 90, 93, 97, 99…)"
   },
   "categories": {
     "plumber": "Santexnik",
@@ -93,7 +94,8 @@
     "locating": "Joylashuv aniqlanmoqda…",
     "locDenied": "Joylashuvga ruxsat berilmagan",
     "pickOnMap": "Xaritani surib manzilni tanlang",
-    "mapPoint": "Xaritada belgilangan joy"
+    "mapPoint": "Xaritada belgilangan joy",
+    "masterShort": "Usta {{name}}"
   },
   "order": {
     "category": "Kategoriya",
@@ -105,7 +107,11 @@
     "callFee": "Chaqiruv (kelib ko'rish)",
     "estimate": "Taxminiy ish narxi",
     "guarantee": "Aniq narx usta kelib ko'rgach kelishiladi. Ishga {{days}} kun kafolat.",
-    "submit": "Usta chaqirish"
+    "submit": "Usta chaqirish",
+    "feeRule": "Chaqiruv {{fee}}. Usta ko'rib narxni aytadi — rozi bo'lsangiz chaqiruv ish narxi ichida, rozi bo'lmasangiz faqat {{fee}} to'laysiz.",
+    "noAddressTitle": "Manzil tanlanmagan",
+    "noAddressText": "Usta qayerga kelishini tanlang.",
+    "removePhoto": "Rasmni o'chirish"
   },
   "searching": {
     "title": "Usta qidirilmoqda",
@@ -142,7 +148,15 @@
     "shareBtn": "Ulashish",
     "verified": "Tasdiqlangan usta",
     "workPhoto": "Ish rasmi",
-    "another": "Yana usta chaqirish"
+    "another": "Yana usta chaqirish",
+    "codeTitle": "Eshikdagi kod",
+    "codeHint": "Usta kelganda shu kodni ayting — u haqiqiy usta ekanini tasdiqlaydi. Kodni oldindan hech kimga bermang.",
+    "priceProposed": "Usta narx taklif qildi",
+    "priceTitle": "Usta taklif qilgan narx",
+    "priceWork": "Ish (chaqiruv ichida)",
+    "priceNote": "Rozi bo'lmasangiz, faqat chaqiruv {{fee}} to'lanadi va usta ketadi.",
+    "priceApprove": "Roziman, boshlasin",
+    "priceDecline": "Rozi emasman"
   },
   "rate": {
     "doneTitle": "Ish yakunlandi",
@@ -165,7 +179,12 @@
     "pay": "To'lash va yakunlash",
     "payNote": "Muammo bo'lsa, {{days}} kun ichida bepul qayta chaqiring",
     "star": "{{n}} yulduz",
-    "time": "1 soat 10 daqiqa"
+    "time": "1 soat 10 daqiqa",
+    "doneDeclined": "Ko'rik yakunlandi",
+    "inspection": "Chaqiruv (ko'rik)",
+    "feeIncluded": "Chaqiruv ({{fee}}) ish narxi ichida",
+    "declinedNote": "Ish qilinmagani uchun kafolat yo'q",
+    "paidCash": "Naqd to'ladim · {{sum}}"
   },
   "history": {
     "title": "Buyurtmalar tarixi",
@@ -173,7 +192,8 @@
     "empty": "Hali buyurtma yo'q",
     "statusCompleted": "Bajarildi",
     "statusCancelled": "Bekor qilingan",
-    "noMaster": "Usta biriktirilmagan"
+    "noMaster": "Usta biriktirilmagan",
+    "statusInspection": "Faqat ko'rik"
   },
   "master": {
     "online": "Onlayn",
@@ -202,15 +222,16 @@
     "seconds": "soniya",
     "declineNote": "Rad etsangiz aktivlik 5 ballga tushadi",
     "note1": "Muammo kecha paydo bo'ldi, tezroq kelsangiz yaxshi bo'lardi.",
-    "note2": "Uyda kun bo'yi bormiz, podyezd kodi 45#.",
-    "note3": "Rasm ilova qildim, kerakli ehtiyot qismni olib keling."
+    "note2": "Uyda kun bo'yi bormiz, kelishdan oldin qo'ng'iroq qiling.",
+    "note3": "Rasm ilova qildim, kerakli ehtiyot qismni olib keling.",
+    "addressHidden": "Aniq manzil va mijoz ismi qabul qilgandan keyin ko'rinadi"
   },
   "job": {
     "toClient": "Mijozga yo'l",
     "arrivedBtn": "Yetib keldim",
     "startBtn": "Ishni boshladim",
     "finishBtn": "Tugatdim",
-    "finalPrice": "Yakuniy narx (chaqiruvsiz)",
+    "finalPrice": "Ish narxi (chaqiruv ichida)",
     "partsPrice": "Ehtiyot qismlar",
     "confirm": "Tasdiqlash",
     "client": "Mijoz",
@@ -221,7 +242,22 @@
     "stepDone": "Tugadi",
     "platformCut": "Platforma ulushi",
     "yourIncome": "Sizga qoladi",
-    "chatClient": "Mijozga yozish"
+    "chatClient": "Mijozga yozish",
+    "codeTitle": "Mijozdan kodni so'rang",
+    "codeHint": "Mijozning ilovasida 4 xonali kod bor — u siz haqiqiy usta ekaningizni bildiradi.",
+    "codeBtn": "Kodni tasdiqlash",
+    "codeWrong": "Kod noto'g'ri. Mijozdan qayta so'rang.",
+    "codeDemo": "Sinov: mijoz kodi — {{code}}",
+    "sendPrice": "Narxni mijozga yuborish",
+    "priceWaiting": "Mijoz narxni ko'rib chiqyapti…",
+    "feeIncluded": "Chaqiruv ({{fee}}) ish narxi ichida. Mijoz rozi bo'lmasa — faqat chaqiruv to'lanadi.",
+    "priceTooLow": "Ish narxi kamida {{fee}} (chaqiruv narxi) bo'lishi kerak.",
+    "priceTooHigh": "Narx juda katta. Raqamni tekshiring.",
+    "priceBigTitle": "Narx to'g'rimi?",
+    "priceBigText": "Jami {{sum}}. Mijozga yuborilsinmi?",
+    "onlyInspection": "Faqat ko'rik ({{fee}})",
+    "declinedTitle": "Mijoz narxga rozi bo'lmadi — chaqiruv narxini oling: {{fee}}",
+    "takeCash": "Mijozdan naqd oling"
   },
   "earnings": {
     "title": "Daromad",
@@ -279,7 +315,10 @@
     "zoomOut": "Uzoqlashtirish",
     "days": "{{days}} kun",
     "gpsSent": "Joylashuv yuborildi · {{sec}} s oldin",
-    "unverified": "Hujjatsiz: ulush {{pct}}% · Pasport yuklasangiz — {{base}}%"
+    "unverified": "Hujjatsiz: ulush {{pct}}% · Pasport yuklasangiz — {{base}}%",
+    "activeJob": "Faol ish",
+    "open": "Ochish",
+    "view": "Ko'rish"
   },
   "money": {
     "title": "Pul",
@@ -298,7 +337,9 @@
     "subscriptionExpired": "Muddati tugagan",
     "renew": "Obunani uzaytirish",
     "plan": "Tarif",
-    "commissionNote": "Har bir ishdan {{percent}}% balansdan yechiladi"
+    "commissionNote": "Har bir ishdan {{percent}}% balansdan yechiladi",
+    "topUpDemo": "Sinov: +{{sum}}",
+    "renewDemo": "Sinov: 30 kunga uzaytirish"
   },
   "chats": {
     "title": "Chatlar",
@@ -333,7 +374,13 @@
     "version": "Ilova versiyasi",
     "soon": "Tez kunda",
     "soonText": "Bu bo'lim keyingi bosqichlarda qo'shiladi",
-    "cashOnly": "Hozircha mijozlar faqat naqd to'laydi. Click va Payme keyingi bosqichda."
+    "cashOnly": "Hozircha mijozlar faqat naqd to'laydi. Click va Payme keyingi bosqichda.",
+    "activeJobTitle": "Faol ish bor",
+    "activeJobText": "Avval joriy ishni yakunlang.",
+    "logoutTitle": "Hisobdan chiqasizmi?",
+    "logoutText": "Bu telefondagi ma'lumotlaringiz o'chadi.",
+    "noName": "Ism kiritilmagan",
+    "noRating": "Hali baho yo'q"
   },
   "welcome": {
     "title": "UyService'ga xush kelibsiz!",
@@ -353,14 +400,17 @@
     "beMasterHint": "Buyurtma oling va daromad qiling",
     "language": "Til",
     "logout": "Chiqish",
-    "namePlaceholder": "Ismingiz"
+    "namePlaceholder": "Ismingiz",
+    "logoutActive": "Sizda {{count}} ta faol buyurtma bor. Chiqsangiz, ular shu telefondan o'chadi."
   },
   "address": {
     "title": "Manzilni qidirish",
     "placeholder": "Ko'cha, uy yoki joy nomi",
     "myLocation": "Mening joylashuvim",
     "hint": "Kamida 3 ta harf yozing. Xaritani surib ham tanlash mumkin",
-    "empty": "Hech narsa topilmadi. Boshqacha yozib ko'ring yoki xaritadan tanlang"
+    "empty": "Hech narsa topilmadi. Boshqacha yozib ko'ring yoki xaritadan tanlang",
+    "noLocationTitle": "Joylashuv aniqlanmadi",
+    "noLocationText": "Telefon sozlamalarida joylashuvga ruxsat bering va GPS'ni yoqing yoki manzilni yozib qidiring."
   },
   "schedule": {
     "today": "Bugun",
@@ -369,7 +419,9 @@
     "hint": "Usta qidirish belgilangan vaqtdan 30 daqiqa oldin avtomatik boshlanadi",
     "submit": "Buyurtmani rejalashtirish",
     "searchStarts": "Usta qidirish {{min}} daqiqa oldin boshlanadi",
-    "searchNow": "Hozir qidirish"
+    "searchNow": "Hozir qidirish",
+    "staleTitle": "Vaqt o'tib ketdi",
+    "staleText": "Tanlangan vaqt endi juda yaqin. Eng yaqin bo'sh vaqt: {{time}}."
   },
   "notify": {
     "foundTitle": "Usta topildi",
@@ -377,7 +429,12 @@
     "arrivedTitle": "Usta yetib keldi",
     "arrivedBody": "{{category}} eshigingiz oldida",
     "noneTitle": "Hozir bo'sh usta yo'q",
-    "offerTitle": "Yangi buyurtma"
+    "offerTitle": "Yangi buyurtma",
+    "channel": "Buyurtmalar",
+    "priceTitle": "Usta narx taklif qildi",
+    "priceBody": "Ko'rib chiqing: rozi bo'lsangiz ish boshlanadi",
+    "doneTitle": "Ish tugadi",
+    "doneBody": "Ustani baholang — bu boshqalarga yordam beradi"
   },
   "register": {
     "step": "{{n}}/{{total}}-qadam",
@@ -402,7 +459,9 @@
     "submit": "Arizani yuborish",
     "submitSkip": "Hozircha rasmsiz yuborish",
     "reviewNote": "Admin odatda 24 soat ichida tekshiradi",
-    "passOptional": "Ixtiyoriy. Pasportsiz ham buyurtma olasiz, faqat platforma ulushi +{{extra}}% bo'ladi ({{base}}% o'rniga {{pct}}%). Keyin Profil → Hujjatlar'dan yuklash mumkin."
+    "passOptional": "Ixtiyoriy. Pasportsiz ham buyurtma olasiz, faqat platforma ulushi +{{extra}}% bo'ladi ({{base}}% o'rniga {{pct}}%). Keyin Profil → Hujjatlar'dan yuklash mumkin.",
+    "photo": "Profil surati",
+    "photoHint": "Majburiy. Mijoz eshikni ochishdan oldin sizning yuzingizni ko'radi."
   },
   "docs": {
     "none": "Hujjatlar yuklanmagan",
@@ -417,7 +476,9 @@
     "why": "Mijozlar xavfsizligi uchun har bir usta shaxsi tasdiqlanadi. Hujjatni almashtirsangiz, qayta tekshiruvga yuboriladi.",
     "demoNote": "Demo: haqiqiy ilovada admin Supabase panelidan tasdiqlaydi",
     "demoApprove": "Demo: admin tasdiqladi",
-    "feeNote": "Hozir ulush {{pct}}%, tasdiqlangach — {{base}}%."
+    "feeNote": "Hozir ulush {{pct}}%, tasdiqlangach — {{base}}%.",
+    "recheckTitle": "Hujjat qayta tekshiriladi",
+    "recheckText": "Hujjatni almashtirsangiz, tasdiq bekor bo'ladi va admin qayta tekshirguncha ulushingiz {{pct}}% bo'ladi."
   },
   "works": {
     "count": "{{n}} / {{max}} ta rasm"
@@ -444,7 +505,8 @@
     "step3": "U 5 ta ishni bajargach, balansingizga {{sum}} tushadi",
     "share": "Havolani yuborish",
     "copyLink": "Faqat havola",
-    "message": "UyService'da usta bo'lib ishlang — buyurtmalar o'zi keladi. Kodim: {{code}}\n{{link}}"
+    "message": "UyService'da usta bo'lib ishlang — buyurtmalar o'zi keladi. Kodim: {{code}}\n{{link}}",
+    "copied": "Nusxalandi"
   },
   "learn": {
     "dispatchTitle": "Buyurtma qanday keladi?",
@@ -454,7 +516,7 @@
     "ratingTitle": "Reytingni qanday oshirish mumkin?",
     "ratingBody": "Vaqtida keling va kech qolsangiz mijozga yozing|Narxni ish boshlanishidan oldin kelishib oling|Ishdan keyin joyni toza qoldiring|Ish namunalari rasmini qo'shing",
     "moneyTitle": "Pul qanday hisoblanadi?",
-    "moneyBody": "Mijoz chaqiruv narxi va ish haqini naqd to'laydi|Komissiya tarifida platforma ulushi balansingizdan yechiladi|Pasport tasdiqlanmagan bo'lsa, ulush +5% (obunada ham 5%)|Balans limitdan past bo'lsa, buyurtmalar vaqtincha yopiladi|Obuna tarifida foiz yo'q — oyiga bir marta to'lanadi",
+    "moneyBody": "Narx ish oldidan ilovada kelishiladi, mijoz naqd to'laydi (chaqiruv ish narxi ichida)|Komissiya tarifida platforma ulushi balansingizdan yechiladi|Pasport tasdiqlanmagan bo'lsa, ulush +5% (obunada ham 5%)|Balans limitdan past bo'lsa, buyurtmalar vaqtincha yopiladi|Obuna tarifida foiz yo'q — oyiga bir marta to'lanadi",
     "safetyTitle": "Xavfsizlik",
     "safetyBody": "Buyurtmani faqat ilova orqali qabul qiling|Mijozga noqulay vaziyatda qo'llab-quvvatlashga yozing|Elektr va gaz bilan ishlashda xavfsizlik qoidalariga rioya qiling"
   },
@@ -550,5 +612,26 @@
     "hours": "Ish vaqti",
     "hoursValue": "Har kuni {{hours}}",
     "footer": "UyService · versiya {{version}} · © {{year}} O'zbekiston"
+  },
+  "chatMock": {
+    "supportTitle": "UyService qo'llab-quvvatlash",
+    "supportSub": "Savolingiz bormi? Yozing",
+    "supportHello": "Assalomu alaykum! UyService'ga xush kelibsiz. Savollaringiz bo'lsa, shu yerga yozing.",
+    "newsTitle": "Yangiliklar",
+    "newsSub": "Platformadagi yangiliklar",
+    "news1": "Yangi: taklifni ko'rib chiqish uchun 60 soniya beriladi.",
+    "news2": "Yangi: narx ish boshlanishidan oldin mijoz bilan kelishiladi. Chaqiruv (50 000) ish narxi ichida."
+  },
+  "demo": {
+    "banner": "Sinov rejimi — buyurtmalar va ustalar haqiqiy emas",
+    "short": "Sinov",
+    "title": "Sinov rejimi",
+    "text": "Ilova hozir sinovda: ustalar, buyurtmalar va to'lovlar soxta, hech kim haqiqatda kelmaydi va pul yechilmaydi. Tez orada haqiqiy ishga tushadi.",
+    "orderNote": "Sinov rejimi: buyurtma haqiqiy ustaga yuborilmaydi — hamma narsa namoyish uchun."
+  },
+  "notFound": {
+    "title": "Buyurtma topilmadi",
+    "text": "U yakunlangan yoki bekor qilingan bo'lishi mumkin.",
+    "home": "Bosh sahifaga"
   }
 }

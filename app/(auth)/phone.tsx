@@ -15,6 +15,9 @@ const WEB_FIELD = { dataSet: { autofill: 'field' } } as object;
 const format = (digits: string) =>
   [digits.slice(0, 2), digits.slice(2, 5), digits.slice(5, 7), digits.slice(7, 9)].filter(Boolean).join(' ');
 
+// O'zbekiston mobil operatorlari kodlari (Beeline, Ucell, Uzmobile, Mobiuz, Humans, Perfectum, OQ)
+const OPERATORS = ['20', '33', '50', '55', '77', '88', '90', '91', '93', '94', '95', '97', '98', '99'];
+
 export default function PhoneScreen() {
   useScheme();
   const [digits, setDigits] = useState('');
@@ -22,7 +25,9 @@ export default function PhoneScreen() {
   const { next } = useLocalSearchParams<{ next?: string }>();
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
-  const ready = digits.length === 9;
+  // Ikki raqam yozilgach operator kodi tekshiriladi — noto'g'ri raqamga SMS yuborilmaydi
+  const badCode = digits.length >= 2 && !OPERATORS.includes(digits.slice(0, 2));
+  const ready = digits.length === 9 && !badCode;
   const input = useRef<TextInput>(null);
 
   // SMS kod yuboriladi (Supabase sozlanmagan bo'lsa — soxta), keyin kod ekrani
@@ -68,7 +73,7 @@ export default function PhoneScreen() {
         </Text>
       </View>
       {/* Maydonning istalgan joyiga bosilsa (+998 ustiga ham) — yozish boshlanadi */}
-      <Pressable accessible={false} onPress={() => input.current?.focus()} style={[styles.field, focused && styles.fieldFocus]}>
+      <Pressable accessible={false} onPress={() => input.current?.focus()} style={[styles.field, focused && styles.fieldFocus, badCode && styles.fieldError]}>
         <Text style={styles.prefix}>+998</Text>
         <View style={styles.sep} />
         <TextInput
@@ -95,6 +100,11 @@ export default function PhoneScreen() {
           style={styles.input}
         />
       </Pressable>
+      {badCode ? (
+        <Text variant="small" style={styles.error}>
+          {t('auth.badOperator')}
+        </Text>
+      ) : null}
       {failed ? (
         <Text variant="small" style={styles.error}>
           {t('auth.sendFailed')}
@@ -119,6 +129,7 @@ const styles = themed(() => ({
   },
   // Fokusda faqat hoshiya rangi o'zgaradi (fon bir xil — brauzer avtomatik to'ldirganda ham maydon toza ko'rinadi)
   fieldFocus: { borderColor: colors.primary },
+  fieldError: { borderColor: colors.danger },
   prefix: { fontFamily: fonts.heavy, fontSize: 18, color: colors.ink },
   sep: { width: 1.5, height: 24, backgroundColor: colors.line },
   input: { flex: 1, fontFamily: fonts.bold, fontSize: 18, color: colors.ink, letterSpacing: 0.5, height: '100%', minWidth: 0 },
