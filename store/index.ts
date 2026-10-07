@@ -357,6 +357,8 @@ type ChatState = {
   /** Buyurtma bo'yicha chat bo'lmasa — yaratadi */
   ensure: (chat: Omit<Chat, 'messages' | 'unread'>) => void;
   markRead: (chatId: string) => void;
+  /** Server rejimi: suhbat serverdagi xabarlar bilan almashtiriladi (tizim xabarlari — i18n — qoladi) */
+  setServerMessages: (chatId: string, messages: ChatMessage[]) => void;
 };
 
 const msg = (mine: boolean, text: string): ChatMessage => ({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, mine, text, at: Date.now() });
@@ -373,6 +375,17 @@ export const useChats = create<ChatState>((set) => ({
   ensure: (chat) =>
     set((s) => (s.chats.some((c) => c.id === chat.id) ? s : { chats: [{ ...chat, unread: 0, messages: [] }, ...s.chats] })),
   markRead: (chatId) => set((s) => ({ chats: s.chats.map((c) => (c.id === chatId ? { ...c, unread: 0 } : c)) })),
+  setServerMessages: (chatId, messages) =>
+    set((s) => ({
+      chats: s.chats.map((c) => {
+        if (c.id !== chatId) return c;
+        const system = c.messages.filter((m) => m.i18n);
+        const old = c.messages.filter((m) => !m.i18n);
+        // O'zgarmagan bo'lsa — qayta chizilmaydi
+        if (old.length === messages.length && old[old.length - 1]?.id === messages[messages.length - 1]?.id) return c;
+        return { ...c, messages: [...system, ...messages] };
+      }),
+    })),
 }));
 
 // Faol buyurtmalar: mijoz bir vaqtda bir nechta usta chaqira oladi (masalan, santexnik va elektrik)

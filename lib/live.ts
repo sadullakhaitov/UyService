@@ -11,7 +11,7 @@ import { DISPATCH } from '@/constants/dispatch';
 import type { DispatchState } from '@/lib/dispatch';
 import { distanceKm, type LatLng } from '@/lib/geo';
 import { fetchRoute, resample } from '@/lib/routes';
-import { useMaster, useMasterWork, useOrders, useUser, type ActiveOrder, type MasterOrder, type OrderMaster } from '@/store';
+import { useChats, useMaster, useMasterWork, useOrders, useUser, type ActiveOrder, type ChatMessage, type MasterOrder, type OrderMaster } from '@/store';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 
 export const LIVE = isSupabaseConfigured;
@@ -523,3 +523,56 @@ export const liveJob = {
   },
   cancel: async (id: string, reason: string) => must(await db().from('orders').update({ status: 'cancelled', cancel_reason: reason }).eq('id', id)),
 };
+
+// ---------- Chat ----------
+
+/** Chat id → server manzili: "order-<id>" (mijoz) / "job-<id>" (usta) — buyurtma chati, "support" — qo'llab-quvvatlash */
+function chatTarget(chatId: string, uid: string): { order_id: string } | { support_user_id: string } | null {
+  if (chatId === 'support') return { support_user_id: uid };
+  const m = /^(order|job)-(.+)$/.exec(chatId);
+  return m ? { order_id: m[2] } : null;
+}
+
+/** Ochiq chat oynasi serverdan (Realtime + har 3 s); yangiliklar kanali mahalliy */
+export function useLiveChat(chatId: string | undefined) {
+  useEffect(() => {
+    if (!LIVE || !chatId) return;
+    let stop = false;
+    const refresh = async () => {
+      const uid = await myId();
+      const target = uid ? chatTarget(chatId, uid) : null;
+      if (!uid || !target || stop) return;
+      let q = db().from('chat_messages').select('id, sender_id, text, created_at').order('created_at').limit(300);
+      q = 'order_id' in target ? q.eq('order_id', target.order_id) : q.eq('support_user_id', target.support_user_id);
+      const { data } = await q;
+      if (stop || !data) return;
+      const msgs: ChatMessage[] = (data as { id: string; sender_id: string; text: string; created_at: string }[]).map((m) => ({
+        id: m.id,
+        mine: m.sender_id === uid,
+        text: m.text,
+        at: Date.parse(m.created_at),
+      }));
+      useChats.getState().setServerMessages(chatId, msgs);
+    };
+    void refresh();
+    const t = setInterval(refresh, MASTER_POLL_MS);
+    const ch = db()
+      .channel(`chat-${chatId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, () => void refresh())
+      .subscribe();
+    return () => {
+      stop = true;
+      clearInterval(t);
+      void db().removeChannel(ch);
+    };
+  }, [chatId]);
+}
+
+/** Xabar yuborish (server rejimi). false — yuborilmadi */
+export async function liveSendMessage(chatId: string, text: string): Promise<boolean> {
+  const uid = await myId();
+  const target = uid ? chatTarget(chatId, uid) : null;
+  if (!uid || !target) return false;
+  const { error } = await db().from('chat_messages').insert({ ...target, sender_id: uid, text });
+  return !error;
+}

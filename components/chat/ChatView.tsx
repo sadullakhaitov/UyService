@@ -7,14 +7,17 @@ import { Text } from '@/components/ui/Text';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { chatSubtitle, chatTitle, msgText, useChats } from '@/store';
+import { LIVE, liveSendMessage, useLiveChat } from '@/lib/live';
+import { notice } from '@/lib/dialog';
 
-// Chat oynasi: usta ↔ qo'llab-quvvatlash / mijoz, mijoz ↔ usta. Hozir mahalliy, 5-bosqichda Supabase Realtime
+// Chat oynasi: usta ↔ qo'llab-quvvatlash / mijoz, mijoz ↔ usta. Server rejimida — chat_messages (lib/live.ts), sinovda — mahalliy
 export function ChatView({ id, accent = colors.primary, onAccent = colors.onPrimary }: { id: string; accent?: string; onAccent?: string }) {
   useScheme();
   const chat = useChats((s) => s.chats.find((c) => c.id === id));
   const { send, markRead, receive } = useChats();
   const [text, setText] = useState('');
   const list = useRef<FlatList>(null);
+  useLiveChat(chat && chat.kind !== 'news' ? id : undefined);
 
   useEffect(() => {
     if (id) markRead(id);
@@ -26,8 +29,13 @@ export function ChatView({ id, accent = colors.primary, onAccent = colors.onPrim
   const submit = () => {
     const v = text.trim();
     if (!v) return;
-    send(chat.id, v);
     setText('');
+    if (LIVE) {
+      // Serverga yoziladi; ro'yxat serverdan yangilanadi (soxta javob yo'q)
+      void liveSendMessage(chat.id, v).then((ok) => (ok ? undefined : (setText(v), notice(t('job.serverErrorTitle'), t('job.serverErrorText')))));
+      return;
+    }
+    send(chat.id, v);
     // Soxta javob: qo'llab-quvvatlash, mijoz yoki usta (5-bosqichda haqiqiy suhbatdosh)
     const reply = chat.kind === 'support' ? 'chats.autoReply' : chat.kind === 'client' ? 'chats.clientReply' : chat.kind === 'master' ? 'chats.masterReply' : null;
     const seen = chat.messages.some((m) => !m.mine && m.text === t(reply ?? ''));

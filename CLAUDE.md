@@ -146,7 +146,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 **Usta** (pastki menyu: Buyurtmalar · Pul · Chatlar · Profil — Yandex Pro tuzilmasi, Mejgorod yo'q):
 - Buyurtmalar: to'liq xarita, filtr (kategoriya, radius), zoom ±, joylashuv; panelda aktivlik va bugungi daromad, tarif kartasi, "surib ishga chiqish" tugmasi. Buyurtma yopiq bo'lsa tepada qizil banner (balans limitdan past / obuna tugagan); hujjatsiz ishlayotgan bo'lsa — to'q sariq eslatma (bloklamaydi).
 - Pul: kunlik daromad + 7 kunlik tanlov, komissiya tarifida balans va limit (`BALANCE_LIMIT`, platforma ulushi ish yakunida balansdan yechiladi), obuna tarifida obuna muddati; "Yordam" → qo'llab-quvvatlash chati.
-- Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar bilan yozishmalar (hozircha mahalliy, 5-bosqichda Realtime).
+- Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar bilan yozishmalar (server rejimida — `chat_messages`, Realtime + har 3 s; admin qo'llab-quvvatlashdan javob beradi; sinovda — mahalliy).
 - Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; o'qish (qo'llanma); sozlamalar (bildirishnomalar, til), chiqish. Demo promokodlar: `UYSERVICE` (+10 prioritet), `BIRINCHI` (+20 000 balans), `USTA2026`. Do'st uchun bonus `INVITE_BONUS` = 30 000 (⚠️ tasdiqlanmagan).
 - Tarif tanlash (birinchi kirishda) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → eshik kodi → narx yuborish → mijoz rozi bo'lsa ish → Tugatdim; mijozdan naqd olinadigan summa va platforma ulushi — qabul paytidagi foiz bo'yicha).
 
