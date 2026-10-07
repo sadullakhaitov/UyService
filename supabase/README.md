@@ -174,7 +174,8 @@ Kerak bo'lsa SQL Editor'dan ham qilish mumkin (masalan, server ulanmasdan oldin)
 | `functions/*/index.ts` | `dispatch`, `offer-respond`, `offer-timeout`, `send-sms` |
 | `seed.sql` | faqat lokal sinov uchun 3 ta demo usta (`db push` uni yubormaydi) |
 | `migrations/…_admin.sql` | admin panel: bloklash, `admin_log`, `balance_ops`, `admin_*` funksiyalari va ko'rinishlari, `admin_stats` |
-| `tests/` | lokal Postgres'da RLS sinovi (`rls_test.sql`) va admin sinovi (`admin_test.sql`) |
+| `migrations/…_price_agreement.sql` | narx kelishuvi va eshik kodi: `order_secrets` (kodni faqat mijoz ko'radi), `order_door_code`, `verify_door_code` (5 xato → 10 daq), `propose_price`, `respond_price`; ulush foizi qabul paytida qotiriladi (`orders.fee_percent`) |
+| `tests/` | lokal Postgres'da RLS sinovi (`rls_test.sql`), admin sinovi (`admin_test.sql`), narx kelishuvi sinovi (`price_test.sql`) |
 
 Ilova tomoni: `lib/supabase.ts` (ulanish), `lib/auth.ts` (SMS kod), `lib/api.ts` (buyurtma, taklifga javob,
 joylashuv, chat — ekranlarga keyin ulanadi).
@@ -196,7 +197,7 @@ Docker kerak emas — oddiy PostgreSQL 16 + PostGIS yetadi:
 
 ```bash
 createdb uytest
-for f in supabase/tests/supabase_stub.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/rls_test.sql supabase/tests/admin_test.sql; do
+for f in supabase/tests/supabase_stub.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/rls_test.sql supabase/tests/admin_test.sql supabase/tests/price_test.sql; do
   psql -v ON_ERROR_STOP=1 -q -d uytest -f "$f" || break
 done   # oxirida: NOTICE: ALL RLS TESTS PASSED
 ```

@@ -172,7 +172,7 @@ reset role;
 -- Buyurtma 1 — usta tayinlanadi va bajariladi (server: Edge Function), keyin mijoz baho beradi
 update public.orders set master_id = '00000000-0000-4000-d000-000000000001', status = 'assigned' where id = '00000000-0000-4000-e000-000000000001';
 update public.masters set busy = true where id = '00000000-0000-4000-d000-000000000001';
-update public.orders set price_work = 150000, status = 'completed' where id = '00000000-0000-4000-e000-000000000001';
+update public.orders set price_work = 150000, price_status = 'approved', status = 'completed' where id = '00000000-0000-4000-e000-000000000001';
 do $$ declare o public.orders; b int; n int; begin
   select * into o from public.orders where id = '00000000-0000-4000-e000-000000000001';
   -- tasdiqlangan, komissiya 10%: 150 000 (chaqiruv ichida) × 10% = 15 000

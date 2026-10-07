@@ -122,10 +122,10 @@ locales/uz.json           ← ilovadagi barcha matnlar
 mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
 design/                   ← dizayn skrinshotlari
 supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma
-  migrations/             ← 7 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin
+  migrations/             ← 8 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
   functions/{dispatch,offer-respond,offer-timeout,send-sms} ← Edge Functions (send-sms — Eskiz.uz orqali SMS)
-  tests/                  ← supabase_stub.sql + rls_test.sql + admin_test.sql (mahalliy Postgres+PostGIS'da 50 dan ortiq tekshiruv)
+  tests/                  ← supabase_stub.sql + rls_test.sql + admin_test.sql + price_test.sql (mahalliy Postgres+PostGIS'da 58 ta tekshiruv)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
 wrangler.jsonc            ← sayt (uyservice.uz) Cloudflare Workers'da: build `npx expo export --platform web` → `dist`, deploy `npx wrangler deploy`; hamma yo'llar index.html'ga (SPA)
@@ -150,6 +150,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 2. Usta ko'rib **narx yuboradi**: ish (chaqiruv ichida, kamida `CALL_FEE`, ko'pi bilan 10 mln, 3 mln dan oshsa qayta so'raladi) + ehtiyot qismlar. Yoki "Faqat ko'rik (50 000)".
 3. Mijoz "Roziman, boshlasin" → ish boshlanadi; "Rozi emasman" → faqat chaqiruv to'lanadi, tarixda "Faqat ko'rik".
 4. Taklifda mijoz ismi va aniq manzil qabul qilgandan keyin ko'rinadi. Platforma ulushi foizi usta taklifni **qabul qilgan paytda** qotiriladi (`MasterJob.feePercent`) — ish o'rtasida hujjat almashtirib foizni o'zgartirib bo'lmaydi.
+5. Serverda ham xuddi shunday (`…_price_agreement.sql`): eshik kodi `order_secrets`da (usta ko'rmaydi), usta `verify_door_code` (5 xato → 10 daqiqa kutish) → `propose_price` → mijoz `respond_price`; narxni to'g'ridan-to'g'ri yozib bo'lmaydi; usta ichkariga kirgach mijoz bepul bekor qila olmaydi (faqat "Rozi emasman" — ko'rik); ulush foizi `orders.fee_percent`da qotiriladi.
 
 **Saqlanadigan holat** (AsyncStorage, `version` + `migrate`): mijoz buyurtmalari (`uyservice-orders`), tarix (bo'sh boshlanadi), ustaning taklifi va joriy ishi (`uyservice-master-work`) — sahifa yangilansa yo'qolmaydi. Usta daromadi kunlar bo'yicha (`earnings`, `dayKey`, `earningOn`) — "bugun" har kuni noldan. Yangi usta: reyting yo'q ("—"), balans 0 (sinovda 50 000), kategoriyalar bo'sh. Chiqish (`logoutAll`) — hamma store tozalanadi (til, mavzu, oxirgi joy qoladi), oldin tasdiq so'raladi. Usta **profil surati majburiy** (`profile.photo`, old kamera; brauzerda ≤ 320 px data: URL — `keepablePhoto`). Telefon raqami operator kodi bilan tekshiriladi (20, 33, 50, 55, 77, 88, 90, 91, 93, 94, 95, 97, 98, 99). Buyurtma topilmasa — `components/ui/NotFound.tsx`.
 

@@ -291,14 +291,64 @@ do $$ begin
   end;
   begin
     update public.orders set price_work = 100000 where id = '00000000-0000-4000-c000-000000000001';
-    raise exception 'FAIL: usta ish boshlanmasdan narx yozdi';
+    raise exception 'FAIL: usta narxni to''g''ridan-to''g''ri yozdi';
   exception when insufficient_privilege then null;
   end;
+  if exists (select 1 from public.order_secrets) or public.order_door_code('00000000-0000-4000-c000-000000000001') is not null then
+    raise exception 'FAIL: usta eshik kodini ko''rdi';
+  end if;
   update public.orders set status = 'arrived' where id = '00000000-0000-4000-c000-000000000001';
-  update public.orders set status = 'in_progress' where id = '00000000-0000-4000-c000-000000000001';
-  update public.orders set price_work = 100000, price_parts = 30000 where id = '00000000-0000-4000-c000-000000000001';
+  begin
+    update public.orders set status = 'in_progress' where id = '00000000-0000-4000-c000-000000000001';
+    raise exception 'FAIL: usta mijoz roziligisiz ishni boshladi';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.propose_price('00000000-0000-4000-c000-000000000001', 100000, 30000);
+    raise exception 'FAIL: usta eshik kodisiz narx yubordi';
+  exception when invalid_parameter_value then null;
+  end;
+  if public.verify_door_code('00000000-0000-4000-c000-000000000001', '0000') then
+    raise exception 'FAIL: noto''g''ri kod qabul qilindi';
+  end if;
+end $$;
+-- Mijoz kodni ko'radi va ustaga aytadi
+set request.jwt.claim.sub = '00000000-0000-4000-b000-00000000000a';
+select public.order_door_code('00000000-0000-4000-c000-000000000001') as door_code \gset
+set request.jwt.claim.sub = '00000000-0000-4000-b000-000000000001';
+select public.verify_door_code('00000000-0000-4000-c000-000000000001', :'door_code') as door_ok \gset
+do $$ begin
+  if (select door_verified_at from public.orders where id = '00000000-0000-4000-c000-000000000001') is null then
+    raise exception 'FAIL: to''g''ri kod qabul qilinmadi';
+  end if;
+  begin
+    perform public.propose_price('00000000-0000-4000-c000-000000000001', 10000, 0);
+    raise exception 'FAIL: chaqiruvdan arzon ish narxi qabul qilindi';
+  exception when invalid_parameter_value then null;
+  end;
+  perform public.propose_price('00000000-0000-4000-c000-000000000001', 100000, 30000);
+  begin
+    update public.orders set status = 'completed' where id = '00000000-0000-4000-c000-000000000001';
+    raise exception 'FAIL: usta narx javobini kutmasdan yopdi';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+set request.jwt.claim.sub = '00000000-0000-4000-b000-00000000000a';
+do $$ begin
+  begin
+    update public.orders set status = 'cancelled' where id = '00000000-0000-4000-c000-000000000001';
+    raise exception 'FAIL: mijoz usta ichkariga kirgach bepul bekor qildi';
+  exception when insufficient_privilege then null;
+  end;
+  perform public.respond_price('00000000-0000-4000-c000-000000000001', true);
+  if (select status from public.orders where id = '00000000-0000-4000-c000-000000000001') <> 'in_progress' then
+    raise exception 'FAIL: mijoz rozi bo''lgach ish boshlanmadi';
+  end if;
+end $$;
+set request.jwt.claim.sub = '00000000-0000-4000-b000-000000000001';
+do $$ begin
   update public.orders set status = 'completed' where id = '00000000-0000-4000-c000-000000000001';
-  raise notice 'PASS: usta Yetib keldim → Ishni boshladim → Tugatdim (bosqich tashlab o''tib bo''lmaydi)';
+  raise notice 'PASS: usta Yetib keldim → eshik kodi → narx → mijoz rozi → Tugatdim (bosqich tashlab o''tib bo''lmaydi)';
 end $$;
 reset role;
 do $$ declare o public.orders; m public.masters; begin
