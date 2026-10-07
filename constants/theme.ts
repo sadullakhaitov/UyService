@@ -1,7 +1,7 @@
 // UyService ranglari (TZ, 8-bo'lim). To'q yashil — ishonch, to'q sariq — mehnat/asbob rangi.
 // Ikki rejim: kunduzgi (light) va tungi (dark). Rejim ildiz _layout'da tanlanadi (setScheme),
 // `colors.x` har o'qilganda joriy rejim rangini qaytaradi; ekran uslublari `themed()` orqali yaratiladi.
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { useStore } from 'zustand';
 import { createStore } from 'zustand/vanilla';
 
@@ -203,22 +203,22 @@ export const size = {
   gutter: 16,
 } as const;
 
+// Android: `elevation` soyasi faqat fonli elementda chiziladi — shisha tugmalar (fon yo'q, shisha qatlam ichida)
+// soyasiz qolardi. Shuning uchun u yerda `boxShadow` (fon bo'lmasa ham tashqi soya chiziladi)
+const drop = (y: number, blur: number, alpha: number, elevation: number) =>
+  Platform.OS === 'android'
+    ? { boxShadow: `0px ${y}px ${blur}px ${hexAlpha(colors.shadow, alpha)}` }
+    : { shadowColor: colors.shadow, shadowOpacity: alpha, shadowRadius: blur, shadowOffset: { width: 0, height: y }, elevation };
+
+function hexAlpha(hex: string, a: number) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
 export const shadow = themed(() => ({
   // Xarita ustidagi suzuvchi tugmalar: soya rang-barang xarita fonidan ajratib turadi
-  float: {
-    shadowColor: colors.shadow,
-    shadowOpacity: isDark() ? 0.6 : 0.2,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
-  },
-  sheet: {
-    shadowColor: colors.shadow,
-    shadowOpacity: isDark() ? 0.5 : 0.12,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: -8 },
-    elevation: 16,
-  },
+  float: drop(6, 16, isDark() ? 0.6 : 0.2, 8),
+  sheet: drop(-8, 30, isDark() ? 0.5 : 0.12, 16),
 }));
 
 export const type = themed(() => ({
