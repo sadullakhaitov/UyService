@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
-import { ChevronRight, Gauge, LocateFixed, Minus, Plus, Power, SlidersHorizontal, Wallet } from 'lucide-react-native';
+import { ChevronRight, Gauge, LocateFixed, Power, SlidersHorizontal, Wallet } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase, type MapHandle } from '@/components/map';
+import { MapZoom } from '@/components/map/MapZoom';
 import { ModalSheet } from '@/components/sheets/ModalSheet';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Button, Chip, IconButton, Squish, Text } from '@/components/ui';
@@ -133,16 +134,7 @@ export default function MasterOrders() {
       </View>
 
       <View style={[styles.rightCol, { bottom: (wide ? MAP_ATTRIBUTION_H : sheetH) + 12 }]} pointerEvents="box-none">
-        <View style={[styles.zoom, shadow.float]}>
-          <GlassBg radius={26} interactive />
-          <Pressable accessibilityRole="button" accessibilityLabel={t('mOrders.zoomIn')} onPress={() => map.current?.zoomBy(1)} style={styles.zoomBtn}>
-            <Plus size={24} color={colors.ink} strokeWidth={2.2} />
-          </Pressable>
-          <View style={styles.zoomSep} />
-          <Pressable accessibilityRole="button" accessibilityLabel={t('mOrders.zoomOut')} onPress={() => map.current?.zoomBy(-1)} style={styles.zoomBtn}>
-            <Minus size={24} color={colors.ink} strokeWidth={2.2} />
-          </Pressable>
-        </View>
+        <MapZoom onZoom={(d) => map.current?.zoomBy(d)} size={52} radius={26} />
         <IconButton icon={LocateFixed} label={t('client.myLocation')} floating onPress={locate} style={styles.round} />
       </View>
 
@@ -298,9 +290,6 @@ const styles = themed(() => ({
   stateText: { fontFamily: fonts.bold, fontSize: 14, color: colors.ink },
   round: { width: 52, height: 52, borderRadius: 26 },
   rightCol: { position: 'absolute', right: 16, gap: 12, alignItems: 'flex-end' },
-  zoom: { borderRadius: 26, width: 52, overflow: 'hidden' },
-  zoomBtn: { height: 52, alignItems: 'center', justifyContent: 'center' },
-  zoomSep: { height: 1, backgroundColor: colors.line, marginHorizontal: 10 },
   stats: { flexDirection: 'row', alignItems: 'center' },
   stat: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   statIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },

@@ -3,6 +3,7 @@ import { CalendarClock, ChevronRight, LocateFixed, MapPin, ReceiptText, Search, 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MapZoom } from '@/components/map/MapZoom';
 import { CenterPin, MapBase, type MapHandle } from '@/components/map';
 import { Sheet, SheetInput } from '@/components/sheets/Sheet';
 import { Avatar, IconButton, Logo, RatingBadge, Squish, Text } from '@/components/ui';
@@ -147,13 +148,10 @@ export default function ClientHome() {
         </View>
       </View>
 
-      <IconButton
-        icon={LocateFixed}
-        label={t('client.address')}
-        floating
-        onPress={locate}
-        style={[styles.locate, { bottom: (wide ? MAP_ATTRIBUTION_H : sheetH) + 12 }]}
-      />
+      <View style={[styles.rightCol, { bottom: (wide ? MAP_ATTRIBUTION_H : sheetH) + 12 }]} pointerEvents="box-none">
+        <MapZoom onZoom={(d) => map.current?.zoomBy(d)} />
+        <IconButton icon={LocateFixed} label={t('client.address')} floating onPress={locate} />
+      </View>
 
       <Sheet onHeight={setSheetH} top={topH}>
         <ActiveOrders />
@@ -254,7 +252,7 @@ const styles = themed(() => ({
   top: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   topRight: { flexDirection: 'row', gap: 10 },
   logoPill: { paddingHorizontal: 14, height: 44, borderRadius: 14, justifyContent: 'center' },
-  locate: { position: 'absolute', right: 16 },
+  rightCol: { position: 'absolute', right: 16, gap: 12, alignItems: 'center' },
   locWarn: { color: colors.accentInk },
   onGlass: { position: 'relative' },
   address: { flexDirection: 'row', alignItems: 'center', gap: 12 },

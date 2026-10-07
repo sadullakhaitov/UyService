@@ -204,12 +204,13 @@ export const size = {
 } as const;
 
 export const shadow = themed(() => ({
+  // Xarita ustidagi suzuvchi tugmalar: soya rang-barang xarita fonidan ajratib turadi
   float: {
     shadowColor: colors.shadow,
-    shadowOpacity: isDark() ? 0.45 : 0.1,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    shadowOpacity: isDark() ? 0.6 : 0.2,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   sheet: {
     shadowColor: colors.shadow,
