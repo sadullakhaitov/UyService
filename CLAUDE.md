@@ -45,7 +45,7 @@ Hammasi TypeScript'da, o'z serverimiz yo'q.
 | Ikonkalar | lucide-react-native (chiziqli, 2 px) |
 | Shriftlar | Manrope (matn), Unbounded (faqat logotip) |
 
-Yangi paket: `npx expo install <paket>`. Tekshirish: `npm run typecheck`.
+Yangi paket: `npx expo install <paket>`. Tekshirish: `npm run typecheck`; server — `bash supabase/tests/run.sh` (GitHub'da CI o'zi ishga tushiradi).
 
 ## 3. Papka tuzilmasi
 
@@ -127,7 +127,8 @@ supabase/                 ← server (tayyor, hali joylanmagan): README.md — j
   migrations/             ← 9 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
   functions/{dispatch,offer-respond,offer-timeout,send-sms,push-send} ← Edge Functions (send-sms — Eskiz.uz orqali SMS; push-send — push_outbox → Expo Push API)
-  tests/                  ← supabase_stub.sql + rls_test.sql + admin_test.sql + price_test.sql + push_test.sql (mahalliy Postgres+PostGIS'da 65 ta tekshiruv)
+  tests/                  ← run.sh — hammasi: supabase_stub.sql + rls/admin/price/push_test.sql (65 ta tekshiruv) + e2e/ (usta qidirish va push, Deno + PostgREST)
+.github/workflows/ci.yml  ← har push'da: typecheck, deno check, server sinovlari (Postgres+PostGIS+PostgREST)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
 wrangler.jsonc            ← sayt (uyservice.uz) Cloudflare Workers'da: build `npx expo export --platform web` → `dist`, deploy `npx wrangler deploy`; hamma yo'llar index.html'ga (SPA)

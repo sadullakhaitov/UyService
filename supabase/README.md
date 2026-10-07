@@ -211,13 +211,12 @@ joylashuv, chat — ekranlarga keyin ulanadi).
 
 ### Dasturchi uchun: lokal sinov
 
-Docker kerak emas — oddiy PostgreSQL 16 + PostGIS yetadi:
+Docker kerak emas — oddiy PostgreSQL 16 + PostGIS yetadi (ulanish — `PGHOST`, `PGUSER` va h.k.):
 
 ```bash
-createdb uytest
-for f in supabase/tests/supabase_stub.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/rls_test.sql supabase/tests/admin_test.sql supabase/tests/price_test.sql supabase/tests/push_test.sql; do
-  psql -v ON_ERROR_STOP=1 -q -d uytest -f "$f" || break
-done   # oxirida: NOTICE: ALL RLS TESTS PASSED
+bash supabase/tests/run.sh                                  # SQL: RLS, admin, narx kelishuvi, push
+PGRST_BIN=$(which postgrest) bash supabase/tests/run.sh     # + E2E: usta qidirish va push (Deno + PostgREST)
+deno check --no-lock --node-modules-dir=none supabase/functions/*/index.ts
 ```
 
-Funksiyalar turi: `deno check --node-modules-dir=none supabase/functions/*/index.ts`.
+GitHub'da har push'da shular avtomatik ishlaydi (`.github/workflows/ci.yml`) + ilovaning `npm run typecheck`.
