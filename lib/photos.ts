@@ -1,9 +1,16 @@
 // Rasm tanlash / suratga olish (pasport, selfi, ish namunalari, muammo rasmi).
-// 5-bosqichda tanlangan rasmlar Supabase Storage'ga yuklanadi.
+// Brauzerda tanlangan rasm vaqtinchalik (blob:) havola — sahifa yangilansa yo'qoladi, shuning uchun bu yerdan
+// har doim saqlab qo'ysa bo'ladigan manzil qaytadi (keepablePhoto). 5-bosqichda rasmlar Supabase Storage'ga yuklanadi.
 import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
 
-export async function pickImages(limit = 1): Promise<string[]> {
+/** Odatiy eng katta tomon (px): muammo rasmi, ish namunasi. Hujjat uchun kattaroq — DOC_MAX */
+export const PHOTO_MAX = 800;
+export const DOC_MAX = 1280;
+/** Profil surati */
+export const AVATAR_MAX = 320;
+
+export async function pickImages(limit = 1, max = PHOTO_MAX): Promise<string[]> {
   if (limit <= 0) return [];
   const res = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
@@ -11,11 +18,12 @@ export async function pickImages(limit = 1): Promise<string[]> {
     allowsMultipleSelection: limit > 1,
     selectionLimit: limit,
   });
-  return res.canceled ? [] : res.assets.map((a) => a.uri).slice(0, limit);
+  if (res.canceled) return [];
+  return Promise.all(res.assets.slice(0, limit).map((a) => keepablePhoto(a.uri, max)));
 }
 
 /** Kamera (selfi uchun old kamera). Ruxsat berilmasa yoki kamera yo'q bo'lsa — galereya */
-export async function takePhoto({ front = false }: { front?: boolean } = {}): Promise<string | null> {
+export async function takePhoto({ front = false, max = PHOTO_MAX }: { front?: boolean; max?: number } = {}): Promise<string | null> {
   try {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (perm.granted) {
@@ -24,20 +32,20 @@ export async function takePhoto({ front = false }: { front?: boolean } = {}): Pr
         quality: 0.6,
         cameraType: front ? ImagePicker.CameraType.front : ImagePicker.CameraType.back,
       });
-      return res.canceled ? null : res.assets[0].uri;
+      return res.canceled ? null : keepablePhoto(res.assets[0].uri, max);
     }
   } catch {
     // simulyator / brauzer — kamera yo'q
   }
-  return (await pickImages(1))[0] ?? null;
+  return (await pickImages(1, max))[0] ?? null;
 }
 
 /**
- * Profil surati telefonda saqlanib qolishi uchun: brauzerda tanlangan rasm vaqtinchalik (blob:) havola bo'ladi
- * va sahifa yangilanganda yo'qoladi — shuning uchun kichraytirib (≤ 320 px) data: URL'ga aylantiramiz.
+ * Brauzerda tanlangan rasm vaqtinchalik (blob:) havola bo'ladi va sahifa yangilanganda yo'qoladi — shuning uchun
+ * kichraytirib (eng katta tomoni ≤ max px) data: URL'ga aylantiramiz (localStorage'ga sig'ishi uchun JPEG).
  * Telefonda fayl manzili o'zi saqlanadi. 5-bosqichda Supabase Storage'ga yuklanadi.
  */
-export async function keepablePhoto(uri: string, max = 320): Promise<string> {
+export async function keepablePhoto(uri: string, max = PHOTO_MAX): Promise<string> {
   if (Platform.OS !== 'web' || !uri.startsWith('blob:')) return uri;
   try {
     const img = new window.Image();

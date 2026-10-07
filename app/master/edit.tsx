@@ -9,7 +9,7 @@ import { PhotoTile } from '@/components/ui/PhotoTile';
 import type { CategoryId } from '@/constants/categories';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
-import { keepablePhoto, takePhoto } from '@/lib/photos';
+import { AVATAR_MAX, takePhoto } from '@/lib/photos';
 import { useMaster } from '@/store';
 
 const YEARS = [1, 2, 3, 5, 10];
@@ -42,8 +42,8 @@ export default function EditProfile() {
               icon={UserRound}
               label={t('register.photo')}
               onAdd={async () => {
-                const uri = await takePhoto({ front: true });
-                if (uri) setPhoto(await keepablePhoto(uri));
+                const uri = await takePhoto({ front: true, max: AVATAR_MAX });
+                if (uri) setPhoto(uri);
               }}
               onRemove={() => setPhoto(null)}
             />

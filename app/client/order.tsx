@@ -1,4 +1,3 @@
-import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { CalendarClock, Camera, FlaskConical, Info, MapPin, ShieldCheck, X } from 'lucide-react-native';
@@ -15,6 +14,7 @@ import { DEMO } from '@/lib/demo';
 import { DAYS_AHEAD, dayOffsetOf, firstSlot, slotStillValid, slotsFor } from '@/lib/schedule';
 import { useOrder, useOrders, useUser } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
+import { pickImages } from '@/lib/photos';
 
 const MAX_PHOTOS = 3;
 
@@ -34,8 +34,8 @@ export default function OrderScreen() {
 
   const addPhoto = async () => {
     if (photos.length >= MAX_PHOTOS) return;
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6, allowsMultipleSelection: true, selectionLimit: MAX_PHOTOS - photos.length });
-    if (!res.canceled) setDraft({ photos: [...photos, ...res.assets.map((a) => a.uri)].slice(0, MAX_PHOTOS) });
+    const uris = await pickImages(MAX_PHOTOS - photos.length);
+    if (uris.length) setDraft({ photos: [...photos, ...uris].slice(0, MAX_PHOTOS) });
   };
 
   const submit = async () => {

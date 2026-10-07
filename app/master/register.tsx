@@ -9,7 +9,7 @@ import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import { PhotoTile } from '@/components/ui/PhotoTile';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
-import { keepablePhoto, pickImages, takePhoto } from '@/lib/photos';
+import { AVATAR_MAX, DOC_MAX, pickImages, takePhoto } from '@/lib/photos';
 import { useMaster, useUser } from '@/store';
 
 const STEPS = 4;
@@ -71,8 +71,8 @@ export default function Register() {
                   label={t('register.photo')}
                   size={96}
                   onAdd={async () => {
-                    const uri = await takePhoto({ front: true });
-                    if (uri) setProfile({ photo: await keepablePhoto(uri) });
+                    const uri = await takePhoto({ front: true, max: AVATAR_MAX });
+                    if (uri) setProfile({ photo: uri });
                   }}
                   onRemove={() => setProfile({ photo: null })}
                 />
@@ -109,7 +109,7 @@ export default function Register() {
                     label={t('register.passport')}
                     size="100%"
                     onAdd={async () => {
-                      const uri = await takePhoto();
+                      const uri = await takePhoto({ max: DOC_MAX });
                       if (uri) setProfile({ passportPhoto: uri });
                     }}
                     onRemove={() => setProfile({ passportPhoto: null })}
@@ -125,7 +125,7 @@ export default function Register() {
                     label={t('register.selfie')}
                     size="100%"
                     onAdd={async () => {
-                      const uri = await takePhoto({ front: true });
+                      const uri = await takePhoto({ front: true, max: DOC_MAX });
                       if (uri) setProfile({ selfie: uri });
                     }}
                     onRemove={() => setProfile({ selfie: null })}

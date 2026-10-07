@@ -5,7 +5,7 @@ import { Button, ScreenHeader, Text } from '@/components/ui';
 import { PhotoTile } from '@/components/ui/PhotoTile';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
-import { takePhoto } from '@/lib/photos';
+import { DOC_MAX, takePhoto } from '@/lib/photos';
 import { feePercent } from '@/constants/billing';
 import { DEMO } from '@/lib/demo';
 import { confirm } from '@/lib/dialog';
@@ -66,7 +66,7 @@ export default function Documents() {
               label={t('register.passport')}
               size="100%"
               onAdd={async () => {
-                const uri = await takePhoto();
+                const uri = await takePhoto({ max: DOC_MAX });
                 if (uri) replace({ passportPhoto: uri });
               }}
               onRemove={removePassport}
@@ -82,7 +82,7 @@ export default function Documents() {
               label={t('register.selfie')}
               size="100%"
               onAdd={async () => {
-                const uri = await takePhoto({ front: true });
+                const uri = await takePhoto({ front: true, max: DOC_MAX });
                 if (uri) replace({ selfie: uri });
               }}
               onRemove={() => setProfile({ selfie: null })}
