@@ -7,11 +7,12 @@ import { IconButton } from './IconButton';
 import { Text } from './Text';
 import { themed, useScheme } from '@/constants/theme';
 
-export function ScreenHeader({ kicker, title, right, onBack }: { kicker?: string; title: string; right?: ReactNode; onBack?: () => void }) {
+/** back={false} — orqaga tugmasiz (pastki menyu bo'limlari) */
+export function ScreenHeader({ kicker, title, right, onBack, back = true }: { kicker?: string; title: string; right?: ReactNode; onBack?: () => void; back?: boolean }) {
   useScheme();
   return (
     <View style={styles.row}>
-      <IconButton icon={ChevronLeft} label={t('common.back')} floating onPress={onBack ?? (() => router.back())} />
+      {back ? <IconButton icon={ChevronLeft} label={t('common.back')} floating onPress={onBack ?? (() => router.back())} /> : null}
       <View style={styles.titles}>
         {kicker ? <Text variant="caption">{kicker}</Text> : null}
         <Text variant="h2" numberOfLines={1}>

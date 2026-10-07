@@ -315,7 +315,10 @@
     "orders": "Orders",
     "money": "Money",
     "chats": "Chats",
-    "profile": "Profile"
+    "profile": "Profile",
+    "home": "Home",
+    "map": "Map",
+    "myOrders": "Orders"
   },
   "mOrders": {
     "blockedBalance": "Orders closed — top up your balance",
@@ -1305,5 +1308,34 @@
       "resetText": "All your test actions in this browser will be erased.",
       "resetDone": "Test data refreshed"
     }
+  },
+  "home": {
+    "helloMorning": "Good morning,",
+    "helloDay": "Good afternoon,",
+    "helloEvening": "Good evening,",
+    "helloNight": "Good night,",
+    "guest": "Guest",
+    "client": "Client",
+    "pickAddress": "Choose your address",
+    "onMap": "On the map",
+    "title": "What do you need fixed?",
+    "searchPlaceholder": "Describe the problem: tap, socket…",
+    "noResults": "Nothing found. Pick a service below.",
+    "popular": "Popular",
+    "services": "All services",
+    "bannerFeeTitle": "Call-out — {{fee}}",
+    "bannerFeeText": "The master comes and takes a look. If they do the job, the fee is included",
+    "bannerFeeCta": "Call a master",
+    "bannerWarrantyTitle": "{{days}}-day warranty",
+    "bannerWarrantyText": "If the problem comes back, the master returns for free",
+    "bannerMore": "Learn more",
+    "bannerMasterTitle": "Work as a master",
+    "bannerMasterText": "Get orders and choose your own plan",
+    "bannerMasterCta": "Get started"
+  },
+  "orders": {
+    "active": "Current orders",
+    "noActive": "No active orders right now",
+    "callMaster": "Call a master"
   }
 }

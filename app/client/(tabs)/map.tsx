@@ -21,7 +21,7 @@ import { mastersAround, mockMasters } from '@/mocks';
 import { useOrder, useUser } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 
-export default function ClientHome() {
+export default function ClientMap() {
   useScheme();
   const insets = useSafeAreaInsets();
   const [sheetH, setSheetH] = useState(520);
@@ -153,7 +153,8 @@ export default function ClientHome() {
         <IconButton icon={LocateFixed} label={t('client.address')} floating onPress={locate} />
       </View>
 
-      <Sheet onHeight={setSheetH} top={topH}>
+      {/* Pastki menyu xavfsiz joyni o'zi egallaydi — panel to'g'ridan-to'g'ri uning ustida */}
+      <Sheet onHeight={setSheetH} top={topH} bottomInset={0}>
         <ActiveOrders />
         <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/client/address')} style={styles.address}>
           <View style={styles.addrIcon}>

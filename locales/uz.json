@@ -303,7 +303,10 @@
     "orders": "Buyurtmalar",
     "money": "Pul",
     "chats": "Chatlar",
-    "profile": "Profil"
+    "profile": "Profil",
+    "home": "Asosiy",
+    "map": "Xarita",
+    "myOrders": "Buyurtmalar"
   },
   "mOrders": {
     "blockedBalance": "Buyurtmalar yopiq — balansni to'ldiring",
@@ -1275,5 +1278,34 @@
       "resetText": "Shu brauzerda qilgan barcha sinov amallaringiz o'chadi.",
       "resetDone": "Sinov ma'lumotlari yangilandi"
     }
+  },
+  "home": {
+    "helloMorning": "Xayrli tong,",
+    "helloDay": "Xayrli kun,",
+    "helloEvening": "Xayrli kech,",
+    "helloNight": "Xayrli tun,",
+    "guest": "Mehmon",
+    "client": "Mijoz",
+    "pickAddress": "Manzilni tanlang",
+    "onMap": "Xaritada",
+    "title": "Qanday usta kerak?",
+    "searchPlaceholder": "Muammoni yozing: kran, rozetka…",
+    "noResults": "Topilmadi. Pastdagi xizmatlardan tanlang.",
+    "popular": "Ko'p so'raladi",
+    "services": "Barcha xizmatlar",
+    "bannerFeeTitle": "Chaqiruv — {{fee}}",
+    "bannerFeeText": "Usta kelib ko'radi. Ish qilinsa — narx ichida",
+    "bannerFeeCta": "Usta chaqirish",
+    "bannerWarrantyTitle": "{{days}} kun kafolat",
+    "bannerWarrantyText": "Muammo qaytsa — usta bepul qayta keladi",
+    "bannerMore": "Batafsil",
+    "bannerMasterTitle": "Usta bo'lib ishlang",
+    "bannerMasterText": "Buyurtmalar oling, tarifni o'zingiz tanlang",
+    "bannerMasterCta": "Boshlash"
+  },
+  "orders": {
+    "active": "Hozirgi buyurtmalar",
+    "noActive": "Hozir faol buyurtma yo'q",
+    "callMaster": "Usta chaqirish"
   }
 }

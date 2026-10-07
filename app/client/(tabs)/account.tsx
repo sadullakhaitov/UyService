@@ -38,7 +38,7 @@ export default function Account() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.root}>
-      <ScreenHeader title={t('account.title')} />
+      <ScreenHeader title={t('account.title')} back={false} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.card}>
           <Avatar initials={(name.trim()[0] ?? '?').toUpperCase()} size={56} solid={!guest} />

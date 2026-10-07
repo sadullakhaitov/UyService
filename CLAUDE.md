@@ -57,8 +57,12 @@ app/                      ← ekranlar (Expo Router)
   welcome.tsx             ← birinchi ochilish: til tanlash (O'zbek / Русский / English)
   (auth)/phone.tsx        ← telefon raqam (/phone?next=order|master)
   (auth)/code.tsx         ← SMS kod
-  client/account.tsx      ← mijoz profili: mehmon/kirgan, "Usta bo'lib ishlash", til
-  client/index.tsx        ← bosh sahifa: xarita + kategoriyalar, "Hozir kerak" / "Vaqtni tanlash" (/client)
+  client/(tabs)/          ← mijoz ilovasi, pastki menyu 4 bo'lim (kompyuterda — chap menyu; components/ui/TabChrome.tsx usta bilan umumiy)
+    index.tsx             ← Asosiy (/client): salom + ism, manzil, aylanuvchi banner (chaqiruv narxi, kafolat, usta bo'lish),
+                            muammo bo'yicha qidiruv, faol buyurtmalar, "Ko'p so'raladi" chiplari, 6 xizmat, Hozir/Vaqtni tanlash, Mening ustalarim
+    map.tsx               ← Xarita (/client/map): oldingi xaritali bosh sahifa o'zgarishsiz (pin, atrofdagi ustalar, kategoriyalar)
+    orders.tsx            ← Buyurtmalar: hozirgi buyurtmalar + tarix (components/order/HistoryList.tsx)
+    account.tsx           ← Profil (/client/account): mehmon/kirgan, "Usta bo'lib ishlash", til, ko'rinish
   client/address.tsx      ← manzilni yozib qidirish (lib/geocode.ts)
   client/order.tsx        ← muammo, tavsif, rasm, narx; rejalashtirishda kun va soat
   client/searching.tsx    ← usta qidirilmoqda (to'lqinlar, radius, takliflar) yoki rejalashtirilgan buyurtma ┐ ikkalasi bitta ekran —
@@ -144,7 +148,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 ## 4. Ekranlar
 
-**Mijoz** (bir vaqtda bir nechta usta chaqira oladi — masalan, santexnik va elektrik; faol buyurtmalar bosh sahifada kartalar bo'lib turadi, `useOrders` + `lib/orderSimulator.ts`): Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim") → Tarix (qayta chaqirish).
+**Mijoz** (pastki menyu: Asosiy · Xarita · Buyurtmalar · Profil; bir vaqtda bir nechta usta chaqira oladi — masalan, santexnik va elektrik; faol buyurtmalar bosh sahifada kartalar bo'lib turadi, `useOrders` + `lib/orderSimulator.ts`): Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim") → Tarix (qayta chaqirish).
 
 **Usta** (pastki menyu: Buyurtmalar · Pul · Chatlar · Profil — Yandex Pro tuzilmasi, Mejgorod yo'q):
 - Buyurtmalar: to'liq xarita, filtr (kategoriya, radius), zoom ±, joylashuv; panelda aktivlik va bugungi daromad, tarif kartasi, "surib ishga chiqish" tugmasi. Buyurtma yopiq bo'lsa tepada qizil banner (balans limitdan past / obuna tugagan); hujjatsiz ishlayotgan bo'lsa — to'q sariq eslatma (bloklamaydi).

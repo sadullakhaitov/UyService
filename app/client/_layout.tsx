@@ -5,7 +5,7 @@ import { LIVE, useLiveOrders } from '@/lib/live';
 import { useOrderSimulator } from '@/lib/orderSimulator';
 
 // Kompyuterda xaritali ekranlar butun oyna bo'ylab, qolganlari — o'rtada ustun
-const layout = pageLayout(['index', 'searching', 'tracking']);
+const layout = pageLayout(['(tabs)', 'searching', 'tracking']);
 
 export default function ClientLayout() {
   useScheme();
