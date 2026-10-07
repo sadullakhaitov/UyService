@@ -133,7 +133,7 @@ export default function OrderScreen() {
         <View style={styles.where}>
           <MapPin size={16} color={colors.accent} strokeWidth={2.4} />
           <Text variant="small" numberOfLines={1} style={styles.flex}>
-            {address} · {scheduledAt !== null ? `${formatSchedule(scheduledAt)} · ` : ''}{t('common.cash')}
+            {address || t('client.mapPoint')} · {scheduledAt !== null ? `${formatSchedule(scheduledAt)} · ` : ''}{t('common.cash')}
           </Text>
         </View>
         <Button title={scheduledAt !== null ? t('schedule.submit') : t('order.submit')} big color={{ bg: category.main, fg: category.onMain }} onPress={submit} />

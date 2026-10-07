@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, View, useWindowDimensions } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Squish, Text } from '@/components/ui';
@@ -26,6 +26,11 @@ export default function Welcome() {
   const setLang = useUser((s) => s.setLanguage);
   const current = useUser((s) => s.language) ?? 'uz';
 
+  // Past ekranlarda (telefon brauzeri — manzil satri va pastki panel joy oladi) illyustratsiya va yozuvlar kichrayadi
+  const { height } = useWindowDimensions();
+  const k = height < 700 ? 0.62 : height < 820 ? 0.78 : 1;
+  const compact = k < 1;
+
   const choose = (lang: Lang) => {
     setLanguage(lang);
     setLang(lang);
@@ -35,41 +40,45 @@ export default function Welcome() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.art}>
-        {BUBBLES.map((b, i) => {
-          const c = categories[i % categories.length];
-          return (
-            <Bubble key={c.id} index={i} style={{ left: b.x, top: b.y, width: b.s, height: b.s, borderRadius: b.s / 2, backgroundColor: c.tint }}>
-              <c.icon size={b.s * 0.42} color={c.ink} strokeWidth={2} />
-            </Bubble>
-          );
-        })}
-        <Bubble index={6} style={styles.center}>
-          <LogoMark size={70} />
-        </Bubble>
-      </View>
+      {/* Hamma narsa sig'masa — aylantiriladi */}
+      <ScrollView style={styles.flex} contentContainerStyle={[styles.scroll, compact && styles.scrollCompact]} showsVerticalScrollIndicator={false}>
+        <View style={[styles.art, { width: 320 * k, height: 300 * k, marginTop: 24 * k }]}>
+          {BUBBLES.map((b, i) => {
+            const c = categories[i % categories.length];
+            const size = b.s * k;
+            return (
+              <Bubble key={c.id} index={i} style={{ left: b.x * k, top: b.y * k, width: size, height: size, borderRadius: size / 2, backgroundColor: c.tint }}>
+                <c.icon size={size * 0.42} color={c.ink} strokeWidth={2} />
+              </Bubble>
+            );
+          })}
+          <Bubble index={6} style={[styles.center, { left: 106 * k, top: 96 * k, width: 108 * k, height: 108 * k, borderRadius: 54 * k }]}>
+            <LogoMark size={70 * k} />
+          </Bubble>
+        </View>
 
-      <View style={styles.texts}>
-        <Text style={styles.title}>{t('welcome.title')}</Text>
-        <Text variant="body" style={styles.choose}>
-          {t('welcome.choose')}
-        </Text>
-      </View>
+        <View style={[styles.texts, compact && styles.textsCompact]}>
+          <Text style={[styles.title, compact && styles.titleCompact]}>{t('welcome.title')}</Text>
+          <Text variant="body" style={styles.choose}>
+            {t('welcome.choose')}
+          </Text>
+        </View>
 
-      <View style={styles.list}>
-        {LANGS.map((l) => (
-          <Squish key={l} accessibilityRole="button" accessibilityState={{ selected: l === current }} onPress={() => choose(l)} scaleTo={0.97} style={styles.item}>
-            <Text style={styles.itemText}>{t(`lang.${l}`)}</Text>
-            <Flag lang={l} />
-          </Squish>
-        ))}
-      </View>
+        <View style={[styles.list, compact && styles.listCompact]}>
+          {LANGS.map((l) => (
+            <Squish key={l} accessibilityRole="button" accessibilityState={{ selected: l === current }} onPress={() => choose(l)} scaleTo={0.97} style={[styles.item, compact && styles.itemCompact]}>
+              <Text style={styles.itemText}>{t(`lang.${l}`)}</Text>
+              <Flag lang={l} size={compact ? 42 : 52} />
+            </Squish>
+          ))}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 // Sekin "nafas olib" suzib turadi
-function Bubble({ index, style, children }: { index: number; style: object; children: React.ReactNode }) {
+function Bubble({ index, style, children }: { index: number; style: object | object[]; children: React.ReactNode }) {
   useScheme();
   const p = useSharedValue(0);
   useEffect(() => {
@@ -80,14 +89,21 @@ function Bubble({ index, style, children }: { index: number; style: object; chil
 }
 
 const styles = themed(() => ({
-  root: { flex: 1, backgroundColor: colors.surface, paddingHorizontal: 20 },
-  art: { width: 320, height: 300, alignSelf: 'center', marginTop: 24 },
+  root: { flex: 1, backgroundColor: colors.surface },
+  flex: { flex: 1 },
+  scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 20, paddingBottom: 24 },
+  scrollCompact: { paddingBottom: 16 },
+  art: { alignSelf: 'center' },
   bubble: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
-  center: { left: 106, top: 96, width: 108, height: 108, borderRadius: 54, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
+  center: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line },
   texts: { alignItems: 'center', gap: 10, marginTop: 20 },
+  textsCompact: { gap: 6, marginTop: 12 },
   title: { fontFamily: fonts.heavy, fontSize: 30, color: colors.ink, textAlign: 'center' },
+  titleCompact: { fontSize: 24 },
   choose: { color: colors.ink, fontFamily: fonts.medium },
   list: { gap: 12, marginTop: 28 },
+  listCompact: { gap: 10, marginTop: 18 },
   item: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 76, paddingHorizontal: 20, borderRadius: radius.card, backgroundColor: colors.field },
+  itemCompact: { height: 60 },
   itemText: { fontFamily: fonts.bold, fontSize: 18, color: colors.ink },
 }));
