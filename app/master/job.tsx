@@ -13,6 +13,7 @@ import { bboxCorners, distanceKm, type LatLng } from '@/lib/geo';
 import { estimateEtaMin, remainingEtaMin, useRoute } from '@/lib/routes';
 import { useWatchLocation } from '@/lib/useWatchLocation';
 import { DEMO } from '@/lib/demo';
+import { LIVE, liveJob } from '@/lib/live';
 import { confirm, notice } from '@/lib/dialog';
 import { mockMasterSelf } from '@/mocks';
 import { CancelSheet, MASTER_REASONS } from '@/components/sheets/CancelSheet';
@@ -111,14 +112,38 @@ function JobView({ job }: { job: MasterJob }) {
   const stepIndex = STEP_INDEX[step];
 
   // Yakun: ulush balansdan yechiladi, daromad yoziladi
-  function finish(sum: number, priceStatus: MasterJob['priceStatus']) {
+  async function finish(sum: number, priceStatus: MasterJob['priceStatus']) {
+    // Server rejimi: buyurtma serverda yopiladi (ulushni server balansdan yechadi, keyin balans qayta o'qiladi)
+    if (LIVE && !(await serverStep(() => liveJob.complete(job.id)))) return;
     const c = Math.round((sum * pct) / 100);
     if (c) charge(c);
     addIncome(sum - c);
     updateJob({ stage: 'completed', total: sum, priceStatus });
   }
 
-  const checkCode = () => {
+  // Serverga yozish; xato bo'lsa — xabar va false
+  async function serverStep(f: () => Promise<unknown>) {
+    try {
+      await f();
+      return true;
+    } catch {
+      notice(t('job.serverErrorTitle'), t('job.serverErrorText'));
+      return false;
+    }
+  }
+
+  const checkCode = async () => {
+    if (LIVE) {
+      // Kodni server tekshiradi (usta uni oldindan bilmaydi); 5 marta xato — 10 daqiqa kutish
+      try {
+        const ok = await liveJob.verifyCode(job.id, code);
+        setCodeError(!ok);
+        if (ok) updateJob({ stage: 'pricing' });
+      } catch (e) {
+        notice(t('job.codeLockedTitle'), e instanceof Error && e.message === 'locked' ? t('job.codeLockedText') : t('job.serverErrorText'));
+      }
+      return;
+    }
     if (code === job.doorCode) {
       setCodeError(false);
       updateJob({ stage: 'pricing' });
@@ -129,6 +154,7 @@ function JobView({ job }: { job: MasterJob }) {
     if (workN < CALL_FEE) return notice(t('job.priceTooLow', { fee: formatSum(CALL_FEE) }));
     if (workN > MAX_PRICE || partsN > MAX_PRICE) return notice(t('job.priceTooHigh'));
     if (workN + partsN > CONFIRM_ABOVE && !(await confirm(t('job.priceBigTitle'), t('job.priceBigText', { sum: formatSum(workN + partsN) }), t('common.continue')))) return;
+    if (LIVE && !(await serverStep(() => liveJob.proposePrice(job.id, workN, partsN)))) return;
     updateJob({ work: workN, parts: partsN, priceStatus: 'sent' });
   };
 
@@ -243,7 +269,14 @@ function JobView({ job }: { job: MasterJob }) {
           </Card>
         ) : null}
 
-        {step === 'on_the_way' ? <Button title={t('job.arrivedBtn')} big onPress={() => updateJob({ stage: 'arrived' })} /> : null}
+        {step === 'on_the_way' ? <Button
+            title={t('job.arrivedBtn')}
+            big
+            onPress={async () => {
+              if (LIVE && !(await serverStep(() => liveJob.arrived(job.id)))) return;
+              updateJob({ stage: 'arrived' });
+            }}
+          /> : null}
         {step === 'arrived' ? <Button title={t('job.codeBtn')} big disabled={code.length < 4} onPress={checkCode} /> : null}
         {step === 'pricing' && job.priceStatus !== 'sent' ? (
           <>
@@ -264,8 +297,9 @@ function JobView({ job }: { job: MasterJob }) {
         reasons={MASTER_REASONS}
         warning={t('cancel.masterWarning', { n: Math.abs(DISPATCH.activity.cancelled) })}
         onClose={() => setCancelling(false)}
-        onConfirm={() => {
+        onConfirm={async (reason) => {
           setCancelling(false);
+          if (LIVE && !(await serverStep(() => liveJob.cancel(job.id, reason)))) return;
           bumpActivity(DISPATCH.activity.cancelled);
           finishJob();
         }}

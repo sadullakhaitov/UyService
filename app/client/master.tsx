@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { BadgeCheck, Briefcase, Clock3, Star } from 'lucide-react-native';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Text } from '@/components/ui';
@@ -9,6 +9,7 @@ import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
 import { mockMasters, mockReviews } from '@/mocks';
 import { useHistory } from '@/store';
+import { fetchMasterInfo, LIVE, type MasterInfo, type MasterReview } from '@/lib/live';
 
 const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
 
@@ -16,7 +17,12 @@ const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
 export default function MasterInfo() {
   useScheme();
   const { id, cat } = useLocalSearchParams<{ id: string; cat?: CategoryId }>();
-  const master = mockMasters.find((m) => m.id === id);
+  // Server rejimida — haqiqiy usta va sharhlar, sinovda — namunaviy
+  const [server, setServer] = useState<{ master: MasterInfo | null; reviews: MasterReview[] } | null>(null);
+  useEffect(() => {
+    if (LIVE && id) fetchMasterInfo(id).then(setServer, () => setServer({ master: null, reviews: [] }));
+  }, [id]);
+  const master = LIVE ? server?.master : mockMasters.find((m) => m.id === id);
   const history = useHistory((s) => s.items);
   const c = getCategory(cat ?? master?.categories[0] ?? 'plumber');
 
@@ -25,8 +31,10 @@ export default function MasterInfo() {
     const mine = history
       .filter((h) => h.masterId === id && h.stars)
       .map((h) => ({ id: `h${h.id}`, author: t('reviews.you'), stars: h.stars!, text: h.comment ?? '', tags: h.tags ?? [], at: h.at }));
-    return [...mine, ...mockReviews.filter((r) => r.masterId === id)].sort((a, b) => b.at - a.at);
-  }, [history, id]);
+    const others = LIVE ? (server?.reviews ?? []) : mockReviews.filter((r) => r.masterId === id);
+    // Serverda o'zimizning sharhimiz ham bor — ikki marta ko'rsatilmasin
+    return [...(LIVE ? [] : mine), ...others].sort((a, b) => b.at - a.at);
+  }, [history, id, server]);
 
   if (!master) return null;
   const tagCount = TAGS.map((tag) => ({ tag, n: reviews.filter((r) => r.tags.includes(tag)).length })).filter((x) => x.n > 0);
@@ -48,9 +56,9 @@ export default function MasterInfo() {
         </View>
 
         <View style={styles.stats}>
-          <Stat icon={<Star size={20} color={colors.accent} fill={colors.accent} />} value={master.rating.toFixed(1)} label={t('reviews.count', { n: reviews.length })} />
+          <Stat icon={<Star size={20} color={colors.accent} fill={colors.accent} />} value={master.rating > 0 ? master.rating.toFixed(1) : '—'} label={t('reviews.count', { n: reviews.length })} />
           <Stat icon={<Briefcase size={20} color={c.ink} strokeWidth={2.2} />} value={String(master.jobsCount)} label={t('reviews.jobs')} />
-          <Stat icon={<Clock3 size={20} color={c.ink} strokeWidth={2.2} />} value={`${master.onTimePercent}%`} label={t('reviews.onTime')} />
+          <Stat icon={<Clock3 size={20} color={c.ink} strokeWidth={2.2} />} value={master.onTimePercent >= 0 ? `${master.onTimePercent}%` : '—'} label={t('reviews.onTime')} />
         </View>
 
         {tagCount.length ? (

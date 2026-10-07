@@ -410,6 +410,21 @@ export type ActiveOrder = {
   parts: number;
   /** Yakuniy summa: rozi bo'lsa — ish + qismlar, rad etsa — faqat chaqiruv */
   finalPrice: number | null;
+  /** Server rejimi: tayinlangan usta haqida (master_cards + profiles) */
+  master?: OrderMaster;
+};
+
+/** Mijoz ko'radigan usta kartasi (server rejimida; sinov rejimida mocks/mastersAround) */
+export type OrderMaster = {
+  id: string;
+  name: string;
+  initials: string;
+  rating: number;
+  jobsCount: number;
+  onTimePercent: number;
+  experienceYears: number;
+  phone: string;
+  verified: boolean;
 };
 
 /** 4 xonali tasodifiy kod */
@@ -417,8 +432,8 @@ export const makeDoorCode = () => String(1000 + Math.floor(Math.random() * 9000)
 
 type OrdersState = {
   orders: ActiveOrder[];
-  /** Joriy qoralamadan yangi buyurtma yaratadi, id qaytaradi */
-  create: () => string;
+  /** Joriy qoralamadan yangi buyurtma yaratadi, id qaytaradi (server rejimida — serverdagi id) */
+  create: (serverId?: string) => string;
   update: (id: string, patch: Partial<ActiveOrder>) => void;
   remove: (id: string) => void;
 };
@@ -428,9 +443,9 @@ export const useOrders = create<OrdersState>()(
   persist(
     (set) => ({
   orders: [] as ActiveOrder[],
-  create: () => {
+  create: (serverId) => {
     const d = useOrder.getState();
-    const id = `o${Date.now()}`;
+    const id = serverId ?? `o${Date.now()}`;
     const now = Date.now();
     const order: ActiveOrder = {
       id,
@@ -451,7 +466,8 @@ export const useOrders = create<OrdersState>()(
       step: 0,
       speed: 6,
       phaseAt: now,
-      doorCode: makeDoorCode(),
+      // Server rejimida kod serverdan keladi (order_door_code)
+      doorCode: serverId ? '----' : makeDoorCode(),
       priceStatus: 'none',
       work: 0,
       parts: 0,

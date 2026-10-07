@@ -15,6 +15,7 @@ import { DAYS_AHEAD, dayOffsetOf, firstSlot, slotStillValid, slotsFor } from '@/
 import { useOrder, useOrders, useUser } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 import { pickImages } from '@/lib/photos';
+import { LIVE, liveCreateOrder } from '@/lib/live';
 
 const MAX_PHOTOS = 3;
 
@@ -70,7 +71,20 @@ export default function OrderScreen() {
     }
     askNotifications();
     busy.current = true;
-    const id = create();
+    let serverId: string | undefined;
+    if (LIVE) {
+      setSubmitting(true);
+      try {
+        serverId = await liveCreateOrder(useOrder.getState());
+      } catch (e) {
+        busy.current = false;
+        setSubmitting(false);
+        notice(t('order.sendFailedTitle'), t('order.sendFailedText'));
+        return;
+      }
+      setSubmitting(false);
+    }
+    const id = create(serverId);
     if (scheduledAt !== null) setDraft({ scheduledAt: null }); // keyingi buyurtma yana "Hozir kerak"
     router.replace(`/client/searching?id=${id}`);
   };

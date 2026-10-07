@@ -8,6 +8,7 @@ import { BILLING, UNVERIFIED_SURCHARGE_PERCENT, type BillingPlan } from '@/const
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { useMaster, useUser } from '@/store';
+import { LIVE, liveSetPlan } from '@/lib/live';
 
 // Usta to'lov modelini o'zi tanlaydi: oylik obuna yoki komissiya
 export default function PlanScreen() {
@@ -19,6 +20,7 @@ export default function PlanScreen() {
 
   const submit = () => {
     save(plan);
+    if (LIVE) void liveSetPlan(plan);
     if (current && router.canGoBack()) router.back();
     else router.replace('/master');
   };

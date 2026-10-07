@@ -2,6 +2,8 @@
 // 5-bosqichda shu funksiyalar ichi Supabase chaqiruvlariga almashtiriladi, ekranlar o'zgarmaydi.
 import type { LatLng } from '@/lib/geo';
 import { useLocationLog } from '@/store';
+import { publishLocation } from './api';
+import { LIVE } from './live';
 
 /**
  * Ustaning joylashuvi (har 5 s). 5-bosqichda:
@@ -9,4 +11,5 @@ import { useLocationLog } from '@/store';
  */
 export function publishMasterLocation(p: LatLng) {
   useLocationLog.getState().record(p);
+  if (LIVE) void publishLocation(p);
 }

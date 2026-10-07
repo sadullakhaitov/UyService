@@ -15,6 +15,7 @@ import { useWatchLocation } from '@/lib/useWatchLocation';
 import { DISPATCH } from '@/constants/dispatch';
 import { mockMasterSelf } from '@/mocks';
 import { makeDoorCode, useMaster, useMasterWork, useUser, type MasterOrder } from '@/store';
+import { LIVE } from './live';
 
 export type Blocked = null | 'balance' | 'subscription';
 
@@ -86,7 +87,7 @@ export function useMasterFeed() {
   if (live) here.current = live;
 
   // Takliflar: onlayn, buyurtmalar ochiq, qo'lda taklif ham, ish ham yo'q, tarif ekranida emas
-  const canReceive = online && !blocked && !offer && !job && categories.length > 0 && !path.includes('/plan') && !path.includes('/register');
+  const canReceive = !LIVE && online && !blocked && !offer && !job && categories.length > 0 && !path.includes('/plan') && !path.includes('/register');
   useEffect(() => {
     if (!canReceive) return;
     const id = setTimeout(() => {
@@ -101,7 +102,7 @@ export function useMasterFeed() {
   // Taklif muddati shu yerda ham kuzatiladi: usta taklif ekranidan chiqib ketsa ham 60 s dan keyin
   // taklif o'zi yopiladi (aktivlik −5) va yangi takliflar kela boshlaydi — ilova qotib qolmaydi
   useEffect(() => {
-    if (!offer) return;
+    if (!offer || LIVE) return; // serverda muddatni offer-timeout yopadi
     const left = offer.sentAt + DISPATCH.offerTimeoutSec * 1000 - Date.now();
     const id = setTimeout(() => {
       const cur = useMasterWork.getState().offer;

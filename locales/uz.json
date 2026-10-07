@@ -111,7 +111,9 @@
     "feeRule": "Chaqiruv {{fee}}. Usta ko'rib narxni aytadi — rozi bo'lsangiz chaqiruv ish narxi ichida, rozi bo'lmasangiz faqat {{fee}} to'laysiz.",
     "noAddressTitle": "Manzil tanlanmagan",
     "noAddressText": "Usta qayerga kelishini tanlang.",
-    "removePhoto": "Rasmni o'chirish"
+    "removePhoto": "Rasmni o'chirish",
+    "sendFailedTitle": "Buyurtma yuborilmadi",
+    "sendFailedText": "Internetni tekshirib, qayta urinib ko'ring."
   },
   "searching": {
     "title": "Usta qidirilmoqda",
@@ -224,7 +226,9 @@
     "note1": "Muammo kecha paydo bo'ldi, tezroq kelsangiz yaxshi bo'lardi.",
     "note2": "Uyda kun bo'yi bormiz, kelishdan oldin qo'ng'iroq qiling.",
     "note3": "Rasm ilova qildim, kerakli ehtiyot qismni olib keling.",
-    "addressHidden": "Aniq manzil va mijoz ismi qabul qilgandan keyin ko'rinadi"
+    "addressHidden": "Aniq manzil va mijoz ismi qabul qilgandan keyin ko'rinadi",
+    "goneTitle": "Buyurtma boshqa ustaga o'tdi",
+    "goneText": "Taklif muddati tugagan yoki mijoz bekor qilgan. Keyingi buyurtmani kuting."
   },
   "job": {
     "toClient": "Mijozga yo'l",
@@ -257,7 +261,11 @@
     "priceBigText": "Jami {{sum}}. Mijozga yuborilsinmi?",
     "onlyInspection": "Faqat ko'rik ({{fee}})",
     "declinedTitle": "Mijoz narxga rozi bo'lmadi — chaqiruv narxini oling: {{fee}}",
-    "takeCash": "Mijozdan naqd oling"
+    "takeCash": "Mijozdan naqd oling",
+    "serverErrorTitle": "Saqlanmadi",
+    "serverErrorText": "Server bilan aloqa yo'q. Internetni tekshirib, qayta bosing.",
+    "codeLockedTitle": "Kod tekshirilmadi",
+    "codeLockedText": "Juda ko'p noto'g'ri urinish. 10 daqiqadan keyin qayta urinib ko'ring yoki qo'llab-quvvatlashga yozing."
   },
   "earnings": {
     "title": "Daromad",
@@ -461,7 +469,9 @@
     "reviewNote": "Admin odatda 24 soat ichida tekshiradi",
     "passOptional": "Ixtiyoriy. Pasportsiz ham buyurtma olasiz, faqat platforma ulushi +{{extra}}% bo'ladi ({{base}}% o'rniga {{pct}}%). Keyin Profil → Hujjatlar'dan yuklash mumkin.",
     "photo": "Profil surati",
-    "photoHint": "Majburiy. Mijoz eshikni ochishdan oldin sizning yuzingizni ko'radi."
+    "photoHint": "Majburiy. Mijoz eshikni ochishdan oldin sizning yuzingizni ko'radi.",
+    "sendFailedTitle": "Anketa yuborilmadi",
+    "sendFailedText": "Internetni tekshirib, qayta urinib ko'ring."
   },
   "docs": {
     "none": "Hujjatlar yuklanmagan",

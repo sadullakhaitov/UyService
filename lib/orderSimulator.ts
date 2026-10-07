@@ -12,6 +12,7 @@ import { notify } from '@/lib/notify';
 import { estimateEtaMin, fallbackRoute, fetchRoute, resample, ROUTE_WAIT_MS } from '@/lib/routes';
 import { mastersAround, mockMasters } from '@/mocks';
 import { useOrders, type ActiveOrder } from '@/store';
+import { LIVE, liveRespondPrice, liveRestartSearch } from './live';
 
 const TICK_MS = 500;
 /** Usta belgisi har qadamda shuncha vaqt silliq siljiydi (tracking ekrani ham shuni ishlatadi) */
@@ -84,11 +85,13 @@ function proposePrice(problemId: string) {
 
 /** Mijoz narxga rozi bo'ldi — ish boshlanadi */
 export function approvePrice(id: string) {
+  if (LIVE) return void liveRespondPrice(id, true).catch(() => {});
   useOrders.getState().update(id, { priceStatus: 'approved', status: 'in_progress', phaseAt: Date.now() });
 }
 
 /** Mijoz narxni rad etdi — faqat chaqiruv (ko'rik) to'lanadi, buyurtma yakunlanadi */
 export function declinePrice(id: string) {
+  if (LIVE) return void liveRespondPrice(id, false).catch(() => {});
   useOrders.getState().update(id, { priceStatus: 'declined', status: 'completed', finalPrice: CALL_FEE, phaseAt: Date.now() });
 }
 
@@ -101,6 +104,10 @@ export function completeOrder(id: string) {
 }
 
 export function startSearch(id: string, now = Date.now()) {
+  if (LIVE) {
+    useOrders.getState().update(id, { none: false });
+    return void liveRestartSearch(id).catch(() => {});
+  }
   useOrders.getState().update(id, { status: 'searching', createdAt: now, none: false, dispatch: startDispatch(now) });
 }
 

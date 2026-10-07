@@ -1,6 +1,6 @@
 // POST /functions/v1/dispatch  { order_id, restart? }
 // Mijoz buyurtma yaratgandan keyin chaqiradi (lib/api.ts → createOrder) — birinchi ustaga taklif yuboriladi.
-// restart: true — "Hozir bo'sh usta yo'q" → "Qayta urinish" (qidiruv boshidan).
+// restart: true — "Hozir bo'sh usta yo'q" → "Qayta urinish" (qidiruv boshidan) yoki rejalashtirilganni "Hozir qidirish".
 // Keyingi qadamlarni offer-timeout (har 15 s) va offer-respond (usta javobi) bajaradi.
 import { dispatchStep } from '../_shared/engine.ts';
 import { adminClient, corsHeaders, isAdmin, json, readJson, requestUserId } from '../_shared/http.ts';
@@ -20,6 +20,11 @@ Deno.serve(async (req) => {
   if (!order) return json({ error: 'not_found' }, 404);
   if (order.client_id !== userId && !(await isAdmin(db, userId))) return json({ error: 'forbidden' }, 403);
 
+  // Rejalashtirilgan buyurtma — mijoz "Hozir qidirish" bosdi: qidiruv darhol boshlanadi
+  if (body.restart && order.status === 'scheduled') {
+    const { error } = await db.from('orders').update({ status: 'searching', dispatch: null }).eq('id', body.order_id).eq('status', 'scheduled');
+    if (error) return json({ ok: false, error: error.message }, 500);
+  }
   // Qayta boshlash faqat qidiruv "topilmadi" bilan tugaganda
   const restart = Boolean(body.restart) && order.status === 'searching' && order.dispatch?.done === 'none';
 

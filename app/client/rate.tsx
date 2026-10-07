@@ -9,6 +9,7 @@ import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
 import { useActiveOrder, useHistory, useOrders, useUser } from '@/store';
+import { LIVE, liveRate } from '@/lib/live';
 
 const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
 
@@ -23,7 +24,7 @@ export default function Rate() {
   const cat = getCategory(categoryId);
   const toggleFavorite = useUser((s) => s.toggleFavorite);
   const addHistory = useHistory((s) => s.add);
-  const master = mockMasters.find((m) => m.id === masterId) ?? mockMasters[0];
+  const master = order?.master ?? mockMasters.find((m) => m.id === masterId) ?? mockMasters[0];
   // Hech narsa oldindan belgilanmaydi — baho mijozning o'z fikri bo'lsin
   const [stars, setStars] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
@@ -42,6 +43,7 @@ export default function Rate() {
 
   const finish = () => {
     if (fav) toggleFavorite(master.id, true);
+    if (LIVE && stars && order?.masterId) void liveRate(order.id, order.masterId, stars, tags, comment.trim()).catch(() => {});
     // Tarixga: narx, baho, teglar, izoh (5-bosqichda reviews jadvaliga ham yoziladi)
     addHistory({
       id: order?.id ?? `o${Date.now()}`,

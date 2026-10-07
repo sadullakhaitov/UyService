@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { colors, useScheme } from '@/constants/theme';
 import { pageLayout } from '@/components/ui/PageFrame';
+import { LIVE, useLiveMasterFeed } from '@/lib/live';
 import { useMasterFeed } from '@/lib/masterFeed';
 
 // Kompyuterda: menyu bo'limlari va ish jarayoni (xarita) butun oyna bo'ylab, qolganlari — o'rtada ustun
@@ -10,6 +11,8 @@ export default function MasterLayout() {
   useScheme();
   // Takliflar oqimi va joylashuvni har 5 s yuborish — usta ilovasining qaysi bo'limida bo'lmasin ishlaydi
   useMasterFeed();
+  // Server rejimi: takliflar, joriy ish va ustaning holati serverdan (soxta takliflar o'chadi)
+  if (LIVE) useLiveMasterFeed();
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} screenLayout={layout}>
       <Stack.Screen name="(tabs)" />

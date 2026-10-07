@@ -11,6 +11,8 @@ import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { AVATAR_MAX, DOC_MAX, pickImages, takePhoto } from '@/lib/photos';
 import { useMaster, useUser } from '@/store';
+import { LIVE, liveSubmitMaster } from '@/lib/live';
+import { notice } from '@/lib/dialog';
 
 const STEPS = 4;
 const MAX_WORKS = 6;
@@ -21,6 +23,7 @@ const YEARS = [1, 2, 3, 5, 10];
 export default function Register() {
   useScheme();
   const { profile, setProfile, submitProfile } = useMaster();
+  const [sending, setSending] = useState(false);
   const billingPlan = useUser((s) => s.billingPlan);
   const plan = billingPlan ?? 'commission';
   const setRole = useUser((s) => s.setRole);
@@ -40,8 +43,19 @@ export default function Register() {
     setRole('client');
     router.replace('/client/account');
   };
-  const next = () => {
+  const next = async () => {
     if (step < STEPS - 1) return setStep(step + 1);
+    if (LIVE) {
+      if (sending) return;
+      setSending(true);
+      try {
+        await liveSubmitMaster();
+      } catch {
+        setSending(false);
+        return notice(t('register.sendFailedTitle'), t('register.sendFailedText'));
+      }
+      setSending(false);
+    }
     submitProfile();
     router.replace(billingPlan ? '/master' : '/master/plan');
   };

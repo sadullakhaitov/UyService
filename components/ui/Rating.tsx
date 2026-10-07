@@ -6,12 +6,13 @@ import { Squish } from './Pressable';
 import { Text } from './Text';
 
 // Kichik: ⭐ 4.9
+/** value ≤ 0 — hali baho yo'q (yangi usta): "—" */
 export function RatingBadge({ value }: { value: number }) {
   useScheme();
   return (
     <View style={styles.badge}>
       <Star size={14} color={colors.accent} fill={colors.accent} />
-      <Text style={styles.badgeText}>{value.toFixed(1)}</Text>
+      <Text style={styles.badgeText}>{value > 0 ? value.toFixed(1) : '—'}</Text>
     </View>
   );
 }

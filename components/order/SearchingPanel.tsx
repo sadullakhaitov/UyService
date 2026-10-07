@@ -14,6 +14,7 @@ import { blur } from '@/lib/geo';
 import { formatSchedule, formatSum, t } from '@/lib/i18n';
 import { SCHEDULE_LEAD_MS, searchInfo, startSearch } from '@/lib/orderSimulator';
 import { mastersAround } from '@/mocks';
+import { LIVE, liveCancelOrder } from '@/lib/live';
 import { useHistory, useOrders, type ActiveOrder } from '@/store';
 
 /** Qidiruv paytidagi xarita: atrofdagi ustalar miltillaydi, to'lqinlar, kamera asta uzoqlashadi */
@@ -67,6 +68,7 @@ export function SearchingPanel({ order, onHeight, onRetry }: { order: ActiveOrde
   // Bekor qilish ham sabab bilan va tarixga yoziladi (rejalashtirilgan buyurtma bir bosishda yo'qolib ketmasin)
   const cancel = (reason: string) => {
     setCancelling(false);
+    if (LIVE) void liveCancelOrder(order.id, reason).catch(() => {});
     addHistory({
       id: order.id,
       categoryId: order.categoryId,

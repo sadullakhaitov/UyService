@@ -1,4 +1,5 @@
-// Supabase'ga yozish/chaqirish — keyinroq ekranlarga ulanadi (hozir lib/backend.ts va soxta simulyator ishlaydi).
+// Supabase'ga yozish/chaqirish (eski yordamchilar). Ekranlar asosan lib/live.ts orqali ishlaydi; bu yerdan
+// publishLocation (lib/backend.ts) ishlatiladi.
 // Supabase sozlanmagan bo'lsa hamma funksiya { ok: false, error: 'not_configured' } qaytaradi.
 import type { CategoryId } from '@/constants/categories';
 import type { LatLng } from './geo';

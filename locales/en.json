@@ -111,7 +111,9 @@
     "feeRule": "Call fee {{fee}}. The master inspects and quotes a price — if you agree, the call fee is included; if not, you pay only {{fee}}.",
     "noAddressTitle": "No address selected",
     "noAddressText": "Choose where the master should come.",
-    "removePhoto": "Remove photo"
+    "removePhoto": "Remove photo",
+    "sendFailedTitle": "The order wasn't sent",
+    "sendFailedText": "Check your internet connection and try again."
   },
   "searching": {
     "title": "Finding a handyman",
@@ -236,7 +238,9 @@
     "note1": "The problem started yesterday, the sooner the better.",
     "note2": "We're home all day, please call before you come.",
     "note3": "Photo attached, please bring the needed part.",
-    "addressHidden": "The exact address and client name appear after you accept"
+    "addressHidden": "The exact address and client name appear after you accept",
+    "goneTitle": "The order went to another master",
+    "goneText": "The offer expired or the client cancelled. Wait for the next one."
   },
   "job": {
     "toClient": "Route to client",
@@ -269,7 +273,11 @@
     "priceBigText": "Total {{sum}}. Send it to the client?",
     "onlyInspection": "Inspection only ({{fee}})",
     "declinedTitle": "The client declined — collect the call fee: {{fee}}",
-    "takeCash": "Collect in cash"
+    "takeCash": "Collect in cash",
+    "serverErrorTitle": "Not saved",
+    "serverErrorText": "No connection to the server. Check your internet and tap again.",
+    "codeLockedTitle": "Code not checked",
+    "codeLockedText": "Too many wrong attempts. Try again in 10 minutes or contact support."
   },
   "earnings": {
     "title": "Earnings",
@@ -482,7 +490,9 @@
     "reviewNote": "An admin usually reviews within 24 hours",
     "passOptional": "Optional. You get orders without a passport too, just with a {{extra}}% higher platform fee ({{pct}}% instead of {{base}}%). You can upload it later in Profile → Documents.",
     "photo": "Profile photo",
-    "photoHint": "Required. The client sees your face before opening the door."
+    "photoHint": "Required. The client sees your face before opening the door.",
+    "sendFailedTitle": "The application wasn't sent",
+    "sendFailedText": "Check your internet connection and try again."
   },
   "docs": {
     "none": "No documents uploaded",

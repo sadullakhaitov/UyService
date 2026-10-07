@@ -101,9 +101,11 @@ components/
   ui/PageFrame.tsx        ← kompyuter brauzeri: oddiy sahifalar o'rtada ustun (navigator `screenLayout`)
 lib/                      ← i18n, geo, location, routes, supabase
   dispatch.ts             ← usta qidirish algoritmi (TZ 7-bo'lim), toza funksiyalar — 7-bosqichda Edge Function'ga ko'chadi
-  orderSimulator.ts       ← mijoz buyurtmalari uchun soxta "server": dispatch + soxta ustalar javobi va harakati
+  orderSimulator.ts       ← sinov rejimi: mijoz buyurtmalari uchun soxta "server" (dispatch + soxta ustalar javobi va harakati)
+  live.ts                 ← server rejimi (`LIVE` — Supabase kaliti bor): buyurtma yaratish, holatlar Realtime + so'rov (zaxira) bilan,
+                            usta kartasi va jonli joyi, narx/kod RPC'lari, usta takliflari, ish bosqichlari, anketa (Storage), baholash
   masterFeed.ts           ← usta tomoni: takliflar oqimi, joylashuvni har 5 s yuborish, useBlocked
-  backend.ts              ← serverga yoziladigan hamma narsa (hozir mahalliy, 5-bosqichda Supabase)
+  backend.ts              ← ustaning joylashuvi (server rejimida master_locations ga)
   notify.ts               ← bildirishnomalar (mahalliy; ilova orqa fonda bo'lsa chiqadi)
   push.ts                 ← serverdan push: Expo push tokeni → profiles.push_token (til, "Yangi buyurtma" sozlamasi bilan); chiqishda o'chiriladi
   geocode.ts              ← manzil qidirish butun O'zbekiston bo'ylab, foydalanuvchiga yaqinlari birinchi (Yandex Geocoder, kalit bo'lmasa OSM Nominatim)
@@ -148,7 +150,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 - Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; o'qish (qo'llanma); sozlamalar (bildirishnomalar, til), chiqish. Demo promokodlar: `UYSERVICE` (+10 prioritet), `BIRINCHI` (+20 000 balans), `USTA2026`. Do'st uchun bonus `INVITE_BONUS` = 30 000 (⚠️ tasdiqlanmagan).
 - Tarif tanlash (birinchi kirishda) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → eshik kodi → narx yuborish → mijoz rozi bo'lsa ish → Tugatdim; mijozdan naqd olinadigan summa va platforma ulushi — qabul paytidagi foiz bo'yicha).
 
-**Narx kelishuvi va eshik kodi** (soxta mijoz/usta — `lib/orderSimulator.ts`: `approvePrice`, `declinePrice`, `completeOrder`; usta — `master/job.tsx`):
+**Narx kelishuvi va eshik kodi** (soxta mijoz/usta — `lib/orderSimulator.ts`: `approvePrice`, `declinePrice`, `completeOrder`; usta — `master/job.tsx`; server rejimida — `lib/live.ts` → RPC'lar):
 1. Buyurtmada 4 xonali **eshik kodi** (`makeDoorCode`). Mijoz kuzatuv ekranida ko'radi; usta yetib kelgach mijozdan so'rab kiritadi — noto'g'ri bo'lsa davom etmaydi (kelgan odam o'sha usta ekani tasdiqlanadi).
 2. Usta ko'rib **narx yuboradi**: ish (chaqiruv ichida, kamida `CALL_FEE`, ko'pi bilan 10 mln, 3 mln dan oshsa qayta so'raladi) + ehtiyot qismlar. Yoki "Faqat ko'rik (50 000)".
 3. Mijoz "Roziman, boshlasin" → ish boshlanadi; "Rozi emasman" → faqat chaqiruv to'lanadi, tarixda "Faqat ko'rik".
@@ -239,9 +241,9 @@ Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, 
 2. ✅ Xarita: `MapBase` (Yandex), uchib kelish, nafas oluvchi nuqta.
 3. ✅ Mijoz ekranlari (soxta ma'lumot bilan).
 4. ✅ Animatsiyalar (to'lqinlar, miltillash, zoom, silliq usta belgisi, oqib turuvchi yo'l) — telefonda sinab ko'rish kerak.
-5. 🟡 Supabase: migratsiyalar, PostGIS, RLS, Storage, Realtime, SMS (Eskiz.uz) — yozilgan va mahalliy sinalgan (`supabase/`); kirish ekranlari `lib/auth.ts` orqali kalit bo'lsa Supabase'ga ulanadi. Qoladi: loyihani yaratish va joylash (`supabase/README.md`), ekranlarni `lib/api.ts`ga ulash.
-6. 🟡 Usta ilovasi — ekranlar, anketa, profil bo'limlari tayyor; joylashuv har 5 s `lib/backend.ts` → `publishMasterLocation` orqali yuboriladi (hozir mahalliy, 5-bosqichda `master_locations`).
-7. 🟡 Taqsimlash: algoritm (`supabase/functions/_shared/dispatch.ts`) va Edge Functions tayyor; ilova hozir soxta simulyator bilan ishlaydi, Realtime'ga ulash qoladi.
+5. 🟡 Supabase: migratsiyalar, PostGIS, RLS, Storage, Realtime, SMS (Eskiz.uz) — yozilgan va mahalliy sinalgan (`supabase/`); kirish (`lib/auth.ts`) va hamma ekranlar (`lib/live.ts`) kalit bo'lsa o'zi serverga ulanadi — ikki brauzerda (mijoz + usta) mahalliy Postgres + PostgREST + Edge Functions bilan to'liq oqim sinaldi (ro'yxatdan o'tish → buyurtma → taklif → kod → narx → yakun → baho). Qoladi: loyihani yaratish va joylash (`supabase/README.md`), Eskiz.uz akkaunti.
+6. ✅ Usta ilovasi — ekranlar, anketa, profil bo'limlari; server rejimida anketa `masters` + Storage'ga, onlayn holati, takliflar (Realtime + har 3 s so'rov), ish bosqichlari serverda; joylashuv har 5 s `master_locations`ga.
+7. ✅ Taqsimlash: algoritm (`supabase/functions/_shared/dispatch.ts`) va Edge Functions; ilova server rejimida ularni ishlatadi (sinov rejimida — soxta simulyator).
 8. ✅ Admin panel (uyservice.uz/admin): hamma bo'limlar, sinov rejimi va Supabase manbasi, server funksiyalari va sinovlari.
 9. 🟡 Sayqal: internet yo'qligi banneri, xato ekrani (ErrorBoundary), bekor qilish sabablari, serverdan push (yozilgan va sinalgan) tayyor; qoladi — ikki telefonda sinov.
 

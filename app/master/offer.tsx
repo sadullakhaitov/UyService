@@ -11,6 +11,8 @@ import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatRange, formatSum, t } from '@/lib/i18n';
 import { useMaster, useMasterWork, useUser } from '@/store';
+import { LIVE, liveRespondOffer } from '@/lib/live';
+import { notice } from '@/lib/dialog';
 
 export default function Offer() {
   useScheme();
@@ -34,8 +36,14 @@ export default function Offer() {
   const problem = problems.find((p) => p.id === offer.problemId);
   const Icon = cat.icon;
 
-  const accept = () => {
+  const accept = async () => {
     accepted.current = true;
+    if (LIVE) {
+      // Server tasdiqlaydi (taklif hali ochiqmi); mijoz ismi, manzili va ulush foizi shundan keyin keladi
+      if (await liveRespondOffer(true)) router.replace('/master/job');
+      else notice(t('offer.goneTitle'), t('offer.goneText'));
+      return;
+    }
     bump(DISPATCH.activity.accepted);
     // Ulush qabul paytidagi tarif bo'yicha qotiriladi (keyin tarif almashtirilsa ham shu ish uchun o'zgarmaydi)
     const { verified } = useMaster.getState();
@@ -44,6 +52,7 @@ export default function Offer() {
   };
   // Rad etish yoki 60 s o'tib ketishi — aktivlik −5, taklif keyingi ustaga o'tadi
   const decline = () => {
+    if (LIVE) return void liveRespondOffer(false);
     bump(DISPATCH.activity.declinedOrExpired);
     setOffer(null);
   };
@@ -69,7 +78,7 @@ export default function Offer() {
             {t(`problems.${offer.problemId}`)}
           </Text>
           <Text variant="small" style={styles.centerText}>
-            {t(`categories.${offer.categoryId}`)} · {offer.description}
+            {offer.description ? `${t(`categories.${offer.categoryId}`)} · ${offer.description}` : t(`categories.${offer.categoryId}`)}
           </Text>
         </View>
 

@@ -17,8 +17,9 @@ import { approvePrice, completeOrder, declinePrice, etaMin, STEP_MS } from '@/li
 // Kamera har shuncha qadamda (≈ soniyada) qayta moslanadi — tez-tez sakramasligi uchun
 const FIT_EVERY = 20;
 import { mastersAround } from '@/mocks';
+import { LIVE, liveCancelOrder } from '@/lib/live';
 import { CancelSheet, CLIENT_REASONS } from '@/components/sheets/CancelSheet';
-import { useChats, useHistory, useOrders, type ActiveOrder } from '@/store';
+import { useChats, useHistory, useOrders, type ActiveOrder, type OrderMaster } from '@/store';
 
 /** Usta yo'lda: harakatlanuvchi belgi, qolgan yo'l; kamera har ~20 soniyada usta va mijozni sig'diradi */
 export function useTrackingMap(order: ActiveOrder | undefined) {
@@ -57,7 +58,8 @@ export function TrackingPanel({ order, onHeight }: { order: ActiveOrder; onHeigh
 
   const location = order.location;
   const masters = useMemo(() => mastersAround(location), [location]);
-  const master = masters.find((m) => m.id === order.masterId) ?? masters[0];
+  // Server rejimida — haqiqiy usta kartasi (yuklanguncha bo'sh joy), sinovda — namunaviy usta
+  const master = order.master ?? (LIVE ? pendingMaster(order.masterId) : (masters.find((m) => m.id === order.masterId) ?? masters[0]));
   const cat = getCategory(order.categoryId);
   const status = order.status;
 
@@ -74,6 +76,7 @@ export function TrackingPanel({ order, onHeight }: { order: ActiveOrder; onHeigh
   // Usta yo'lga chiqqan — sabab so'raladi va tarixga yoziladi (5-bosqichda ustaga ham xabar boradi)
   const cancel = (reason: string) => {
     setCancelling(false);
+    if (LIVE) void liveCancelOrder(order.id, reason).catch(() => {});
     addHistory({
       id: order.id,
       categoryId: order.categoryId,
@@ -134,7 +137,7 @@ export function TrackingPanel({ order, onHeight }: { order: ActiveOrder; onHeigh
             <View style={styles.stats}>
               <RatingBadge value={master.rating} />
               <Text variant="small">{t('tracking.jobs', { count: master.jobsCount })}</Text>
-              <Text variant="small">{t('tracking.onTime', { percent: master.onTimePercent })}</Text>
+              {master.onTimePercent >= 0 ? <Text variant="small">{t('tracking.onTime', { percent: master.onTimePercent })}</Text> : null}
             </View>
           </View>
         </View>
@@ -220,6 +223,18 @@ export function TrackingPanel({ order, onHeight }: { order: ActiveOrder; onHeigh
     </>
   );
 }
+
+const pendingMaster = (id: string | null): OrderMaster => ({
+  id: id ?? '',
+  name: '…',
+  initials: '…',
+  rating: 0,
+  jobsCount: 0,
+  onTimePercent: -1,
+  experienceYears: 0,
+  phone: '',
+  verified: false,
+});
 
 function Action({ icon, label, onPress, tint }: { icon: React.ReactNode; label: string; onPress: () => void; tint: string }) {
   useScheme();
