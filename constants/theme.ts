@@ -50,6 +50,9 @@ const light = {
   danger: '#B83A26',
   dangerSoft: '#FBE9E5',
   dangerStrong: '#F6CFC7',
+  /** Ma'lumot / jarayon holati (admin panel: qidirilmoqda, rejalashtirilgan) */
+  info: '#1F5FA8',
+  infoSoft: '#E4EEF9',
   shadow: '#0B2A24',
 
   /** Panel ostidagi qoraytirish, rasm ustidagi tugmalar */
@@ -115,6 +118,8 @@ const dark: Palette = {
   danger: '#F07560',
   dangerSoft: '#3A1D19',
   dangerStrong: '#5A2A23',
+  info: '#7FB2EC',
+  infoSoft: '#16273A',
   shadow: '#000000',
 
   backdrop: 'rgba(0,0,0,0.55)',

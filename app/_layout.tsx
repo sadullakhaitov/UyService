@@ -24,7 +24,7 @@ import { useMaster, useUser } from '@/store';
 export { ErrorBoundary } from '@/components/ui/ErrorScreen';
 
 // Butun oyna bo'ylab: yo'naltirish va ichki bo'limlar (ular o'z ekranlarini o'zi joylaydi)
-const rootLayout = pageLayout(['index', 'client', 'master']);
+const rootLayout = pageLayout(['index', 'client', 'master', 'admin']);
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 

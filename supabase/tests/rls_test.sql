@@ -304,14 +304,14 @@ reset role;
 do $$ declare o public.orders; m public.masters; begin
   select * into o from public.orders where id = '00000000-0000-4000-c000-000000000001';
   select * into m from public.masters where id = '00000000-0000-4000-b000-000000000001';
-  -- komissiya 10%: (50 000 + 100 000 + 30 000) × 10% = 18 000
-  if o.platform_fee <> 18000 or o.completed_at is null or o.accepted_at is null then
-    raise exception 'FAIL: platform_fee=% (18000 kutilgan)', o.platform_fee;
+  -- komissiya 10%: (100 000 ish, chaqiruv ichida + 30 000 qism) × 10% = 13 000
+  if o.platform_fee <> 13000 or o.completed_at is null or o.accepted_at is null then
+    raise exception 'FAIL: platform_fee=% (13000 kutilgan)', o.platform_fee;
   end if;
-  if m.busy or m.jobs_count <> 1 or m.balance <> 32000 then
+  if m.busy or m.jobs_count <> 1 or m.balance <> 37000 then
     raise exception 'FAIL: usta holati: busy=% jobs=% balance=%', m.busy, m.jobs_count, m.balance;
   end if;
-  raise notice 'PASS: ish tugadi — platform_fee 18 000, balans 50 000 → 32 000, jobs_count=1, busy=false';
+  raise notice 'PASS: ish tugadi — platform_fee 13 000, balans 50 000 → 37 000, jobs_count=1, busy=false';
 end $$;
 
 -- ---------- Baholash ----------

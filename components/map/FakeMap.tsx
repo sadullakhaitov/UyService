@@ -1,7 +1,7 @@
 // Zaxira soxta xarita: Yandex skripti yuklanmasa (masalan, demo sahifa ichida) brauzerda shu ko'rinadi.
 // Faqat dizaynni ko'rish uchun — haqiqiy xarita MapBase.tsx / MapBase.web.tsx (Yandex).
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { PanResponder, StyleSheet, View } from 'react-native';
+import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { colors, themed, useScheme } from '@/constants/theme';
 import type { LatLng } from '@/lib/geo';
@@ -35,6 +35,8 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
   route,
   master,
   fitTo,
+  points,
+  onPointPress,
   onMoveStart,
   onMoveEnd,
   overlay,
@@ -234,6 +236,19 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
           <View key={`n${i}`} pointerEvents="none" style={[styles.marker, { left: s.x - 8, top: s.y - 8, opacity: blink[i] }]}>
             <NearbyIcon />
           </View>
+        );
+      })}
+      {points?.map((p) => {
+        const s = project(p.location);
+        const d = p.size ?? 16;
+        return (
+          <Pressable
+            key={`p${p.id}`}
+            accessibilityRole="button"
+            onPress={() => onPointPress?.(p.id)}
+            hitSlop={8}
+            style={[styles.marker, { left: s.x - d / 2, top: s.y - d / 2, width: d, height: d, borderRadius: d / 2, backgroundColor: p.color, borderWidth: 2.5, borderColor: colors.markerRing }]}
+          />
         );
       })}
       {clientMarker ? (

@@ -13,7 +13,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(raw,
   useScheme();
   // Kompyuterda panel chapda turadi — fokus nuqtasi (pin, kamera) o'ng tomondagi bo'sh joy markazida
   const wide = useWide();
-  const props = wide ? { ...raw, insets: { top: raw.insets?.top ?? 0, bottom: 0, left: SIDE_INSET } } : raw;
+  const props = wide && !raw.fullBleed ? { ...raw, insets: { top: raw.insets?.top ?? 0, bottom: 0, left: SIDE_INSET } } : raw;
   const [mode, setMode] = useState<'loading' | 'yandex' | 'fake'>('loading');
   if (mode === 'fake') return <FakeMap ref={handle} {...props} />;
   return <YandexFrame {...props} handle={handle} ready={mode === 'yandex'} onMode={setMode} />;

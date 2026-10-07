@@ -3,7 +3,7 @@
 // Animatsiyalar (to'lqinlar, miltillash, usta belgisining silliq siljishi) sahifaning o'zida 60 fps'da chiziladi —
 // React tomondan faqat holat (props) yuboriladi, har kadrda xabar almashilmaydi.
 import type { LatLng } from '@/lib/geo';
-import type { MapInsets } from '../types';
+import type { MapInsets, MapPoint } from '../types';
 
 /** React → xarita: to'liq holat (har o'zgarishda qayta yuboriladi) */
 export type MapState = {
@@ -16,6 +16,7 @@ export type MapState = {
   route: LatLng[];
   master: LatLng | null;
   fitTo: LatLng[];
+  points: MapPoint[];
   pulse: { center: LatLng; maxRadiusM: number } | null;
   userLocation: LatLng | null;
   accent: string;
@@ -39,10 +40,11 @@ export type MapEvent =
   | { type: 'error'; message: string }
   | { type: 'moveStart' }
   | { type: 'moveEnd'; center: LatLng }
-  | { type: 'press' };
+  | { type: 'press' }
+  | { type: 'point'; id: string };
 
 /** dark — tungi rejim: xarita qatlami filtr bilan qorong'ilashtiriladi (Yandex 2.1 da tungi xarita yo'q) */
-export type MapInit = { center: LatLng; zoom: number; flyFrom?: LatLng; insets: MapInsets; dark?: boolean };
+export type MapInit = { center: LatLng; zoom: number; flyFrom?: LatLng; insets: MapInsets; dark?: boolean; minZoom?: number };
 
 // Yandex qo'llaydigan til kodlari (o'zbek tili 2.1 da yo'q — Toshkent ko'chalari rus tilida to'liqroq)
 const YANDEX_LANG: Record<string, string> = { uz: 'ru_RU', ru: 'ru_RU', en: 'en_US' };
@@ -125,7 +127,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
         suppressMapOpenBlock: true,
         yandexMapDisablePoiInteractivity: true,
         suppressObsoleteBrowserNotifier: true,
-        minZoom: 9, maxZoom: 19
+        minZoom: init.minZoom || 9, maxZoom: 19
       });
       proj = map.options.get('projection');
       map.behaviors.disable(['rightMouseButtonMagnifier', 'dblClickZoom']);
@@ -141,7 +143,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
   });
 
   // --- Belgilar ---
-  var nearbyMarks = [], nearbyEls = [], pulseCircles = [];
+  var nearbyMarks = [], nearbyEls = [], pulseCircles = [], pointMarks = [];
   var client = null, user = null, master = null, masterEl = null, routeHalo = null, routeLine = null;
   var masterPos = null, anim = null, heading = 0;
 
@@ -241,7 +243,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
       // Kuzatish rejimi: kamera ustaning ortidan yuradi, zoom foydalanuvchi qo'yganicha qoladi
       if (cmd.type === 'panTo') return moveTo(cmd.center, map.getZoom(), 800);
       if (cmd.type === 'zoomBy') {
-        var z = Math.max(9, Math.min(19, map.getZoom() + cmd.delta));
+        var z = Math.max(init.minZoom || 9, Math.min(19, map.getZoom() + cmd.delta));
         return moveTo(focalCenter(), z, 300);
       }
       if (cmd.type !== 'state') return;
@@ -269,6 +271,16 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
         s.nearby.forEach(function(p, i){
           var m = placemark(p, htmlLayout(dot(16, C.primary, 2.5), function(el){ nearbyEls[i] = el; }), 120);
           nearbyMarks.push(m); map.geoObjects.add(m);
+        });
+      }
+      // Bosiladigan nuqtalar (admin xaritasi)
+      if (!prev || !same(prev.points, s.points)) {
+        pointMarks.forEach(function(m){ map.geoObjects.remove(m); });
+        pointMarks = [];
+        (s.points || []).forEach(function(p){
+          var m = new ymaps.Placemark(ll(p.location), {}, { iconLayout: htmlLayout(dot(p.size || 16, p.color, 2.5)), iconShape: {type:'Circle', coordinates:[0,0], radius: Math.max(12, (p.size || 16) / 2 + 4)}, zIndex: 130, cursor: 'pointer' });
+          m.events.add('click', function(e){ try { e.stopPropagation(); } catch (x) {} send({type:'point', id: p.id}); });
+          pointMarks.push(m); map.geoObjects.add(m);
         });
       }
       if (prev && prev.blinkNearby && !s.blinkNearby) nearbyEls.forEach(function(el){ if (el) el.style.opacity = 1; });

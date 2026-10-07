@@ -3,3 +3,8 @@
   Cache-Control: public, max-age=31536000, immutable
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+# Admin panel: qidiruv tizimlariga ko'rinmaydi, boshqa saytlar ichiga (iframe) joylab bo'lmaydi
+/admin*
+  X-Robots-Tag: noindex, nofollow
+  X-Frame-Options: DENY
+  Referrer-Policy: same-origin

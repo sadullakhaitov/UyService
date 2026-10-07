@@ -137,6 +137,13 @@ language sql security definer set search_path = public as $$
   returning activity
 $$;
 
+-- Buyurtmaning mijoz to'laydigan summasi: ish (chaqiruv ichida) + ehtiyot qismlar.
+-- Narx yozilmagan bo'lsa — faqat chaqiruv (ko'rik). Admin statistikasi ham shuni ishlatadi
+create or replace function public.order_total(o public.orders) returns int
+language sql immutable as $$
+  select coalesce(o.price_work, o.call_fee) + coalesce(o.price_parts, 0)
+$$;
+
 -- ---------- master_locations ----------
 -- Vaqtni server qo'yadi (telefon soati noto'g'ri bo'lishi mumkin)
 create or replace function public.master_locations_touch() returns trigger
@@ -230,8 +237,9 @@ begin
   if new.status = 'completed' and old.status <> 'completed' then
     new.completed_at := now();
     select public.master_fee_percent(m) into pct from public.masters m where m.id = new.master_id;
-    -- constants/billing.ts → platformCut: (chaqiruv + ish + qism) × ulush %
-    new.platform_fee := round((new.call_fee + coalesce(new.price_work, 0) + coalesce(new.price_parts, 0)) * coalesce(pct, 10) / 100.0)::int;
+    -- constants/billing.ts → platformCut: (ish + qism) × ulush %. Chaqiruv ish narxi ichida;
+    -- ish narxi yozilmagan bo'lsa (mijoz narxga rozi bo'lmadi) — faqat chaqiruv (ko'rik)
+    new.platform_fee := round(public.order_total(new) * coalesce(pct, 10) / 100.0)::int;
   end if;
   if new.master_id is not null and old.master_id is null then
     new.accepted_at := now();

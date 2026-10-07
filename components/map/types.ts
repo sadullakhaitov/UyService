@@ -4,6 +4,9 @@ import type { LatLng } from '@/lib/geo';
 /** left — kompyuterda chapdagi panel kengligi (fokus nuqtasi o'ngga suriladi) */
 export type MapInsets = { top: number; bottom: number; left?: number };
 
+/** Bosiladigan rangli nuqta (admin jonli xaritasi: ustalar, buyurtmalar) */
+export type MapPoint = { id: string; location: LatLng; color: string; size?: number };
+
 export type MapBaseProps = {
   /** Kamera markazi (odatda mijoz nuqtasi) */
   center: LatLng;
@@ -25,6 +28,13 @@ export type MapBaseProps = {
   master?: LatLng;
   /** Kamera shu nuqtalarni birdaniga ko'rsatadi */
   fitTo?: LatLng[];
+  /** Bosiladigan rangli nuqtalar */
+  points?: MapPoint[];
+  onPointPress?: (id: string) => void;
+  /** Eng kichik zoom (standart 9 — shahar). Butun respublika uchun ~5 */
+  minZoom?: number;
+  /** Kompyuterda ham chap panel uchun joy qoldirilmaydi (xarita butun maydonda) */
+  fullBleed?: boolean;
   /** Xarita surila boshlaganda (pin ko'tariladi) */
   onMoveStart?: () => void;
   /** Surish to'xtaganda yangi markaz (pin tushadi, manzil yangilanadi) */

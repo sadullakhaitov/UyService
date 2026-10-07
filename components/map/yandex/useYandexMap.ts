@@ -12,7 +12,7 @@ export function useYandexMap(p: MapBaseProps) {
 
   // Sahifa bir marta quriladi — boshlang'ich kamera shu yerda
   const html = useMemo(
-    () => buildMapHtml({ apiKey: API_KEY, lang: getLanguage(), init: { center: p.center, zoom, flyFrom: p.flyFrom, insets, dark: isDark() }, colors: { ...colors } }),
+    () => buildMapHtml({ apiKey: API_KEY, lang: getLanguage(), init: { center: p.center, zoom, flyFrom: p.flyFrom, insets, dark: isDark(), minZoom: p.minZoom }, colors: { ...colors } }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -27,6 +27,7 @@ export function useYandexMap(p: MapBaseProps) {
     route: p.route ?? [],
     master: p.master ?? null,
     fitTo: p.fitTo ?? [],
+    points: p.points ?? [],
     pulse: p.pulse ?? null,
     userLocation: p.userLocation ?? null,
     accent: p.accent ?? colors.primary,
@@ -43,6 +44,7 @@ export function useYandexMap(p: MapBaseProps) {
   const onEvent = (e: MapEvent) => {
     if (e.type === 'moveStart') cb.current.onMoveStart?.();
     else if (e.type === 'moveEnd') cb.current.onMoveEnd?.(e.center);
+    else if (e.type === 'point') cb.current.onPointPress?.(e.id);
   };
 
   return { html, state, json, onEvent };

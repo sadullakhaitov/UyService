@@ -12,6 +12,7 @@ Quyida asl TZ + keyin qabul qilingan qarorlar.
 | Chaqiruv narxi | **50 000 so'm**, hamma kategoriya uchun bir xil — `constants/categories.ts` → `CALL_FEE`. **Ish qilinsa — narx ichida**: usta kelib ko'radi, narx taklif qiladi (ish ≥ 50 000 + ehtiyot qismlar), mijoz ilovada tasdiqlaydi; rozi bo'lmasa — faqat 50 000 (ko'rik), kafolat yo'q |
 | Sayt rejimi | Supabase kaliti yo'q ekan — **sinov rejimi** (`lib/demo.ts` → `DEMO`): tepada doim "Sinov rejimi" belgisi (`components/ui/DemoBanner.tsx`), demo tugmalar ("Keyingisi (demo)", "Demo: admin tasdiqladi", balansni to'ldirish) faqat shu rejimda ko'rinadi |
 | Pasport va selfi | **Ixtiyoriy.** Usta ularsiz ham buyurtma oladi, faqat platforma ulushi **+5 foiz punkt**: komissiya 10% → 15%, obuna 0% → 5% (balansdan). Pasport yuklanib admin tasdiqlagach qo'shimcha olib tashlanadi. `constants/billing.ts` → `UNVERIFIED_SURCHARGE_PERCENT`, `feePercent()`; server — `master_fee_percent()` |
+| Admin panel | **uyservice.uz/admin** — alohida sayt emas, shu ilovaning `app/admin/` bo'limi (kompyuter uchun yon menyu, telefonda chiqadigan menyu). Kirish: admin raqami + SMS kod (`profiles.role = 'admin'`; sinov rejimida — kompaniya raqami, istalgan 6 xonali kod). Batafsil — 4-bo'lim "Admin" |
 | Komissiya yoki obuna | **Usta o'zi tanlaydi**: oylik obuna YOKI komissiya. Ro'yxatdan o'tishda `master/plan` ekrani, keyin "Daromad" → "Tarifni o'zgartirish". Narx/foiz: `constants/billing.ts` (⚠️ 149 000 so'm/oy va 10% — hali tasdiqlanmagan) |
 
 ## 1. Loyiha haqida qisqacha
@@ -66,6 +67,10 @@ app/                      ← ekranlar (Expo Router)
   client/rate.tsx         ← ish tugadi, baholash
   client/history.tsx      ← buyurtmalar tarixi (useHistory, telefonda saqlanadi: baho, izoh, bekor sababi)
   about.tsx               ← "Biz haqimizda": logotip bosilganda ochiladi (missiya, qanday ishlaydi, kafolatlar, aloqa — constants/company.ts: support@uyservice.uz, Telegram @uyservice_bot, +998 90 121 88 87, 08:00–22:00)
+  admin/                  ← admin panel (uyservice.uz/admin): login.tsx — kirish; (panel)/ — himoyalangan bo'limlar
+    (panel)/_layout.tsx   ← huquq tekshiruvi (adminApi.me), 8 soat harakatsizlik → qayta kirish, AdminShell + Stack
+    (panel)/index.tsx     ← bosh sahifa: KPI (oldingi davrga nisbatan), hozirgi holat, grafiklar, kategoriyalar, top ustalar
+    (panel)/verification, orders/, masters/, users/, reviews, support, map, finance, catalog, log, settings
   legal/[doc].tsx         ← foydalanish shartlari va maxfiylik siyosati (constants/legal.ts, 3 tilda, ⚠️ QORALAMA — yurist tekshirishi kerak)
   master/(tabs)/          ← usta ilovasi, pastki menyu 4 bo'lim (Yandex Pro tuzilmasi)
     index.tsx             ← Buyurtmalar: xarita, filtr, zoom, aktivlik, "surib ishga chiqish"
@@ -88,6 +93,8 @@ components/
     FakeMap.tsx           ← zaxira soxta xarita (faqat dizayn/demo)
     ClientDot.tsx, CenterPin.tsx, MasterIcon.tsx, usePulse.ts, useBlink.ts
   ui/                     ← Button, Card, Chip, Rating, Logo, ...
+  admin/                  ← admin UI: kit.tsx (tugma, badge, panel, tabs, qidiruv, sahifalash), Table.tsx (jadval ↔ telefonda kartochka),
+                            Dialog.tsx (tasdiqlash / sabab bilan), Charts.tsx (dataviz qoidalari), Shell.tsx (menyu, sahifa, toast), format.ts, csv.ts
   sheets/Sheet.tsx        ← pastdan chiqadigan panel (kompyuterda — chapda suzuvchi oyna); ichidagi matn maydoni — `SheetInput`
   sheets/ModalSheet.tsx   ← oyna ustidagi panel (bekor qilish, filtr): telefonda pastdan, kompyuterda o'rtada dialog
   ui/PageFrame.tsx        ← kompyuter brauzeri: oddiy sahifalar o'rtada ustun (navigator `screenLayout`)
@@ -106,6 +113,8 @@ lib/                      ← i18n, geo, location, routes, supabase
   demo.ts                 ← `DEMO` — sinov rejimi (Supabase kaliti yo'q)
   dialog.ts               ← `notice` / `confirm` — brauzerda ham ishlaydi (RN-web'da `Alert.alert` jim). `Alert` ishlatmang
   masterGuard.ts          ← `guardActiveJob` — faol ish bo'lsa rol almashish/chiqish to'xtatiladi
+  admin/                  ← admin ma'lumotlari: types.ts (AdminApi), supabase.ts (admin_* view/RPC), demo.ts (sinov rejimi, namunaviy
+                            ma'lumotlar butun O'zbekiston bo'ylab, shu brauzerda saqlanadi), rules.ts (chegaralar = server), hooks.ts, session.ts
   supabase.ts, auth.ts, api.ts ← Supabase mijozi (faqat .env'da kalit bo'lsa), SMS kod bilan kirish, server chaqiruvlari
 store/                    ← Zustand (foydalanuvchi, buyurtma, usta)
 constants/                ← theme, categories (+ CALL_FEE), dispatch, billing
@@ -113,10 +122,10 @@ locales/uz.json           ← ilovadagi barcha matnlar
 mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
 design/                   ← dizayn skrinshotlari
 supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma
-  migrations/             ← 6 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron
+  migrations/             ← 7 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
   functions/{dispatch,offer-respond,offer-timeout,send-sms} ← Edge Functions (send-sms — Eskiz.uz orqali SMS)
-  tests/                  ← supabase_stub.sql + rls_test.sql (mahalliy Postgres+PostGIS'da 35 ta tekshiruv)
+  tests/                  ← supabase_stub.sql + rls_test.sql + admin_test.sql (mahalliy Postgres+PostGIS'da 50 dan ortiq tekshiruv)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
 wrangler.jsonc            ← sayt (uyservice.uz) Cloudflare Workers'da: build `npx expo export --platform web` → `dist`, deploy `npx wrangler deploy`; hamma yo'llar index.html'ga (SPA)
@@ -143,6 +152,13 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 4. Taklifda mijoz ismi va aniq manzil qabul qilgandan keyin ko'rinadi. Platforma ulushi foizi usta taklifni **qabul qilgan paytda** qotiriladi (`MasterJob.feePercent`) — ish o'rtasida hujjat almashtirib foizni o'zgartirib bo'lmaydi.
 
 **Saqlanadigan holat** (AsyncStorage, `version` + `migrate`): mijoz buyurtmalari (`uyservice-orders`), tarix (bo'sh boshlanadi), ustaning taklifi va joriy ishi (`uyservice-master-work`) — sahifa yangilansa yo'qolmaydi. Usta daromadi kunlar bo'yicha (`earnings`, `dayKey`, `earningOn`) — "bugun" har kuni noldan. Yangi usta: reyting yo'q ("—"), balans 0 (sinovda 50 000), kategoriyalar bo'sh. Chiqish (`logoutAll`) — hamma store tozalanadi (til, mavzu, oxirgi joy qoladi), oldin tasdiq so'raladi. Usta **profil surati majburiy** (`profile.photo`, old kamera; brauzerda ≤ 320 px data: URL — `keepablePhoto`). Telefon raqami operator kodi bilan tekshiriladi (20, 33, 50, 55, 77, 88, 90, 91, 93, 94, 95, 97, 98, 99). Buyurtma topilmasa — `components/ui/NotFound.tsx`.
+
+**Admin** (`app/admin/`, ma'lumot — `lib/admin`: server ulangan bo'lsa `supabase.ts`, aks holda `demo.ts`; ikkalasi bitta `AdminApi`):
+- Bo'limlar: Bosh sahifa · Hujjat tekshiruvi · Buyurtmalar · Jonli xarita · Ustalar · Foydalanuvchilar · Sharhlar · Qo'llab-quvvatlash · Moliya · Narxlar va katalog · Amallar jurnali · Sozlamalar.
+- Amallar (hammasi jurnalga yoziladi, sabab kerak bo'lganlari — sababsiz bajarilmaydi): hujjatni tasdiqlash/rad etish/qayta tekshiruvga; balans (to'ldirish, bonus, qaytarish, tuzatish — `balance_ops` tarixi); obuna qayd etish; prioritet (−50…+50); bloklash (usta taklif olmaydi, mijoz buyurtma bera olmaydi; adminni bloklab bo'lmaydi); buyurtmani bekor qilish (`cancelled_by = 'admin'`); sharhni o'chirish (reyting qayta hisoblanadi); chaqiruv narxi va narx oraliqlari; adminlarni raqam bo'yicha qo'shish/olib tashlash (o'zini emas); qo'llab-quvvatlashga javob.
+- Chegaralar `lib/admin/rules.ts` = server (`…_admin.sql`). Filtrlar manzil satrida (`?f=active&q=...`) — havolani ulashsa bo'ladi. Ro'yxatlar CSV (Excel) ga yuklanadi. Grafiklarda "Jadval" ko'rinishi bor.
+- Sinov rejimida shu qurilmada ro'yxatdan o'tgan usta ham ro'yxatda (`LOCAL_MASTER_ID`) — admin tasdiqlasa/balans qo'shsa, ilovadagi `useMaster` ham o'zgaradi. Sozlamalar → "Sinov ma'lumotlarini tiklash".
+- Xavfsizlik: `/admin*` — `noindex`, `X-Frame-Options: DENY` (`public/_headers`); 5 marta noto'g'ri kod — 60 s kutish; 8 soat harakatsizlik — chiqish.
 
 **Rejalashtirish ("Vaqtni tanlash"):** bugun/ertaga/indinga, 08:00–21:00 har soat, eng erta — hozirdan 1,5 soat keyin. Buyurtma `scheduled` holatida turadi, usta qidirish belgilangan vaqtdan 30 daqiqa oldin avtomatik boshlanadi (`SCHEDULE_LEAD_MS`).
 
@@ -175,6 +191,8 @@ Qo'shimcha (tarif qarori uchun):
 - `orders.platform_fee` — komissiya tarifidagi ustadan olinadigan ulush (`constants/billing.ts` → `platformCut`)
 
 `categories.call_fee` = 50 000 (hammasi uchun).
+
+Admin uchun (`…_admin.sql`): `profiles.blocked_at/blocked_reason`, `masters.photo_path` (profil surati, `works` bucket), `admin_log` (jurnal, faqat o'qiladi), `balance_ops` (balans tarixi; ish yakunidagi ulush ham yoziladi), `admin_*` ko'rinishlari va funksiyalari, `admin_stats(days)`. Narx: `order_total` = ish (chaqiruv ichida) + qism, narx bo'lmasa — chaqiruv; `platform_fee` = `order_total` × ulush %.
 
 Buyurtma holatlari: `scheduled → searching → assigned → on_the_way → arrived → in_progress → completed`, istalgan joyda `cancelled`. `orders.scheduled_at` — rejalashtirilgan vaqt (null — "Hozir kerak").
 
@@ -219,7 +237,8 @@ Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, 
 5. 🟡 Supabase: migratsiyalar, PostGIS, RLS, Storage, Realtime, SMS (Eskiz.uz) — yozilgan va mahalliy sinalgan (`supabase/`); kirish ekranlari `lib/auth.ts` orqali kalit bo'lsa Supabase'ga ulanadi. Qoladi: loyihani yaratish va joylash (`supabase/README.md`), ekranlarni `lib/api.ts`ga ulash.
 6. 🟡 Usta ilovasi — ekranlar, anketa, profil bo'limlari tayyor; joylashuv har 5 s `lib/backend.ts` → `publishMasterLocation` orqali yuboriladi (hozir mahalliy, 5-bosqichda `master_locations`).
 7. 🟡 Taqsimlash: algoritm (`supabase/functions/_shared/dispatch.ts`) va Edge Functions tayyor; ilova hozir soxta simulyator bilan ishlaydi, Realtime'ga ulash qoladi.
-8. 🟡 Sayqal: internet yo'qligi banneri, xato ekrani (ErrorBoundary), bekor qilish sabablari tayyor; qoladi — serverdan push, ikki telefonda sinov.
+8. ✅ Admin panel (uyservice.uz/admin): hamma bo'limlar, sinov rejimi va Supabase manbasi, server funksiyalari va sinovlari.
+9. 🟡 Sayqal: internet yo'qligi banneri, xato ekrani (ErrorBoundary), bekor qilish sabablari tayyor; qoladi — serverdan push, ikki telefonda sinov.
 
 ## 10. Ishga tushirish
 

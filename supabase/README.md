@@ -122,24 +122,40 @@ uchun kerak.
 
 ## 10. O'zingizni admin qilish
 
-1. Ilovaga o'z raqamingiz bilan kiring (SMS kod keladi).
+Birinchi adminni faqat SQL orqali tayinlash mumkin (keyingilarini admin panelning o'zidan qo'shasiz).
+
+1. Ilovaga o'z raqamingiz bilan kiring (SMS kod keladi) — shunda `profiles` jadvalida qatoringiz paydo bo'ladi.
 2. Supabase → **SQL Editor**:
 
    ```sql
    update public.profiles set role = 'admin' where phone = '+998901234567';
    ```
 
-## 11. Ustani tasdiqlash (admin)
+## 11. Admin panel
 
-Usta anketani yuborgach `masters` jadvalida `verify_status = pending` bo'ladi.
+Manzil: **uyservice.uz/admin** (telefondagi ilovada ham `/admin`). Kirish — admin raqami + SMS kod.
+8 soat harakatsizlikdan keyin qayta kirish so'raladi. Har bir amal `admin_log` jurnaliga yoziladi.
 
-1. Hujjatlarni ko'rish: Supabase → **Storage** → `documents` → ustaning id'si nomli papka (pasport, selfi).
-2. Supabase → **Table Editor** → `masters` → kerakli qator → `verify_status` katakchasi → **approved** → **Save**.
-   Rad etish: `rejected`, sababini `verify_note`ga yozing.
-3. Buyurtma olishi uchun tarif ham ochiq bo'lishi kerak:
-   - **komissiya** tarifida `balance` kamida **20 000** (ustaning naqd to'lovidan keyin shu yerga qo'shasiz);
-   - **obuna** tarifida `subscriptions` jadvaliga qator qo'shing (`master_id`, `period_start`, `period_end`,
-     `amount = 149000`, `status = paid`) — `masters.subscription_until` o'zi uzayadi.
+| Bo'lim | Nima qiladi |
+|---|---|
+| Bosh sahifa | buyurtmalar, aylanma, platforma daromadi (oldingi davrga nisbatan), onlayn ustalar, navbatlar, grafiklar |
+| Hujjat tekshiruvi | pasport va selfi yonma-yon → **Tasdiqlash** yoki sabab bilan **Rad etish** (`admin_set_verify`) |
+| Buyurtmalar | filtr, qidiruv, tafsilot (vaqt chizig'i, takliflar, chat, narx), sabab bilan bekor qilish (`admin_cancel_order`), CSV |
+| Jonli xarita | onlayn ustalar va ochiq buyurtmalar butun respublika bo'ylab |
+| Ustalar | hujjat, tarif, balans, reyting; **balans** (`admin_adjust_balance` → `balance_ops`), **obuna** (`admin_add_subscription`), **prioritet**, **bloklash** (`admin_set_blocked`) |
+| Foydalanuvchilar | buyurtmalari, sharhlari, bloklash (bloklangan mijoz buyurtma bera olmaydi, usta taklif olmaydi) |
+| Sharhlar | shikoyatlar (1–2★), sabab bilan o'chirish — reyting qayta hisoblanadi (`admin_delete_review`) |
+| Qo'llab-quvvatlash | murojaatlar (javob kutayotganlari birinchi) va javob yozish (`admin_support_reply`) |
+| Moliya | daromad, o'rtacha chek, balans amallari tarixi, buyurtma ololmayotgan ustalar |
+| Narxlar va katalog | chaqiruv narxi, kategoriyani yoqish/o'chirish, muammolar narx oralig'i |
+| Amallar jurnali | kim, qachon, nima qildi (o'zgartirib/o'chirib bo'lmaydi) |
+| Sozlamalar | adminlarni raqam bo'yicha qo'shish / olib tashlash (`admin_set_role`), ko'rinish, til |
+
+Huquqlar serverda tekshiriladi: ro'yxatlar `admin_*` ko'rinishlari (faqat admin uchun to'la, boshqalarga bo'sh),
+amallar `admin_*` funksiyalari (ichida `assert_admin()`, qiymat chegaralari, jurnal). Sinov: `tests/admin_test.sql`.
+
+Kerak bo'lsa SQL Editor'dan ham qilish mumkin (masalan, server ulanmasdan oldin):
+`update public.masters set verify_status = 'approved' where id = '...'`.
 
 ---
 
@@ -157,7 +173,8 @@ Usta anketani yuborgach `masters` jadvalida `verify_status = pending` bo'ladi.
 | `functions/_shared/engine.ts` | algoritmni bazaga ulaydigan qadam (takliflar, aktivlik, tayinlash) |
 | `functions/*/index.ts` | `dispatch`, `offer-respond`, `offer-timeout`, `send-sms` |
 | `seed.sql` | faqat lokal sinov uchun 3 ta demo usta (`db push` uni yubormaydi) |
-| `tests/` | lokal Postgres'da RLS sinovi |
+| `migrations/…_admin.sql` | admin panel: bloklash, `admin_log`, `balance_ops`, `admin_*` funksiyalari va ko'rinishlari, `admin_stats` |
+| `tests/` | lokal Postgres'da RLS sinovi (`rls_test.sql`) va admin sinovi (`admin_test.sql`) |
 
 Ilova tomoni: `lib/supabase.ts` (ulanish), `lib/auth.ts` (SMS kod), `lib/api.ts` (buyurtma, taklifga javob,
 joylashuv, chat — ekranlarga keyin ulanadi).
@@ -179,7 +196,7 @@ Docker kerak emas — oddiy PostgreSQL 16 + PostGIS yetadi:
 
 ```bash
 createdb uytest
-for f in supabase/tests/supabase_stub.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/rls_test.sql; do
+for f in supabase/tests/supabase_stub.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/rls_test.sql supabase/tests/admin_test.sql; do
   psql -v ON_ERROR_STOP=1 -q -d uytest -f "$f" || break
 done   # oxirida: NOTICE: ALL RLS TESTS PASSED
 ```
