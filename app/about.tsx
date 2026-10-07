@@ -56,10 +56,10 @@ export default function About() {
             <IconButton icon={ChevronLeft} label={t('common.back')} floating onPress={() => (router.canGoBack() ? router.back() : router.replace('/client'))} />
             <View style={styles.brand}>
               <View style={styles.markWrap}>
-                <LogoMark size={64} />
+                <LogoMark size={64} light={false} />
               </View>
               <Text style={styles.word}>
-                Uy<Text style={[styles.word, styles.wordAccent]}>Service</Text>
+                <Text style={[styles.word, styles.wordAccent]}>Uy</Text>Service
               </Text>
               <Text style={styles.tagline}>{t('app.tagline')}</Text>
             </View>

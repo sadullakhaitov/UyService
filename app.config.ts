@@ -23,7 +23,7 @@ const config: ExpoConfig = {
   android: {
     package: 'uz.uyservice.app',
     adaptiveIcon: {
-      backgroundColor: '#FFFFFF',
+      backgroundColor: '#0E5A4B',
       foregroundImage: './assets/android-icon-foreground.png',
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',
@@ -43,9 +43,9 @@ const config: ExpoConfig = {
       {
         backgroundColor: '#FFFFFF',
         image: './assets/splash-icon.png',
-        imageWidth: 180,
-        // Tungi rejimda ochilish ekrani — to'q fon, o'sha logotip
-        dark: { backgroundColor: '#0E1513', image: './assets/splash-icon.png' },
+        imageWidth: 200,
+        // Tungi rejimda ochilish ekrani — to'q fon, oq belgi
+        dark: { backgroundColor: '#0E1513', image: './assets/splash-icon-dark.png' },
       },
     ],
     [
