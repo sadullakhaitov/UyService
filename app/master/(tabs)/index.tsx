@@ -51,8 +51,8 @@ export default function MasterOrders() {
   const wide = useWide();
   // Xarita oxirgi ma'lum haqiqiy joydan boshlanadi, GPS kelishi bilan aniqlanadi
   const [initial] = useState(() => useUser.getState().lastLocation ?? mockMasterSelf.location);
-  // Belgi faqat usta haqiqatan yurganda siljiydi
-  const live = useWatchLocation();
+  // Belgi faqat usta haqiqatan yurganda siljiydi. Buyurtma kutayotganda — yengil GPS (batareya, qizish)
+  const live = useWatchLocation(true, 'balanced');
   const pos = live ?? me ?? initial;
   // Kuzatish rejimi (navigatordagidek): usta yurganda kamera ortidan yuradi. Xaritani qo'lda sursa — to'xtaydi,
   // "joylashuv" tugmasi qayta yoqadi

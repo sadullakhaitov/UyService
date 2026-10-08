@@ -56,6 +56,47 @@ await flushPush(db, fakeExpo());
 const { data: m2 } = await db.from('profiles').select('push_token').eq('id', M2).single();
 check(m2?.push_token === null, 'DeviceNotRegistered — token tozalanadi', m2);
 
+// Telegram: telefon ilovasi yo'q, Telegram bilan kirgan usta → bot xabari, "Ochish" — Mini App'da taklif ekrani
+type TgCall = { url: string; body: { chat_id: number; text: string; reply_markup?: { inline_keyboard: { text: string; web_app: { url: string } }[][] } } };
+const tgCalls: TgCall[] = [];
+const fakeTg = (status = 200) => (async (url: string | URL | Request, init?: RequestInit) => {
+  if (String(url).includes('api.telegram.org')) {
+    tgCalls.push({ url: String(url), body: JSON.parse(String(init?.body)) });
+    return new Response('{"ok":true}', { status });
+  }
+  return fakeExpo()(url, init);
+}) as typeof fetch;
+const TG = { telegramToken: 'BOT123', appUrl: 'https://uyservice.uz/' };
+await db.from('profiles').update({ push_token: null, telegram_id: 777001, language: 'uz' }).eq('id', M1);
+await db.from('offers').update({ status: 'expired' }).eq('master_id', M1).eq('status', 'sent');
+await db.from('offers').insert({ order_id: O2, master_id: M1, eta_min: 6, distance_km: 2 });
+const viaTg = await flushPush(db, fakeTg(), TG);
+const tgMsg = tgCalls[0];
+check(
+  viaTg.sent === 1 && tgMsg?.url === 'https://api.telegram.org/botBOT123/sendMessage' && tgMsg.body.chat_id === 777001 &&
+    tgMsg.body.text.startsWith('<b>Yangi buyurtma</b>') && tgMsg.body.reply_markup?.inline_keyboard[0][0].web_app.url === 'https://uyservice.uz/master/offer' &&
+    tgMsg.body.reply_markup?.inline_keyboard[0][0].text === 'Ochish',
+  'tokensiz, Telegram bilan kirgan ustaga — bot xabari va "Ochish" (taklif ekrani)',
+  { viaTg, tgCalls },
+);
+
+// Botni bloklagan (403) — qayta urinilmaydi; Telegram ishlamasa (502) — navbatda qoladi
+await db.from('offers').update({ status: 'expired' }).eq('master_id', M1).eq('status', 'sent');
+await db.from('offers').insert({ order_id: O2, master_id: M1, eta_min: 6, distance_km: 2 });
+const down2 = await flushPush(db, fakeTg(502), TG);
+check(down2.failed === 1, 'Telegram ishlamasa xabar yo‘qolmaydi', down2);
+await db.from('push_outbox').update({ claimed_at: null }).is('sent_at', null);
+const blocked = await flushPush(db, fakeTg(403), TG);
+const after = await flushPush(db, fakeTg(), TG);
+check(blocked.sent === 1 && after.sent === 0, 'botni bloklagan foydalanuvchiga qayta-qayta urinilmaydi', { blocked, after });
+
+// Bot sozlanmagan — Telegram xabarlari jim o'tkazib yuboriladi (navbat to'lib qolmaydi)
+tgCalls.length = 0;
+await db.from('offers').update({ status: 'expired' }).eq('master_id', M1).eq('status', 'sent');
+await db.from('offers').insert({ order_id: O2, master_id: M1, eta_min: 6, distance_km: 2 });
+const noBot = await flushPush(db, fakeTg(), { telegramToken: '' });
+check(noBot.sent === 1 && tgCalls.length === 0, 'bot tokeni yo‘q — yuborilmaydi, navbatda qolmaydi', { noBot, tgCalls });
+
 check(pushText('price', { sum: 250000 }, 'uz')?.body.startsWith("250 000 so'm"), 'narx matni: 250 000 so‘m', pushText('price', { sum: 250000 }, 'uz'));
 check(pushText('arrived', { category: 'electric' }, 'en')?.body === 'Electrician is at your door', 'inglizcha kategoriya nomi');
 

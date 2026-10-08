@@ -14,7 +14,7 @@ type Contact = { phone_number?: string; first_name?: string; last_name?: string;
 type ContactResult = { status?: string; response?: string; responseUnsafe?: { contact?: Contact | string } };
 type TgWebApp = {
   initData: string;
-  initDataUnsafe?: { user?: { id: number; first_name?: string; last_name?: string; language_code?: string } };
+  initDataUnsafe?: { user?: { id: number; first_name?: string; last_name?: string; language_code?: string; allows_write_to_pm?: boolean } };
   ready: () => void;
   expand: () => void;
   disableVerticalSwipes?: () => void;
@@ -22,6 +22,7 @@ type TgWebApp = {
   setBackgroundColor?: (c: string) => void;
   setBottomBarColor?: (c: string) => void;
   requestContact?: (cb: (shared: boolean, res?: ContactResult) => void) => void;
+  requestWriteAccess?: (cb?: (allowed: boolean) => void) => void;
   isVersionAtLeast?: (v: string) => boolean;
 };
 
@@ -64,6 +65,19 @@ export function requestTelegramContact(): Promise<{ phone: string | null; raw?: 
   });
 }
 
+/**
+ * "Yangi buyurtma", "Usta topildi" va boshqa xabarlar bot orqali keladi (sayt yopiq bo'lsa ham — server:
+ * supabase/functions/_shared/push.ts). Bot odamga faqat ruxsat bo'lsa yoza oladi: ruxsat yo'q bo'lsa — bir marta so'raymiz
+ */
+function allowBotMessages(tg: TgWebApp) {
+  if (tg.initDataUnsafe?.user?.allows_write_to_pm !== false || !tg.requestWriteAccess) return;
+  try {
+    tg.requestWriteAccess();
+  } catch {
+    // eski Telegram versiyasi
+  }
+}
+
 export type TelegramSignIn = { ok: true; phone: string; name?: string } | { ok: false; need?: 'contact'; error?: string };
 
 /**
@@ -90,6 +104,7 @@ export async function telegramSignIn(contact?: { phone: string | null; raw?: str
       const v = await db.auth.verifyOtp({ token_hash: data.token_hash, type: 'magiclink' });
       if (v.error) return { ok: false, error: v.error.message };
       const phone = displayPhone(data.phone);
+      if (phone) allowBotMessages(tg);
       return phone ? { ok: true, phone, name: data.name || tgName } : { ok: false, error: 'phone_not_uz' };
     }
     if (data?.need !== 'contact' || Date.now() > until) return { ok: false, need: data?.need, error: data?.error };

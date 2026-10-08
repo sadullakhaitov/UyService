@@ -36,7 +36,8 @@ const config: ExpoConfig = {
     output: 'single',
   },
   plugins: [
-    'expo-router',
+    // Brauzerda har ekran alohida fayl: avval faqat ochilgan ekran yuklanadi (admin panel mijozga yuklanmaydi)
+    ['expo-router', { asyncRoutes: { web: true, default: 'development' } }],
     'expo-font',
     [
       'expo-splash-screen',

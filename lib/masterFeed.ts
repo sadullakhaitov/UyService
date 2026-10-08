@@ -82,7 +82,9 @@ export function useMasterFeed() {
   const offer = useMasterWork((s) => s.offer);
   const job = useMasterWork((s) => s.job);
   const path = usePathname();
-  const live = useWatchLocation();
+  // Joylashuv faqat onlayn yoki ishda bo'lganda kuzatiladi (yengil rejimda — serverga har 5 s yuborish uchun yetadi)
+  const sharing = online || Boolean(job);
+  const live = useWatchLocation(sharing, 'balanced');
   const here = useRef<LatLng>(useUser.getState().lastLocation ?? mockMasterSelf.location);
   if (live) here.current = live;
 
@@ -114,7 +116,6 @@ export function useMasterFeed() {
   }, [offer]);
 
   // Joylashuv: onlayn yoki ishda bo'lsa — har 5 s
-  const sharing = online || Boolean(job);
   useEffect(() => {
     if (!sharing) return;
     publishMasterLocation(here.current);

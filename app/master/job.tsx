@@ -69,7 +69,8 @@ function JobView({ job }: { job: MasterJob }) {
   }, [job.priceStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Usta belgisi — telefonning JONLI joylashuvi: usta yursa yuradi, tursa turadi (soxta harakat yo'q)
-  const live = useWatchLocation();
+  // Mijozga borayotganda — aniq GPS (yo'l, "N daqiqa"); yetib kelgach — yengil rejim
+  const live = useWatchLocation(true, job.stage === 'on_the_way' ? 'precise' : 'balanced');
   const [start, setStart] = useState<LatLng | null>(null);
   useEffect(() => {
     if (live && !start) setStart(live);

@@ -137,6 +137,12 @@ Nima qachon ketadi: ustaga — "Yangi buyurtma" (Sozlamalarda o'chirsa bo'ladi),
 "Mijoz bekor qildi"; mijozga — "Usta topildi", "Usta yetib keldi", "Usta narx taklif qildi", "Ish tugadi",
 "Hozir bo'sh usta yo'q". Matn foydalanuvchi tilida (`profiles.language`), bosilganda tegishli ekran ochiladi.
 
+**Telegram orqali ham:** telefon ilovasi yo'q (push tokeni yo'q), lekin Telegram bilan kirgan foydalanuvchiga xuddi
+shu xabarlar **bot orqali** keladi — Telegram yopiq bo'lsa ham, telefon ovoz chiqaradi; "Ochish" tugmasi kerakli ekranni
+(masalan, `/master/offer`) Telegram ichida ochadi. Buning uchun 11-bo'limdagi `TELEGRAM_BOT_TOKEN` siri va
+`npx supabase functions deploy push-send offer-timeout` yetarli (EAS/FCM shart emas). Botni bloklagan odamga xabar
+qayta-qayta yuborilmaydi.
+
 ## 11. Telegram (bot + Mini App, SMS'siz kirish)
 
 Odam botni ochadi → "Ilovani ochish" → uyservice.uz Telegram ichida ochiladi → "Telegram orqali kirish" →
@@ -148,8 +154,9 @@ Telegram raqamni tasdiqlaydi → profilga kiradi. Keyingi safar o'zi kiradi. SMS
    ```powershell
    $tg = [guid]::NewGuid().ToString("N")
    npx supabase secrets set "TELEGRAM_BOT_TOKEN=123456:ABC..." "TELEGRAM_WEBHOOK_SECRET=$tg" "APP_URL=https://uyservice.uz"
-   npx supabase functions deploy telegram-auth telegram-bot
+   npx supabase functions deploy telegram-auth telegram-bot push-send offer-timeout
    ```
+   (`push-send` va `offer-timeout` — bildirishnomalar bot orqali ketishi uchun, 10-bo'lim.)
 3. Webhook (bot xabarlarini serverga yo'naltirish), PowerShell'da:
    ```powershell
    Invoke-RestMethod "https://api.telegram.org/bot<TOKEN>/setWebhook" -Method Post -Body @{ url = "https://PROJECT_REF.supabase.co/functions/v1/telegram-bot"; secret_token = $tg }

@@ -1,4 +1,6 @@
-// Push-bildirishnomalar navbatini (push_outbox) Expo Push API orqali yuborish.
+// Push-bildirishnomalar navbatini (push_outbox) yuborish:
+//   - telefon ilovasi bor (Expo push tokeni) → Expo Push API
+//   - tokeni yo'q, lekin Telegram bilan kirgan → Telegram bot xabari + "Ochish" tugmasi (Mini App'da shu ekran)
 // push-send (darhol, navbatga yozilganda) va offer-timeout (zaxira, har 15 s) chaqiradi.
 // Matnlar — ilovadagi locales/{uz,ru,en}.json → notify.* bilan bir xil (ilova yopiq bo'lsa ham to'g'ri tilda).
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
@@ -58,29 +60,82 @@ export function pushText(kind: string, params: Params, language: string | null):
   return f ? f(params ?? {}, lang) : null;
 }
 
-type Row = { id: number; kind: string; params: Params; url: string | null; token: string; language: string | null };
+type Row = { id: number; kind: string; params: Params; url: string | null; token: string | null; language: string | null; telegram_id: number | null };
 type Ticket = { status: 'ok' | 'error'; message?: string; details?: { error?: string } };
 
 const EXPO_PUSH = 'https://exp.host/--/api/v2/push/send';
+const OPEN: Record<Lang, string> = { uz: 'Ochish', ru: 'Открыть', en: 'Open' };
+
+export type PushOptions = { telegramToken?: string; appUrl?: string };
+/** Sirlar: TELEGRAM_BOT_TOKEN (bot orqali yuborish uchun), APP_URL (ixtiyoriy, "Ochish" tugmasi manzili) */
+export const pushOptionsFromEnv = (): PushOptions => ({
+  telegramToken: Deno.env.get('TELEGRAM_BOT_TOKEN') ?? '',
+  appUrl: Deno.env.get('APP_URL') ?? 'https://uyservice.uz',
+});
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+type Result = { ok: number[]; bad: number[]; dead: string[]; lastError: string | null };
+
+/** Telegram bot orqali: har biriga alohida xabar (sarlavha qalin) va "Ochish" — Mini App kerakli ekranda ochiladi */
+async function sendTelegram(rows: Row[], opts: PushOptions, fetchImpl: typeof fetch, out: Result) {
+  const appUrl = (opts.appUrl || 'https://uyservice.uz').replace(/\/$/, '');
+  for (const r of rows) {
+    const lang: Lang = r.language === 'ru' || r.language === 'en' ? r.language : 'uz';
+    const text = pushText(r.kind, r.params, lang) ?? { title: 'UyService', body: '' };
+    const body = {
+      chat_id: r.telegram_id,
+      text: `<b>${esc(text.title)}</b>\n${esc(text.body)}`,
+      parse_mode: 'HTML',
+      ...(r.url ? { reply_markup: { inline_keyboard: [[{ text: OPEN[lang], web_app: { url: appUrl + r.url } }]] } } : {}),
+    };
+    try {
+      const res = await fetchImpl(`https://api.telegram.org/bot${opts.telegramToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) out.ok.push(r.id);
+      else if (res.status === 400 || res.status === 403) {
+        // botni bloklagan / botni hech ochmagan — qayta urinishdan foyda yo'q
+        out.ok.push(r.id);
+        console.warn('telegram', res.status, (await res.text().catch(() => '')).slice(0, 200));
+      } else {
+        out.bad.push(r.id); // 429 (juda tez) yoki Telegram ishlamayapti — keyinroq qayta
+        out.lastError = `Telegram HTTP ${res.status}`;
+      }
+    } catch (e) {
+      out.bad.push(r.id);
+      out.lastError = String((e as Error).message ?? e);
+    }
+  }
+}
 
 /** Navbatdagi hamma xabarni yuboradi; nechtasi ketganini qaytaradi */
-export async function flushPush(db: SupabaseClient, fetchImpl: typeof fetch = fetch): Promise<{ sent: number; failed: number }> {
+export async function flushPush(
+  db: SupabaseClient,
+  fetchImpl: typeof fetch = fetch,
+  opts: PushOptions = pushOptionsFromEnv(),
+): Promise<{ sent: number; failed: number }> {
   let sent = 0;
   let failed = 0;
   for (let round = 0; round < 5; round++) {
     const { data, error } = await db.rpc('claim_push', { p_limit: 100 });
     if (error) throw new Error(`claim_push: ${error.message}`);
-    const rows = (data ?? []) as Row[];
-    if (!rows.length) break;
+    const all = (data ?? []) as Row[];
+    if (!all.length) break;
 
-    const ok: number[] = [];
-    const bad: number[] = [];
-    const dead: string[] = [];
-    let lastError: string | null = null;
+    const out: Result = { ok: [], bad: [], dead: [], lastError: null };
+    const rows = all.filter((r) => r.token);
+    const tg = all.filter((r) => !r.token && r.telegram_id);
+    if (opts.telegramToken) await sendTelegram(tg, opts, fetchImpl, out);
+    else out.ok.push(...tg.map((r) => r.id)); // bot sozlanmagan — yuboradigan yo'l yo'q
+    const { ok, bad, dead } = out;
+    let lastError = out.lastError;
     const messages = rows.map((r) => {
       const text = pushText(r.kind, r.params, r.language) ?? { title: 'UyService', body: '' };
       return {
-        to: r.token,
+        to: r.token as string,
         title: text.title,
         body: text.body,
         sound: 'default',
@@ -91,7 +146,7 @@ export async function flushPush(db: SupabaseClient, fetchImpl: typeof fetch = fe
         ttl: r.kind === 'offer' ? 60 : 3600,
       };
     });
-    try {
+    if (rows.length) try {
       const res = await fetchImpl(EXPO_PUSH, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -109,7 +164,7 @@ export async function flushPush(db: SupabaseClient, fetchImpl: typeof fetch = fe
           else if (ticket.details?.error === 'DeviceNotRegistered') {
             // ilova o'chirilgan — qayta urinmaymiz, token tozalanadi
             ok.push(row.id);
-            dead.push(row.token);
+            dead.push(row.token as string);
           } else {
             lastError = ticket.message ?? ticket.details?.error ?? 'error';
             bad.push(row.id);

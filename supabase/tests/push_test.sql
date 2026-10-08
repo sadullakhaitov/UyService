@@ -145,3 +145,16 @@ do $$ begin
   end if;
   raise notice 'PASS: finish_push — yuborilgan/qayta urinish/o''lik token tozalash';
 end $$;
+
+-- ---------- Telegram: telefon ilovasi yo'q, Telegram bilan kirgan → navbatga yoziladi ----------
+update public.profiles set telegram_id = 555001 where id = '00000000-0000-4000-8000-000000000002';
+insert into public.offers (order_id, master_id, eta_min) values ('00000000-0000-4000-8100-000000000002', '00000000-0000-4000-8000-000000000002', 4);
+set role service_role;
+do $$ declare r record; begin
+  select * into r from public.claim_push(100) c where c.kind = 'offer';
+  if r.telegram_id is distinct from 555001 or r.token is not null then
+    raise exception 'FAIL: Telegram foydalanuvchisi navbatda emas: %', row_to_json(r);
+  end if;
+  raise notice 'PASS: tokeni yo''q, Telegram bog''langan ustaga "Yangi buyurtma" navbatga yoziladi (bot orqali)';
+end $$;
+reset role;
