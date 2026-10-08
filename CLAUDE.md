@@ -126,12 +126,12 @@ lib/                      ← i18n, geo, location, routes, supabase
   masterGuard.ts          ← `guardActiveJob` — faol ish bo'lsa rol almashish/chiqish to'xtatiladi
   admin/                  ← admin ma'lumotlari: types.ts (AdminApi), supabase.ts (admin_* view/RPC), demo.ts (sinov rejimi, namunaviy
                             ma'lumotlar butun O'zbekiston bo'ylab, shu brauzerda saqlanadi), rules.ts (chegaralar = server), hooks.ts, session.ts
-  supabase.ts, auth.ts, api.ts ← Supabase mijozi (faqat .env'da kalit bo'lsa), SMS kod bilan kirish, server chaqiruvlari
+  supabase.ts, auth.ts    ← Supabase mijozi (faqat .env'da kalit bo'lsa), SMS kod bilan kirish
 store/                    ← Zustand (foydalanuvchi, buyurtma, usta)
 constants/                ← theme, categories (+ CALL_FEE), dispatch, billing
 locales/uz.json           ← ilovadagi barcha matnlar
 mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
-design/                   ← dizayn skrinshotlari
+design/logo/              ← logotip asl fayllari (SVG, ko'rinish varag'i)
 supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma
   migrations/             ← 12 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push, ochiq sharhlar, Telegram, Telegram orqali bildirishnoma
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
@@ -202,7 +202,7 @@ Qo'shimcha (tarif qarori uchun):
 - `masters.billing_plan` — `'subscription' | 'commission'`
 - `masters.plan_changed_at` — oxirgi o'zgartirish sanasi
 - `subscriptions` — (master_id, period_start, period_end, amount, status) — obuna to'lovlari
-- `orders.platform_fee` — komissiya tarifidagi ustadan olinadigan ulush (`constants/billing.ts` → `platformCut`)
+- `orders.platform_fee` — ustadan olinadigan ulush (`order_total` × `orders.fee_percent`; ilovada — `constants/billing.ts` → `feePercent`)
 
 `categories.call_fee` = 50 000 (hammasi uchun).
 

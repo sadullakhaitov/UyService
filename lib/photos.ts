@@ -1,6 +1,6 @@
 // Rasm tanlash / suratga olish (pasport, selfi, ish namunalari, muammo rasmi).
 // Brauzerda tanlangan rasm vaqtinchalik (blob:) havola — sahifa yangilansa yo'qoladi, shuning uchun bu yerdan
-// har doim saqlab qo'ysa bo'ladigan manzil qaytadi (keepablePhoto). 5-bosqichda rasmlar Supabase Storage'ga yuklanadi.
+// har doim saqlab qo'ysa bo'ladigan manzil qaytadi (keepablePhoto). Server rejimida rasmlar Supabase Storage'ga yuklanadi (lib/live.ts).
 import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
 
@@ -43,7 +43,7 @@ export async function takePhoto({ front = false, max = PHOTO_MAX }: { front?: bo
 /**
  * Brauzerda tanlangan rasm vaqtinchalik (blob:) havola bo'ladi va sahifa yangilanganda yo'qoladi — shuning uchun
  * kichraytirib (eng katta tomoni ≤ max px) data: URL'ga aylantiramiz (localStorage'ga sig'ishi uchun JPEG).
- * Telefonda fayl manzili o'zi saqlanadi. 5-bosqichda Supabase Storage'ga yuklanadi.
+ * Telefonda fayl manzili o'zi saqlanadi. Server rejimida Supabase Storage'ga yuklanadi.
  */
 export async function keepablePhoto(uri: string, max = PHOTO_MAX): Promise<string> {
   if (Platform.OS !== 'web' || !uri.startsWith('blob:')) return uri;

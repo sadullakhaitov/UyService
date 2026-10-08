@@ -9,9 +9,6 @@ export type LegalLang = 'uz' | 'ru' | 'en';
 export type LegalSection = { h: string; p: string[] };
 export type LegalText = { title: string; updated: string; sections: LegalSection[] };
 
-// Hujjatlar versiyasi (oxirgi tahrir sanasi). Matn o'zgarsa — shu ham yangilanadi.
-export const LEGAL_VERSION = '2026-10-06';
-
 // Hujjat tepasidagi ogohlantirish (hujjatning o'zida emas)
 export const DRAFT_NOTE: Record<LegalLang, string> = {
   uz: `Bu hujjat qoralama. Rasmiy e'lon qilinishidan oldin yurist tomonidan tekshiriladi va to'ldiriladi.`,

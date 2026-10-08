@@ -56,8 +56,6 @@ export async function uploadPhoto(bucket: 'documents' | 'works' | 'order-photos'
 }
 
 /** Ochiq (works) rasm manzili */
-export const publicPhotoUrl = (path: string) => db().storage.from('works').getPublicUrl(path).data.publicUrl;
-
 // ---------- Mijoz ----------
 
 type OrderRow = {

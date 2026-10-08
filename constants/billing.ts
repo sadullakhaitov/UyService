@@ -33,10 +33,5 @@ export function planLabel(plan: BillingPlan, verified: boolean) {
   return plan === 'subscription' ? `${t('plan.subscription')}${pct ? ` · +${pct}%` : ''}` : `${t('plan.commission')} · ${pct}%`;
 }
 
-// Ustaning bitta ishdan platformaga beradigan ulushi (so'm)
-export function platformCut(plan: BillingPlan, finalPrice: number, verified = true) {
-  return Math.round((finalPrice * feePercent(plan, verified)) / 100);
-}
-
 // Do'st (boshqa usta) taklif qilgani uchun bonus, so'm (⚠️ hali tasdiqlanmagan)
 export const INVITE_BONUS = 30_000;

@@ -10,8 +10,6 @@ export type { Candidate, DispatchEvent, DispatchState, EtaFn } from '../supabase
 export {
   advanceDispatch,
   applyActivity,
-  radiusKmOf,
-  rankCandidates,
   respondDispatch,
   startDispatch,
 } from '../supabase/functions/_shared/dispatch';

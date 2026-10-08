@@ -123,7 +123,7 @@ export const useOrder = create<OrderState>((set) => ({
 
 export type VerifyStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
-/** Usta ro'yxatdan o'tganda yuklagan ma'lumotlar (5-bosqichda: masters + Storage) */
+/** Usta ro'yxatdan o'tganda yuklagan ma'lumotlar (server rejimida — masters + Storage ham) */
 export type MasterProfile = {
   firstName: string;
   lastName: string;
@@ -182,7 +182,7 @@ type MasterState = {
   setProfile: (p: Partial<MasterProfile>) => void;
   /** Ro'yxatdan o'tish arizasi yuborildi — admin tekshiradi, shu paytgacha buyurtma yo'q */
   submitProfile: () => void;
-  /** Admin qarori (5-bosqichda Supabase'dan keladi; hozir demo tugma) */
+  /** Admin qarori (server rejimida — Supabase'dan; sinovda — demo tugma) */
   setVerifyStatus: (status: VerifyStatus) => void;
   addPriority: (points: number, promo?: string) => void;
   addIncome: (amount: number) => void;
@@ -268,7 +268,7 @@ export const useMaster = create<MasterState>()(
   ),
 );
 
-/** Ustaga kelgan taklif / bajarilayotgan ish (5-bosqichda: offers + orders jadvallari, Realtime) */
+/** Ustaga kelgan taklif / bajarilayotgan ish (server rejimida — offers + orders jadvallari, Realtime) */
 export type MasterOrder = {
   id: string;
   categoryId: CategoryId;
@@ -340,7 +340,7 @@ export const useLocationLog = create<LocationLogState>((set) => ({
   record: (p) => set((s) => ({ last: p, lastAt: Date.now(), sent: s.sent + 1 })),
 }));
 
-// Chatlar (soxta, mahalliy) — 5-bosqichda Supabase Realtime
+// Chatlar: sinov rejimida mahalliy; serverda — chat_messages (lib/live.ts → useLiveChat)
 /** i18n: true — matn tarjima kaliti (tizim xabarlari: qo'llab-quvvatlash, yangiliklar) */
 export type ChatMessage = { id: string; mine: boolean; text: string; at: number; i18n?: boolean };
 export type Chat = { id: string; title: string; subtitle: string; kind: 'support' | 'news' | 'client' | 'master'; unread: number; messages: ChatMessage[]; i18n?: boolean };
@@ -352,7 +352,7 @@ export const msgText = (m: ChatMessage) => (m.i18n ? t(m.text) : m.text);
 type ChatState = {
   chats: Chat[];
   send: (chatId: string, text: string) => void;
-  /** Suhbatdoshdan xabar (soxta javob; 5-bosqichda Realtime) */
+  /** Suhbatdoshdan xabar (sinovda — soxta javob; serverda — Realtime) */
   receive: (chatId: string, text: string) => void;
   /** Buyurtma bo'yicha chat bo'lmasa — yaratadi */
   ensure: (chat: Omit<Chat, 'messages' | 'unread'>) => void;
@@ -498,7 +498,7 @@ export const useOrders = create<OrdersState>()(
 
 export const useActiveOrder = (id: string | undefined) => useOrders((s) => s.orders.find((o) => o.id === id));
 
-/** Buyurtmalar tarixi: yakunlangan va bekor qilingan buyurtmalar, qo'yilgan baho (telefonda saqlanadi; 5-bosqichda orders + reviews) */
+/** Buyurtmalar tarixi: yakunlangan va bekor qilingan buyurtmalar, qo'yilgan baho (telefonda saqlanadi; serverda — orders + reviews) */
 type HistoryState = { items: HistoryItem[]; add: (item: HistoryItem) => void };
 export const useHistory = create<HistoryState>()(
   persist(

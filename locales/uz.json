@@ -1,6 +1,5 @@
 {
   "app": {
-    "name": "UyService",
     "tagline": "Uyingizga ishonchli usta — bir necha daqiqada"
   },
   "common": {
@@ -14,7 +13,6 @@
     "km": "{{value}} km",
     "cash": "Naqd",
     "demoNext": "Keyingisi (demo)",
-    "soon": "Tez kunda",
     "profile": "Profil",
     "close": "Yopish",
     "remove": "O'chirish"
@@ -24,19 +22,12 @@
     "phoneHint": "Raqamingizga 6 xonali SMS kod yuboramiz",
     "phoneLabel": "Telefon raqam",
     "getCode": "Kod olish",
-    "terms": "Davom etib, foydalanish shartlariga rozilik bildirasiz",
     "codeTitle": "SMS kodni kiriting",
     "codeHint": "{{phone}} raqamiga kod yuborildi",
     "codeLabel": "SMS kod",
     "resendIn": "Qayta yuborish: {{sec}} s",
     "resend": "Kodni qayta yuborish",
     "codeDemo": "Demo rejim: istalgan 6 ta raqam",
-    "roleTitle": "Kim sifatida kirasiz?",
-    "roleHint": "Keyin profil sozlamalarida o'zgartirish mumkin",
-    "roleClient": "Menga usta kerak",
-    "roleClientHint": "Uydagi muammoni tez hal qilish",
-    "roleMaster": "Men ustaman",
-    "roleMasterHint": "Buyurtma olish va daromad qilish",
     "loginToOrder": "Usta chaqirish uchun raqamingizni tasdiqlang",
     "loginToMaster": "Usta bo'lib ishlash uchun raqamingizni tasdiqlang",
     "codeWrong": "Kod noto'g'ri. Qayta kiriting",
@@ -154,7 +145,6 @@
     "chatBtn": "Chat",
     "shareBtn": "Ulashish",
     "verified": "Tasdiqlangan usta",
-    "workPhoto": "Ish rasmi",
     "another": "Yana usta chaqirish",
     "codeTitle": "Eshikdagi kod",
     "codeHint": "Usta kelganda shu kodni ayting — u haqiqiy usta ekanini tasdiqlaydi. Kodni oldindan hech kimga bermang.",
@@ -168,7 +158,6 @@
   "rate": {
     "doneTitle": "Ish yakunlandi",
     "duration": "{{name}} · {{time}}",
-    "callFee": "Chaqiruv",
     "work": "{{problem}} (ish)",
     "parts": "Ehtiyot qism",
     "total": "Jami",
@@ -183,10 +172,8 @@
     },
     "commentPlaceholder": "Izoh qoldiring (ixtiyoriy)",
     "addFavorite": "\"Mening ustalarim\"ga qo'shish",
-    "pay": "To'lash va yakunlash",
     "payNote": "Muammo bo'lsa, {{days}} kun ichida bepul qayta chaqiring",
     "star": "{{n}} yulduz",
-    "time": "1 soat 10 daqiqa",
     "doneDeclined": "Ko'rik yakunlandi",
     "inspection": "Chaqiruv (ko'rik)",
     "feeIncluded": "Chaqiruv ({{fee}}) ish narxi ichida",
@@ -204,24 +191,10 @@
   },
   "master": {
     "online": "Onlayn",
-    "offline": "Oflayn",
-    "goOnline": "Ishga chiqish",
-    "goOffline": "Dam olish",
-    "onlineHint": "Yangi buyurtmalarni kutyapsiz",
-    "offlineHint": "Buyurtma olish uchun onlayn bo'ling",
-    "today": "Bugungi daromad",
-    "jobsToday": "Bugun {{count}} ta ish",
-    "activity": "Aktivlik",
-    "rating": "Reyting",
-    "earnings": "Daromad",
-    "plan": "Tarif",
-    "pendingTitle": "Profilingiz tekshirilmoqda",
-    "pendingText": "Admin tasdiqlagach buyurtmalar kela boshlaydi"
+    "offline": "Oflayn"
   },
   "offer": {
     "title": "Yangi buyurtma",
-    "distance": "Masofa",
-    "eta": "Yo'lda",
     "estimate": "Taxminiy narx",
     "callFee": "Chaqiruv",
     "accept": "Qabul qilish",
@@ -273,15 +246,6 @@
     "codeLockedText": "Juda ko'p noto'g'ri urinish. 10 daqiqadan keyin qayta urinib ko'ring yoki qo'llab-quvvatlashga yozing."
   },
   "earnings": {
-    "title": "Daromad",
-    "day": "Bugun",
-    "week": "Hafta",
-    "month": "Oy",
-    "jobs": "Ishlar",
-    "rating": "Reyting",
-    "activity": "Aktivlik ballari",
-    "activityHint": "Qabul +2 · Rad −5 · Bekor −10",
-    "currentPlan": "Joriy tarif",
     "changePlan": "Tarifni o'zgartirish"
   },
   "plan": {
@@ -294,8 +258,6 @@
     "commissionPrice": "Har ishdan {{percent}}%",
     "commissionPoints": "Oylik to'lov yo'q|Faqat bajarilgan ishdan to'laysiz|Endi boshlayotganlar uchun qulay",
     "recommended": "Ko'p ish bo'lsa foydali",
-    "choose": "Tanlash",
-    "selected": "Tanlangan",
     "save": "Saqlash",
     "unverifiedNote": "Hujjatingiz hali tasdiqlanmagan: har bir tarifga +{{extra}}% qo'shiladi. Pasport yuklab, admin tasdiqlagach bu qo'shimcha olib tashlanadi."
   },
@@ -389,7 +351,6 @@
     "logout": "Chiqish",
     "version": "Ilova versiyasi",
     "soon": "Tez kunda",
-    "soonText": "Bu bo'lim keyingi bosqichlarda qo'shiladi",
     "cashOnly": "Hozircha mijozlar faqat naqd to'laydi. Click va Payme keyingi bosqichda.",
     "activeJobTitle": "Faol ish bor",
     "activeJobText": "Avval joriy ishni yakunlang.",

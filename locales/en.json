@@ -1,6 +1,5 @@
 {
   "app": {
-    "name": "UyService",
     "tagline": "A trusted handyman at your door — in minutes"
   },
   "common": {
@@ -14,7 +13,6 @@
     "km": "{{value}} km",
     "cash": "Cash",
     "demoNext": "Next (demo)",
-    "soon": "Soon",
     "profile": "Profile",
     "close": "Close",
     "remove": "Remove"
@@ -24,19 +22,12 @@
     "phoneHint": "We'll send a 6-digit SMS code to your number",
     "phoneLabel": "Phone number",
     "getCode": "Get code",
-    "terms": "By continuing you agree to the terms of use",
     "codeTitle": "Enter the SMS code",
     "codeHint": "Code sent to {{phone}}",
     "codeLabel": "SMS code",
     "resendIn": "Resend in {{sec}} s",
     "resend": "Resend code",
     "codeDemo": "Demo mode: any 6 digits",
-    "roleTitle": "How will you use the app?",
-    "roleHint": "You can change this later in profile settings",
-    "roleClient": "I need a handyman",
-    "roleClientHint": "Fix a problem at home fast",
-    "roleMaster": "I'm a handyman",
-    "roleMasterHint": "Get orders and earn",
     "loginToOrder": "Confirm your number to call a handyman",
     "loginToMaster": "Confirm your number to work as a handyman",
     "codeWrong": "Wrong code. Please try again",
@@ -160,7 +151,6 @@
     "chatBtn": "Chat",
     "shareBtn": "Share",
     "verified": "Verified handyman",
-    "workPhoto": "Work photo",
     "another": "Call another handyman",
     "codeTitle": "Door code",
     "codeHint": "Tell the master this code when they arrive — it confirms they're the real master. Don't share it in advance.",
@@ -174,7 +164,6 @@
   "rate": {
     "doneTitle": "Job completed",
     "duration": "{{name}} · {{time}}",
-    "callFee": "Call-out",
     "work": "{{problem}} (labour)",
     "parts": "Parts",
     "total": "Total",
@@ -189,13 +178,11 @@
     },
     "commentPlaceholder": "Leave a comment (optional)",
     "addFavorite": "Add to \"My handymen\"",
-    "pay": "Pay and finish",
     "payNote": "Any issue? Free repeat visit within {{days}} days",
     "star": {
       "one": "{{n}} star",
       "other": "{{n}} stars"
     },
-    "time": "1 h 10 min",
     "doneDeclined": "Inspection done",
     "inspection": "Call-out (inspection)",
     "feeIncluded": "Call fee ({{fee}}) included",
@@ -213,27 +200,10 @@
   },
   "master": {
     "online": "Online",
-    "offline": "Offline",
-    "goOnline": "Go online",
-    "goOffline": "Take a break",
-    "onlineHint": "Waiting for new orders",
-    "offlineHint": "Go online to receive orders",
-    "today": "Earned today",
-    "jobsToday": {
-      "one": "{{count}} job today",
-      "other": "{{count}} jobs today"
-    },
-    "activity": "Activity",
-    "rating": "Rating",
-    "earnings": "Earnings",
-    "plan": "Plan",
-    "pendingTitle": "Your profile is being reviewed",
-    "pendingText": "Orders will start once an admin approves you"
+    "offline": "Offline"
   },
   "offer": {
     "title": "New order",
-    "distance": "Distance",
-    "eta": "Drive",
     "estimate": "Estimated price",
     "callFee": "Call-out",
     "accept": "Accept",
@@ -285,15 +255,6 @@
     "codeLockedText": "Too many wrong attempts. Try again in 10 minutes or contact support."
   },
   "earnings": {
-    "title": "Earnings",
-    "day": "Today",
-    "week": "Week",
-    "month": "Month",
-    "jobs": "Jobs",
-    "rating": "Rating",
-    "activity": "Activity points",
-    "activityHint": "Accept +2 · Decline −5 · Cancel −10",
-    "currentPlan": "Current plan",
     "changePlan": "Change plan"
   },
   "plan": {
@@ -306,8 +267,6 @@
     "commissionPrice": "{{percent}}% per job",
     "commissionPoints": "No monthly payment|Pay only for completed jobs|Easy for beginners",
     "recommended": "Best for many jobs",
-    "choose": "Choose",
-    "selected": "Selected",
     "save": "Save",
     "unverifiedNote": "Your documents are not verified yet: +{{extra}}% on either plan. Upload a passport — once approved, the surcharge is removed."
   },
@@ -407,7 +366,6 @@
     "logout": "Log out",
     "version": "App version",
     "soon": "Soon",
-    "soonText": "This section comes in a later stage",
     "cashOnly": "For now clients pay cash only. Click and Payme come later.",
     "activeJobTitle": "You have an active job",
     "activeJobText": "Finish the current job first.",

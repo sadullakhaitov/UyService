@@ -11,7 +11,7 @@ import { ModalSheet } from './ModalSheet';
 export const CLIENT_REASONS = ['changedMind', 'tooLong', 'foundOther', 'wrongAddress', 'other'] as const;
 export const MASTER_REASONS = ['clientNoAnswer', 'tooFar', 'emergency', 'wrongProblem', 'other'] as const;
 
-/** Bekor qilish: sababni tanlash (Yandex Go'dagidek). Sabab tarixga va 5-bosqichda orders.cancel_reason'ga yoziladi */
+/** Bekor qilish: sababni tanlash (Yandex Go'dagidek). Sabab tarixga va server rejimida orders.cancel_reason'ga yoziladi */
 export function CancelSheet({
   visible,
   reasons,

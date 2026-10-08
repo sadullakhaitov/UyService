@@ -375,19 +375,6 @@ export function SkeletonRows({ n = 6 }: { n?: number }) {
   );
 }
 
-export function Section({ title, children, actions }: { title: string; children: ReactNode; actions?: ReactNode }) {
-  useScheme();
-  return (
-    <View style={styles.section}>
-      <View style={styles.sectionHead}>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        {actions}
-      </View>
-      {children}
-    </View>
-  );
-}
-
 const styles = themed(() => ({
   flex: { flex: 1, minWidth: 0 },
   row8: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -439,7 +426,4 @@ const styles = themed(() => ({
   errorBox: { backgroundColor: colors.dangerSoft, borderRadius: 14 },
   skRows: { gap: 2 },
   skRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
-  section: { gap: 12 },
-  sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  sectionTitle: { fontFamily: fonts.heavy, fontSize: 13, lineHeight: 18, color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.6 },
 }));

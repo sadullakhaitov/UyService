@@ -36,7 +36,7 @@ export function ChatView({ id, accent = colors.primary, onAccent = colors.onPrim
       return;
     }
     send(chat.id, v);
-    // Soxta javob: qo'llab-quvvatlash, mijoz yoki usta (5-bosqichda haqiqiy suhbatdosh)
+    // Soxta javob: qo'llab-quvvatlash, mijoz yoki usta — faqat sinov rejimida; serverda haqiqiy suhbatdosh (useLiveChat)
     const reply = chat.kind === 'support' ? 'chats.autoReply' : chat.kind === 'client' ? 'chats.clientReply' : chat.kind === 'master' ? 'chats.masterReply' : null;
     const seen = chat.messages.some((m) => !m.mine && m.text === t(reply ?? ''));
     if (reply && !seen) setTimeout(() => receive(chat.id, t(reply)), 1500);

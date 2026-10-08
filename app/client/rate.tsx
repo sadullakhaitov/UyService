@@ -44,7 +44,7 @@ export default function Rate() {
   const finish = () => {
     if (fav) toggleFavorite(master.id, true);
     if (LIVE && stars && order?.masterId) void liveRate(order.id, order.masterId, stars, tags, comment.trim()).catch(() => {});
-    // Tarixga: narx, baho, teglar, izoh (5-bosqichda reviews jadvaliga ham yoziladi)
+    // Tarixga: narx, baho, teglar, izoh (server rejimida — reviews jadvaliga ham, liveRate)
     addHistory({
       id: order?.id ?? `o${Date.now()}`,
       categoryId,

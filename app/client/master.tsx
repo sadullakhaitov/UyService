@@ -13,7 +13,7 @@ import { fetchMasterInfo, LIVE, type MasterInfo, type MasterReview } from '@/lib
 
 const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
 
-// Usta haqida: reyting, tajriba, mijozlar ko'p belgilagan sifatlar va sharhlar (5-bosqichda reviews jadvali)
+// Usta haqida: reyting, tajriba, mijozlar ko'p belgilagan sifatlar va sharhlar (server rejimida — master_cards, master_reviews)
 export default function MasterInfo() {
   useScheme();
   const { id, cat } = useLocalSearchParams<{ id: string; cat?: CategoryId }>();

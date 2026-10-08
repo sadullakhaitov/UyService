@@ -1,4 +1,4 @@
-// Soxta ma'lumotlar (3–4-bosqich). 5-bosqichda Supabase'ga almashtiriladi.
+// Soxta ma'lumotlar — faqat sinov rejimi (Supabase kaliti yo'q); server rejimida hammasi bazadan keladi.
 import type { CategoryId } from '@/constants/categories';
 import type { LatLng } from '@/lib/geo';
 
@@ -171,8 +171,6 @@ export const mockMasters: MockMaster[] = [
 ];
 
 
-export const mockFavorites = ['m1'];
-
 const daysAgo = (d: number) => Date.now() - d * 86_400_000;
 
 /** Buyurtmalar tarixi (yangi ilovada namuna sifatida; keyingi buyurtmalar ustiga qo'shiladi) */
@@ -193,11 +191,6 @@ export type HistoryItem = {
   inspectionOnly?: boolean;
 };
 
-export const mockHistory: HistoryItem[] = [
-  { id: 'o3', categoryId: 'plumber', problemId: 'tap', masterId: 'm1', at: daysAgo(8), price: 145_000, status: 'completed', stars: 5, tags: ['onTime', 'clean'] },
-  { id: 'o2', categoryId: 'electric', problemId: 'socket', masterId: 'm2', at: daysAgo(24), price: 90_000, status: 'completed', stars: 5, tags: ['polite'] },
-  { id: 'o1', categoryId: 'aircon', problemId: 'acCleaning', masterId: 'm3', at: daysAgo(47), price: 0, status: 'cancelled' },
-];
 
 /** Ustalar haqidagi sharhlar (5-bosqichda reviews jadvali) */
 export type MockReview = { id: string; masterId: string; author: string; stars: number; text: string; tags: string[]; at: number };
@@ -263,15 +256,6 @@ export const mockChats = [
   },
 ];
 
-export const mockOffer = {
-  id: 'of1',
-  categoryId: 'plumber' as CategoryId,
-  problemId: 'tap',
-  description: "Oshxonadagi kran ostidan suv tomchilayapti, shkaf ichi ho'l bo'lib qoldi.",
-  address: mockClient.address,
-  distanceKm: 1.8,
-  etaMin: 12,
-};
 
 // Soxta ustalar har doim mijoz tanlagan manzil atrofida chiqadi
 // (asl joylashuvlar — standart manzilga nisbatan siljish sifatida olinadi)

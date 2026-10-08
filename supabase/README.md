@@ -229,10 +229,11 @@ Kerak bo'lsa SQL Editor'dan ham qilish mumkin (masalan, server ulanmasdan oldin)
 | `migrations/…_admin.sql` | admin panel: bloklash, `admin_log`, `balance_ops`, `admin_*` funksiyalari va ko'rinishlari, `admin_stats` |
 | `migrations/…_price_agreement.sql` | narx kelishuvi va eshik kodi: `order_secrets` (kodni faqat mijoz ko'radi), `order_door_code`, `verify_door_code` (5 xato → 10 daq), `propose_price`, `respond_price`; ulush foizi qabul paytida qotiriladi (`orders.fee_percent`) |
 | `migrations/…_push.sql` | push navbati (`push_outbox`), triggerlar (kimga nima), `claim_push` / `finish_push`, `configure_push` |
-| `tests/` | lokal Postgres'da RLS sinovi (`rls_test.sql`), admin (`admin_test.sql`), narx kelishuvi (`price_test.sql`), push (`push_test.sql`) |
+| `tests/` | lokal Postgres'da RLS sinovi (`rls_test.sql`), admin (`admin_test.sql`), narx kelishuvi (`price_test.sql`), push (`push_test.sql`), Telegram (`telegram_test.sql`); `unit/`, `e2e/` (Deno) |
 
-Ilova tomoni: `lib/supabase.ts` (ulanish), `lib/auth.ts` (SMS kod), `lib/api.ts` (buyurtma, taklifga javob,
-joylashuv, chat — ekranlarga keyin ulanadi).
+Ilova tomoni: `lib/supabase.ts` (ulanish), `lib/auth.ts` (SMS kod), `lib/telegram.ts` (Telegram orqali kirish),
+`lib/live.ts` (buyurtma, takliflar, ish bosqichlari, chat — kalit bo'lsa hamma ekranlar shu orqali ishlaydi),
+`lib/backend.ts` (ustaning joylashuvi), `lib/push.ts` (push tokeni).
 
 ### Usta qidirish qanday ishlaydi
 

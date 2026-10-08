@@ -1,14 +1,12 @@
 // Supabase ulanishi. Kalitlar .env dan: EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY.
-// Kalit yo'q bo'lsa `supabase` = null va ilova hozirgidek soxta (mahalliy) rejimda ishlaydi.
+// Kalit yo'q bo'lsa getSupabase() = null va ilova sinov (mahalliy) rejimida ishlaydi.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
 export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
-export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
-/** Eski nom (moslik uchun) */
-export const isBackendReady = isSupabaseConfigured;
 
 let client: SupabaseClient | null = null;
 
@@ -35,14 +33,3 @@ export function getSupabase(): SupabaseClient | null {
   }
   return client;
 }
-
-/** Qulaylik uchun: `supabase?.from(...)`. Modul yuklanganda emas, birinchi murojaatda yaratiladi */
-export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? new Proxy({} as SupabaseClient, {
-      get: (_t, prop) => {
-        const c = getSupabase() as SupabaseClient;
-        const v = Reflect.get(c, prop, c);
-        return typeof v === 'function' ? v.bind(c) : v;
-      },
-    })
-  : null;

@@ -18,7 +18,7 @@ const STATUS = (): Record<VerifyStatus, { icon: typeof Clock3; bg: string; fg: s
   rejected: { icon: XCircle, bg: colors.dangerSoft, fg: colors.danger },
 });
 
-// Hujjatlar va shaxsni tasdiqlash: admin tekshiruvi holati (5-bosqichda admin Supabase panelidan tasdiqlaydi)
+// Hujjatlar va shaxsni tasdiqlash: admin tekshiruvi holati (admin uyservice.uz/admin → Hujjat tekshiruvi'da tasdiqlaydi)
 export default function Documents() {
   useScheme();
   const { profile, setProfile, setVerifyStatus } = useMaster();

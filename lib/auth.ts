@@ -43,14 +43,6 @@ export async function verifyCode(phone: string, code: string): Promise<AuthResul
   }
 }
 
-/** Joriy foydalanuvchi id'si (kirmagan yoki soxta rejim — null) */
-export async function currentUserId(): Promise<string | null> {
-  const db = getSupabase();
-  if (!db) return null;
-  const { data } = await db.auth.getSession();
-  return data.session?.user.id ?? null;
-}
-
 export async function signOut() {
   await unregisterPush();
   await getSupabase()?.auth.signOut();

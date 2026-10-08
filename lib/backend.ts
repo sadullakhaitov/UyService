@@ -1,14 +1,20 @@
-// Serverga yoziladigan hamma narsa shu yerdan o'tadi. Hozir — telefonning o'zida (soxta);
-// 5-bosqichda shu funksiyalar ichi Supabase chaqiruvlariga almashtiriladi, ekranlar o'zgarmaydi.
+// Ustaning joylashuvi serverga (har 5 s, lib/masterFeed.ts). Sinov rejimida — faqat telefonda (useLocationLog).
 import type { LatLng } from '@/lib/geo';
 import { useLocationLog } from '@/store';
-import { publishLocation } from './api';
 import { LIVE } from './live';
+import { getSupabase } from './supabase';
 
-/**
- * Ustaning joylashuvi (har 5 s). 5-bosqichda:
- * lib/api.ts → publishLocation(): master_locations.upsert({ master_id, lat, lng, heading }) — PostGIS `location` ustuni bazada o'zi hisoblanadi
- */
+/** master_locations.upsert — PostGIS `location` ustuni bazada o'zi hisoblanadi */
+async function publishLocation(p: LatLng) {
+  const db = getSupabase();
+  if (!db) return;
+  const { data } = await db.auth.getSession();
+  const masterId = data.session?.user.id;
+  if (!masterId) return;
+  const { error } = await db.from('master_locations').upsert({ master_id: masterId, lat: p.latitude, lng: p.longitude });
+  if (error) console.warn('master_locations', error.message);
+}
+
 export function publishMasterLocation(p: LatLng) {
   useLocationLog.getState().record(p);
   if (LIVE) void publishLocation(p);

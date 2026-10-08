@@ -73,7 +73,7 @@ export function TrackingPanel({ order, onHeight }: { order: ActiveOrder; onHeigh
   const s = label[status] ?? label.on_the_way;
   const onWay = status === 'on_the_way' || status === 'assigned';
 
-  // Usta yo'lga chiqqan — sabab so'raladi va tarixga yoziladi (5-bosqichda ustaga ham xabar boradi)
+  // Usta yo'lga chiqqan — sabab so'raladi va tarixga yoziladi (server rejimida ustaga push ham boradi)
   const cancel = (reason: string) => {
     setCancelling(false);
     if (LIVE) void liveCancelOrder(order.id, reason).catch(() => {});
