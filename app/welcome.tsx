@@ -32,12 +32,16 @@ export default function Welcome() {
   const k = height < 700 ? 0.62 : height < 820 ? 0.78 : 1;
   const compact = k < 1;
 
-  // 1-qadam — til, 2-qadam — kim sifatida: mijoz (darhol bosh sahifa) yoki usta (raqam → anketa)
-  const [step, setStep] = useState<'lang' | 'role'>(useUser.getState().language ? 'role' : 'lang');
+  // 1-qadam — til, 2-qadam (faqat yangi foydalanuvchiga) — kim sifatida: mijoz (darhol bosh sahifa) yoki usta (raqam → anketa).
+  // Ro'yxatdan o'tgan odam so'ralmaydi — o'z rolida qoladi; usta bo'lish keyin Profil → "Usta bo'lib ishlash"
+  const [step, setStep] = useState<'lang' | 'role'>('lang');
   const choose = (lang: Lang) => {
     setLanguage(lang);
     setLang(lang);
-    setStep('role');
+    const u = useUser.getState();
+    if (!u.phone) setStep('role');
+    else if (u.role === 'master') asMaster();
+    else router.replace('/client');
   };
   const asClient = () => {
     useUser.getState().setRole('client');
