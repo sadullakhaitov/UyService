@@ -14,7 +14,9 @@ import {
   type AdminApi,
   type AdminMaster,
   type AdminOrder,
+  type AdminReport,
   type AdminReview,
+  type ReportKind,
   type AdminUser,
   type BalanceKind,
   type BalanceOp,
@@ -72,6 +74,7 @@ type DMaster = {
   hasSelfie: boolean;
   works: number;
 };
+type DReport = { id: string; orderId: string; kind: ReportKind; text: string | null; status: 'open' | 'resolved'; resolution: string | null; resolvedAt: number | null; createdAt: number; byMaster: boolean };
 type DOrder = {
   id: string;
   status: OrderStatus;
@@ -117,6 +120,8 @@ type DB = {
   categories: CatalogCategory[];
   problems: CatalogProblem[];
   promos: PromoCode[];
+  /** Murojaatlar (muammo, kafolat, eshik ochilmadi) — namunaviy */
+  reports?: DReport[];
   /** Shu qurilmadagi usta uchun admin qarorlari (blok, rad sababi) — qolgani ilova store'idan */
   local: { blockedAt: number | null; blockedReason: string | null; verifyNote: string | null; createdAt: number };
   seq: number;
@@ -513,6 +518,39 @@ function shift(db: DB, now: number) {
   db.generatedAt = now;
 }
 
+/** Namunaviy murojaatlar: kafolat (ochiq), ortiqcha pul (yopilgan), eshik ochilmadi (ochiq) */
+function demoReports(db: DB, now: number): DReport[] {
+  const done = db.orders.filter((o) => o.status === 'completed');
+  const out: DReport[] = [];
+  const add = (o: DOrder | undefined, kind: ReportKind, text: string, byMaster = false, resolution: string | null = null) => {
+    if (!o) return;
+    out.push({ id: `rep${out.length + 1}`, orderId: o.id, kind, text, status: resolution ? 'resolved' : 'open', resolution, resolvedAt: resolution ? now - 2 * 3_600_000 : null, createdAt: now - (out.length + 1) * 5 * 3_600_000, byMaster });
+  };
+  add(done[0], 'warranty', 'Kran yana tomchilayapti, 5 kun oldin almashtirilgan edi');
+  add(done[1], 'overcharge', 'Kelishilgan 120 000 edi, 150 000 oldi', false, "Usta bilan gaplashildi, 30 000 qaytarildi");
+  add(db.orders.find((o) => o.status === 'cancelled'), 'client_absent', "20 daqiqa kutdim, qo'ng'iroqqa javob bermadi", true);
+  return out;
+}
+
+function reportView(db: DB, r: DReport): AdminReport {
+  const o = db.orders.find((x) => x.id === r.orderId);
+  const reporterId = (r.byMaster ? o?.masterId : o?.clientId) ?? '';
+  const u = db.users.find((x) => x.id === reporterId);
+  const m = o?.masterId ? db.masters.find((x) => x.id === o.masterId) : undefined;
+  return {
+    ...r,
+    reporterId,
+    reporterName: u?.name ?? null,
+    reporterPhone: u?.phone ?? null,
+    categoryId: o?.categoryId ?? 'plumber',
+    problemId: o?.problemId ?? null,
+    orderStatus: o?.status ?? 'completed',
+    clientId: o?.clientId ?? '',
+    masterId: o?.masterId ?? null,
+    masterName: m ? `${m.firstName} ${m.lastName}` : null,
+  };
+}
+
 /** Sinov rejimidagi promokodlar — usta ilovasidagi (app/master/promo.tsx) bilan bir xil */
 function demoPromos(now: number): PromoCode[] {
   const p = (code: string, priority: number, bonus: number, uses: number): PromoCode => ({ code, priority, bonus, maxUses: null, uses, expiresAt: null, active: true, createdAt: now - 20 * DAY });
@@ -532,6 +570,7 @@ async function load(): Promise<DB> {
     }
     db ??= generate(Date.now());
     db.promos ??= demoPromos(Date.now()); // oldin saqlangan sinov ma'lumotlarida promokodlar yo'q edi
+    db.reports ??= demoReports(db, Date.now());
     shift(db, Date.now());
     cache = db;
     save();
@@ -1038,6 +1077,7 @@ export const demoAdmin: AdminApi = {
       offers: db.offers.filter((x) => x.orderId === id).sort((a, b) => a.sentAt - b.sentAt),
       chat: db.chats.filter((c) => c.orderId === id).sort((a, b) => a.at - b.at).map((c) => ({ id: c.id, senderId: c.senderId, mine: c.senderId === o.masterId, text: c.text, at: c.at })),
       review: r ? reviewView(db, r) : null,
+      reports: (db.reports ?? []).filter((x) => x.orderId === id).map((x) => reportView(db, x)),
     };
   },
 
@@ -1244,5 +1284,51 @@ export const demoAdmin: AdminApi = {
       pts.push({ id: o.id, kind: 'order', location: o.location, label: o.address, status: o.status, categoryId: o.categoryId });
     }
     return pts;
+  },
+
+  async reports(q) {
+    const db = await load();
+    await wait();
+    const rows = (db.reports ?? []).filter((r) => q.status === 'all' || r.status === q.status).sort((a, b) => b.createdAt - a.createdAt);
+    return paginate(rows.map((r) => reportView(db, r)), q.page, q.pageSize);
+  },
+
+  async resolveReport(id, note) {
+    const db = await load();
+    checkReason(note);
+    const r = (db.reports ?? []).find((x) => x.id === id);
+    if (!r) throw new AdminError('errors.notFound');
+    if (r.status === 'resolved') throw new AdminError('errors.reportClosed');
+    r.status = 'resolved';
+    r.resolution = clean(note);
+    r.resolvedAt = Date.now();
+    log(db, 'report_resolve', 'report', id, { kind: r.kind, order: r.orderId, note: r.resolution });
+    save();
+    await wait();
+  },
+
+  // Sinov rejimida haqiqiy statistika yo'q — namunaviy voronka (ilova serverga ulanganda haqiqiysi)
+  async funnel(days) {
+    await wait();
+    const k = Math.max(1, days) / 7;
+    const n = (x: number) => Math.round(x * k);
+    return [
+      { name: 'app_open', devices: n(620), events: n(1480) },
+      { name: 'order_open', devices: n(240), events: n(410) },
+      { name: 'order_submit', devices: n(150), events: n(190) },
+      { name: 'phone_open', devices: n(120), events: n(140) },
+      { name: 'signed_in', devices: n(96), events: n(101) },
+      { name: 'order_created', devices: n(88), events: n(131) },
+      { name: 'no_master', devices: n(14), events: n(17) },
+      { name: 'order_completed', devices: n(71), events: n(102) },
+      { name: 'rated', devices: n(52), events: n(74) },
+      { name: 'master_register_open', devices: n(40), events: n(55) },
+      { name: 'master_registered', devices: n(18), events: n(18) },
+    ];
+  },
+
+  async errors() {
+    await wait();
+    return [];
   },
 };

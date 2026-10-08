@@ -84,14 +84,14 @@ update public.orders set status = 'completed' where id = '00000000-0000-4000-810
 do $$ declare kinds text; begin
   select string_agg(kind || ':' || coalesce(params ->> 'name', params ->> 'category', params ->> 'sum', ''), ',' order by id) into kinds
     from public.push_outbox where user_id = '00000000-0000-4000-8000-00000000000c';
-  if kinds <> 'found:Pusher,arrived:plumber,price:250000,done:' then raise exception 'FAIL: mijoz push ketma-ketligi: %', kinds; end if;
+  if kinds <> 'found:Pusher,arrived:plumber,price:250000,done:250000' then raise exception 'FAIL: mijoz push ketma-ketligi: %', kinds; end if;
   if (select string_agg(kind, ',' order by id) from public.push_outbox where user_id = '00000000-0000-4000-8000-000000000001') <> 'offer,priceApproved' then
     raise exception 'FAIL: usta push: %', (select string_agg(kind, ',' order by id) from public.push_outbox where user_id = '00000000-0000-4000-8000-000000000001');
   end if;
   if (select url from public.push_outbox where kind = 'done') <> '/client/rate?id=00000000-0000-4000-8100-000000000001' then
     raise exception 'FAIL: done url';
   end if;
-  raise notice 'PASS: mijozga — Usta topildi → yetib keldi → narx → Ish tugadi; ustaga — narx tasdiqlandi';
+  raise notice 'PASS: mijozga — Usta topildi → yetib keldi → narx → Ish tugadi (chek: jami summa); ustaga — narx tasdiqlandi';
 end $$;
 
 -- ---------- Mijoz bekor qildi → ustaga ----------

@@ -20,7 +20,7 @@ import { confirm, notice } from '@/lib/dialog';
 import { mockMasterSelf } from '@/mocks';
 import { CancelSheet, MASTER_REASONS } from '@/components/sheets/CancelSheet';
 import { DISPATCH } from '@/constants/dispatch';
-import { useChats, useMaster, useMasterWork, useUser, type JobStage, type MasterJob } from '@/store';
+import { detailsText, useChats, useMaster, useMasterWork, useUser, type JobStage, type MasterJob } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 
 /** Bosqichlar yo'lagi: narx kelishish "Yetib keldi" bosqichining bir qismi */
@@ -138,6 +138,13 @@ function JobView({ job }: { job: MasterJob }) {
     }
   }
 
+  // Yetib keldi, mijoz eshikni ochmadi / javob bermadi: buyurtma to'lovsiz yopiladi, aktivlik kamaymaydi (adminga murojaat)
+  const clientAbsent = async () => {
+    if (!(await confirm(t('job.clientAbsentTitle'), t('job.clientAbsentText'), t('job.clientAbsentConfirm'), true))) return;
+    if (LIVE && !(await serverStep(() => liveJob.clientAbsent(job.id)))) return;
+    finishJob();
+  };
+
   const checkCode = async () => {
     if (LIVE) {
       // Kodni server tekshiradi (usta uni oldindan bilmaydi); 5 marta xato — 10 daqiqa kutish
@@ -208,6 +215,12 @@ function JobView({ job }: { job: MasterJob }) {
                 {step === 'on_the_way' ? ` · ${t('common.min', { value: eta })}` : ''}
               </Text>
             </View>
+            {/* Podyezd, qavat, xonadon, domofon, mo'ljal — mijoz yozgan bo'lsa */}
+            {detailsText(job.details) ? (
+              <Text variant="small" style={styles.details}>
+                {detailsText(job.details)}
+              </Text>
+            ) : null}
           </View>
           <IconButton
             icon={MessageCircle}
@@ -299,6 +312,7 @@ function JobView({ job }: { job: MasterJob }) {
         ) : null}
         {step === 'in_progress' ? <Button title={t('job.finishBtn')} big onPress={() => finish(job.work + job.parts, 'approved')} /> : null}
         {step === 'completed' ? <Button title={t('common.continue')} big onPress={finishJob} /> : null}
+        {step === 'arrived' ? <Button title={t('job.clientAbsent')} kind="secondary" onPress={clientAbsent} /> : null}
         {step === 'on_the_way' || step === 'arrived' ? (
           <Button title={t('cancel.masterBtn')} kind="secondary" onPress={() => setCancelling(true)} />
         ) : null}
@@ -351,6 +365,7 @@ const styles = themed(() => ({
   stepText: { fontFamily: fonts.medium, fontSize: 11, color: colors.ink2 },
   client: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   addr: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
+  details: { marginTop: 4, color: colors.ink, fontFamily: fonts.medium },
   price: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   codeInput: {
     height: 56,

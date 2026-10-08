@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Bell, ChevronRight, LogOut } from 'lucide-react-native';
+import { Bell, ChevronRight, LogOut, Trash2 } from 'lucide-react-native';
 import { ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader, Squish, Text } from '@/components/ui';
@@ -9,6 +9,7 @@ import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { confirm } from '@/lib/dialog';
 import { t } from '@/lib/i18n';
 import { guardActiveJob } from '@/lib/masterGuard';
+import { deleteAccount } from '@/lib/account';
 import { askNotifications } from '@/lib/notify';
 import { useMaster, useUser } from '@/store';
 
@@ -77,6 +78,16 @@ export default function Settings() {
             <LogOut size={22} color={colors.danger} strokeWidth={2} />
           </View>
           <Text style={[styles.label, { color: colors.danger }]}>{t('profile.logout')}</Text>
+        </Squish>
+
+        <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => guardActiveJob(() => void deleteAccount())} style={styles.row}>
+          <View style={styles.icon}>
+            <Trash2 size={22} color={colors.danger} strokeWidth={2} />
+          </View>
+          <View style={styles.flex}>
+            <Text style={[styles.label, { color: colors.danger }]}>{t('account.delete')}</Text>
+            <Text variant="caption">{t('account.deleteHint')}</Text>
+          </View>
         </Squish>
       </ScrollView>
     </SafeAreaView>

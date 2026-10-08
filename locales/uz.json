@@ -40,7 +40,8 @@
     "tgHint": "Raqamingizni Telegram tasdiqlaydi — SMS kutish shart emas. Yoki raqamni yozib SMS kod oling.",
     "tgDenied": "Raqam ulashilmadi. Qayta urinib ko'ring yoki SMS kod bilan kiring.",
     "tgNotUz": "Telegram'dagi raqam O'zbekiston raqami emas. Raqamni yozib SMS kod bilan kiring.",
-    "tgFailed": "Telegram orqali kirib bo'lmadi. Qayta urinib ko'ring yoki SMS kod bilan kiring."
+    "tgFailed": "Telegram orqali kirib bo'lmadi. Qayta urinib ko'ring yoki SMS kod bilan kiring.",
+    "loginToSupport": "Yozishma raqamingizga bog'lanadi — javob shu yerga keladi"
   },
   "categories": {
     "plumber": "Santexnik",
@@ -109,7 +110,13 @@
     "noAddressText": "Usta qayerga kelishini tanlang.",
     "removePhoto": "Rasmni o'chirish",
     "sendFailedTitle": "Buyurtma yuborilmadi",
-    "sendFailedText": "Internetni tekshirib, qayta urinib ko'ring."
+    "sendFailedText": "Internetni tekshirib, qayta urinib ko'ring.",
+    "limits": {
+      "too_many_active": "Bir vaqtda ko'pi bilan 3 ta faol buyurtma bo'lishi mumkin. Avvalgisi tugashini kuting yoki bekor qiling.",
+      "too_many_today": "Bugun juda ko'p buyurtma berildi. Ertaga urinib ko'ring yoki \"Yordam\"ga yozing.",
+      "no_show_limit": "Oxirgi 30 kunda usta 3 marta kelganda eshik ochilmagan. Buyurtma berish uchun \"Yordam\" chatiga yozing.",
+      "blocked": "Hisobingiz vaqtincha bloklangan. Profil → \"Yordam\" orqali bog'laning."
+    }
   },
   "searching": {
     "title": "Usta qidirilmoqda",
@@ -190,7 +197,9 @@
     "statusCompleted": "Bajarildi",
     "statusCancelled": "Bekor qilingan",
     "noMaster": "Usta biriktirilmagan",
-    "statusInspection": "Faqat ko'rik"
+    "statusInspection": "Faqat ko'rik",
+    "warranty": "Kafolat · {{days}} kun",
+    "problem": "Muammo bor"
   },
   "master": {
     "online": "Onlayn",
@@ -246,7 +255,11 @@
     "serverErrorTitle": "Saqlanmadi",
     "serverErrorText": "Server bilan aloqa yo'q. Internetni tekshirib, qayta bosing.",
     "codeLockedTitle": "Kod tekshirilmadi",
-    "codeLockedText": "Juda ko'p noto'g'ri urinish. 10 daqiqadan keyin qayta urinib ko'ring yoki qo'llab-quvvatlashga yozing."
+    "codeLockedText": "Juda ko'p noto'g'ri urinish. 10 daqiqadan keyin qayta urinib ko'ring yoki qo'llab-quvvatlashga yozing.",
+    "clientAbsent": "Mijoz eshikni ochmadi",
+    "clientAbsentTitle": "Mijoz eshikni ochmadimi?",
+    "clientAbsentText": "Kamida 10 daqiqa kutib, qo'ng'iroq qilib ko'rdingizmi? Buyurtma to'lovsiz yopiladi, aktivligingiz kamaymaydi. Admin tekshiradi.",
+    "clientAbsentConfirm": "Ha, buyurtmani yopish"
   },
   "earnings": {
     "changePlan": "Tarifni o'zgartirish"
@@ -387,7 +400,19 @@
     "language": "Til",
     "logout": "Chiqish",
     "namePlaceholder": "Ismingiz",
-    "logoutActive": "Sizda {{count}} ta faol buyurtma bor. Chiqsangiz, ular shu telefondan o'chadi."
+    "logoutActive": "Sizda {{count}} ta faol buyurtma bor. Chiqsangiz, ular shu telefondan o'chadi.",
+    "support": "Yordam",
+    "supportHint": "Savol yoki muammo bo'lsa yozing — javob beramiz",
+    "delete": "Hisobni o'chirish",
+    "deleteHint": "Raqam, ism va yozishmalar o'chiriladi",
+    "deleteTitle": "Hisobni o'chirasizmi?",
+    "deleteText": "Raqamingiz, ismingiz, yozishmalar va yuklagan rasmlaringiz butunlay o'chiriladi. Buyurtmalar tarixi ismsiz saqlanadi (hisob-kitob uchun). Buni qaytarib bo'lmaydi.",
+    "deleteConfirm": "O'chirish",
+    "deleteFailedTitle": "Hisob o'chirilmadi",
+    "deleteActive": "Avval faol buyurtmani yakunlang yoki bekor qiling.",
+    "deleteAdmin": "Admin o'z hisobini o'chira olmaydi — avval boshqa admin sizni adminlikdan olsin.",
+    "deletedTitle": "Hisob o'chirildi",
+    "deletedText": "Ma'lumotlaringiz o'chirildi. Xohlasangiz, keyin yana ro'yxatdan o'tishingiz mumkin."
   },
   "address": {
     "title": "Manzilni qidirish",
@@ -396,7 +421,21 @@
     "hint": "Kamida 3 ta harf yozing. Xaritani surib ham tanlash mumkin",
     "empty": "Hech narsa topilmadi. Boshqacha yozib ko'ring yoki xaritadan tanlang",
     "noLocationTitle": "Joylashuv aniqlanmadi",
-    "noLocationText": "Telefon sozlamalarida joylashuvga ruxsat bering va GPS'ni yoqing yoki manzilni yozib qidiring."
+    "noLocationText": "Telefon sozlamalarida joylashuvga ruxsat bering va GPS'ni yoqing yoki manzilni yozib qidiring.",
+    "detailsTitle": "Uy tafsiloti",
+    "detailsHint": "Ko'p qavatli uy bo'lsa to'ldiring — usta adashmaydi. Usta buyurtmani qabul qilgandan keyin ko'radi",
+    "entrance": "Podyezd",
+    "floor": "Qavat",
+    "apartment": "Xonadon",
+    "intercom": "Domofon kodi",
+    "landmark": "Mo'ljal yoki izoh",
+    "landmarkPlaceholder": "Masalan: maktab yonida, ko'k darvoza",
+    "entranceShort": "{{v}}-podyezd",
+    "floorShort": "{{v}}-qavat",
+    "apartmentShort": "{{v}}-xonadon",
+    "intercomShort": "domofon {{v}}",
+    "landmarkShort": "mo'ljal: {{v}}",
+    "change": "O'zgartirish"
   },
   "schedule": {
     "today": "Bugun",
@@ -422,7 +461,11 @@
     "doneTitle": "Ish tugadi",
     "doneBody": "Ustani baholang — bu boshqalarga yordam beradi",
     "requeuedTitle": "Usta bekor qildi",
-    "requeuedBody": "Qayta chaqirish shart emas — yangi usta qidirilmoqda"
+    "requeuedBody": "Qayta chaqirish shart emas — yangi usta qidirilmoqda",
+    "absentTitle": "Usta sizni topa olmadi",
+    "absentBody": "Usta keldi, lekin eshik ochilmadi — buyurtma yopildi",
+    "adminCancelTitle": "Buyurtma bekor qilindi",
+    "adminCancelBody": "UyService buyurtmani bekor qildi. Savol bo'lsa — Profil → \"Yordam\""
   },
   "register": {
     "step": "{{n}}/{{total}}-qadam",
@@ -536,7 +579,9 @@
       "clientNoAnswer": "Mijoz javob bermayapti",
       "tooFar": "Juda uzoq ekan",
       "emergency": "Favqulodda holat (mashina buzildi va h.k.)",
-      "wrongProblem": "Muammo boshqacha, men qila olmayman"
+      "wrongProblem": "Muammo boshqacha, men qila olmayman",
+      "clientAbsent": "Usta keldi, eshik ochilmadi",
+      "byAdmin": "UyService bekor qildi"
     }
   },
   "reviews": {
@@ -649,7 +694,9 @@
       "finance": "Moliya",
       "catalog": "Narxlar va katalog",
       "log": "Amallar jurnali",
-      "settings": "Sozlamalar"
+      "settings": "Sozlamalar",
+      "reports": "Murojaatlar",
+      "stats": "Statistika"
     },
     "navGroup": {
       "main": "Asosiy",
@@ -807,7 +854,8 @@
       "revokeSelf": "O'zingizni adminlikdan olib tashlay olmaysiz",
       "network": "Internet bilan aloqa yo'q. Qayta urinib ko'ring",
       "promoCode": "Kod — 3–20 ta lotin harfi yoki raqam",
-      "promoValue": "Prioritet (0–50) yoki bonus (1 mln gacha) kerak; chegara 1–100 000"
+      "promoValue": "Prioritet (0–50) yoki bonus (1 mln gacha) kerak; chegara 1–100 000",
+      "reportClosed": "Murojaat allaqachon yopilgan"
     },
     "login": {
       "title": "Admin panelga kirish",
@@ -1210,7 +1258,8 @@
         "problem": "Narx oralig'i o'zgardi",
         "grant_admin": "Admin qo'shildi",
         "revoke_admin": "Admin olib tashlandi",
-        "promo": "Promokod saqlandi"
+        "promo": "Promokod saqlandi",
+        "report_resolve": "Murojaatni yopdi"
       },
       "t": {
         "master": "usta",
@@ -1220,7 +1269,8 @@
         "category": "kategoriya",
         "problem": "muammo",
         "support": "murojaat",
-        "promo": "promokod"
+        "promo": "promokod",
+        "report": "Murojaat"
       }
     },
     "settings": {
@@ -1276,6 +1326,65 @@
       "expired": "Muddati o'tgan",
       "full": "Chegara to'ldi",
       "off": "o'chirildi"
+    },
+    "reports": {
+      "subtitle": "{{n}} ta murojaat",
+      "hint": "Mijozning muammo va kafolat murojaatlari, ustaning \"mijoz eshikni ochmadi\" xabarlari. Javobni qo'llab-quvvatlash chatida yozing, keyin yechim bilan yoping.",
+      "tab": {
+        "open": "Ochiq",
+        "resolved": "Yopilgan",
+        "all": "Hammasi"
+      },
+      "status": {
+        "open": "Ochiq",
+        "resolved": "Yopilgan"
+      },
+      "empty": "Murojaatlar yo'q",
+      "emptyOpen": "Ochiq murojaat yo'q — hammasi hal qilingan",
+      "fromClient": "Mijoz",
+      "fromMaster": "Usta",
+      "resolution": "Yechim",
+      "reply": "Chatda javob berish",
+      "resolve": "Yopish",
+      "resolveTitle": "Murojaatni yopish",
+      "resolved": "Murojaat yopildi",
+      "p1": "Usta qayta kelib bepul tuzatdi",
+      "p2": "Ortiqcha pul qaytarildi",
+      "p3": "Tekshirildi, muammo tasdiqlanmadi",
+      "forOrder": "Murojaatlar",
+      "all": "Hammasi"
+    },
+    "stats": {
+      "subtitle": "Mijozlar qayerda tashlab ketyapti va ilovada qanday xatolar bor",
+      "days": "{{n}} kun",
+      "demo": "Sinov rejimi — namunaviy raqamlar",
+      "clientFunnel": "Mijoz voronkasi",
+      "funnelSub": "Qurilmalar soni; foiz — oldingi bosqichdan o'tganlar",
+      "masterFunnel": "Usta voronkasi",
+      "problems": "Muammolar",
+      "errors": "Ilovadagi xatolar",
+      "errorsSub": "Bir xil xatolar birlashtirilgan; bosilsa — texnik tafsilot",
+      "noErrors": "Xato yo'q",
+      "times": "{{n}} marta",
+      "devices": "{{n}} qurilma",
+      "ev": {
+        "app_open": "Ilovani ochdi",
+        "order_open": "Buyurtma ekrani",
+        "order_submit": "\"Usta chaqirish\"ni bosdi",
+        "phone_open": "Raqam ekrani",
+        "signed_in": "Raqamni tasdiqladi",
+        "order_created": "Buyurtma yaratildi",
+        "order_completed": "Ish bajarildi",
+        "rated": "Baho qo'ydi",
+        "master_register_open": "Usta anketasini ochdi",
+        "master_registered": "Anketani yubordi",
+        "master_online": "Ishga chiqdi",
+        "no_master": "Bo'sh usta topilmadi",
+        "order_failed": "Buyurtma yuborilmadi",
+        "report_sent": "Murojaat yubordi",
+        "account_deleted": "Hisobni o'chirdi"
+      },
+      "signin": "Ro'yxatdan o'tish"
     }
   },
   "home": {
@@ -1315,5 +1424,33 @@
     "4": "Pa",
     "5": "Ju",
     "6": "Sh"
+  },
+  "report": {
+    "title": "Qanday muammo?",
+    "hint": "Admin ko'rib chiqadi va javobni \"Yordam\" chatiga yozadi",
+    "warrantyTitle": "Kafolat bo'yicha murojaat",
+    "warrantyHint": "Shu ish bo'yicha muammo qaytadan chiqdimi? Usta bepul qayta keladi; kela olmasa, UyService boshqa ustani yuboradi. Javob \"Yordam\" chatiga keladi.",
+    "warrantyPlaceholder": "Nima bo'ldi? Masalan: kran yana oqyapti",
+    "placeholder": "Batafsil yozing (ixtiyoriy)",
+    "placeholderRequired": "Nima bo'lganini yozing",
+    "send": "Yuborish",
+    "kinds": {
+      "warranty": "Kafolat bo'yicha murojaat",
+      "overcharge": "Kelishilgandan ko'p pul olindi",
+      "quality": "Ish sifatsiz bajarildi",
+      "no_show_master": "Usta kelmadi",
+      "client_absent": "Mijoz eshikni ochmadi",
+      "other": "Boshqa"
+    },
+    "sentTitle": "Murojaat yuborildi",
+    "sentText": "Admin ko'rib chiqadi. Javob Profil → \"Yordam\" chatiga keladi.",
+    "sentWarranty": "Usta bilan bog'lanamiz. Javob Profil → \"Yordam\" chatiga keladi.",
+    "failedTitle": "Yuborilmadi",
+    "errors": {
+      "warranty_expired": "Kafolat muddati (30 kun) tugagan yoki bu buyurtmada faqat ko'rik bo'lgan. \"Muammo bor\" orqali yozing.",
+      "text_required": "Nima bo'lganini qisqacha yozing.",
+      "too_many_open": "Sizda 5 ta ochiq murojaat bor. Avval ularga javob kuting.",
+      "already_open": "Bu buyurtma bo'yicha murojaatingiz ko'rib chiqilmoqda."
+    }
   }
 }

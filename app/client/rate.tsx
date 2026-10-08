@@ -10,6 +10,7 @@ import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
 import { useActiveOrder, useHistory, useOrders, useUser } from '@/store';
 import { LIVE, liveRate } from '@/lib/live';
+import { track } from '@/lib/track';
 import { shareText } from '@/lib/share';
 
 const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
@@ -44,6 +45,8 @@ export default function Rate() {
 
   const finish = () => {
     if (fav) toggleFavorite(master.id, true);
+    track('order_completed', { category: categoryId, inspection: declined });
+    if (stars) track('rated', { stars });
     if (LIVE && stars && order?.masterId) void liveRate(order.id, order.masterId, stars, tags, comment.trim()).catch(() => {});
     // Tarixga: narx, baho, teglar, izoh (server rejimida — reviews jadvaliga ham, liveRate)
     addHistory({
@@ -51,6 +54,7 @@ export default function Rate() {
       categoryId,
       problemId,
       masterId: master.id,
+      masterName: master.name,
       at: Date.now(),
       price: total,
       status: 'completed',

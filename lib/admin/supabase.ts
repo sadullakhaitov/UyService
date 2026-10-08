@@ -9,6 +9,7 @@ import {
   type AdminApi,
   type AdminMaster,
   type AdminOrder,
+  type AdminReport,
   type AdminReview,
   type AdminUser,
   type BalanceOp,
@@ -117,6 +118,35 @@ function toOrder(r: Row): AdminOrder {
     masterId: r.master_id,
     masterName: r.master_name,
     masterPhone: r.master_phone,
+    entrance: r.entrance ?? null,
+    floor: r.floor ?? null,
+    apartment: r.apartment ?? null,
+    intercom: r.intercom ?? null,
+    landmark: r.landmark ?? null,
+    openReports: r.open_reports ?? 0,
+  };
+}
+
+function toReport(r: Row): AdminReport {
+  return {
+    id: r.id,
+    orderId: r.order_id,
+    kind: r.kind,
+    text: r.text,
+    status: r.status,
+    resolution: r.resolution,
+    resolvedAt: ms(r.resolved_at),
+    createdAt: ms(r.created_at) ?? 0,
+    reporterId: r.reporter_id,
+    reporterName: r.reporter_name,
+    reporterPhone: r.reporter_phone,
+    byMaster: Boolean(r.by_master),
+    categoryId: r.category_id,
+    problemId: r.problem_id,
+    orderStatus: r.order_status,
+    clientId: r.client_id,
+    masterId: r.master_id,
+    masterName: r.master_name,
   };
 }
 
@@ -341,11 +371,12 @@ export const supabaseAdmin: AdminApi = {
     if (error) fail(error);
     if (!data) return null;
     const order = toOrder(data);
-    const [photos, offers, chat, review] = await Promise.all([
+    const [photos, offers, chat, review, reports] = await Promise.all([
       signed(ORDER_PHOTOS, order.photos),
       db().from('offers').select('*, master:masters(first_name, last_name)').eq('order_id', id).order('sent_at'),
       db().from('chat_messages').select('*').eq('order_id', id).order('created_at').limit(500),
       db().from('admin_reviews').select('*').eq('order_id', id).maybeSingle(),
+      db().from('admin_reports').select('*').eq('order_id', id).order('created_at'),
     ]);
     return {
       order,
@@ -364,6 +395,7 @@ export const supabaseAdmin: AdminApi = {
       })),
       chat: (chat.data ?? []).map((m: Row) => ({ id: m.id, senderId: m.sender_id, mine: m.sender_id === order.masterId, text: m.text, at: ms(m.created_at) ?? 0 })),
       review: review.data ? toReview(review.data) : null,
+      reports: (reports.data ?? []).map(toReport),
     };
   },
 
@@ -524,5 +556,38 @@ export const supabaseAdmin: AdminApi = {
       pts.push({ id: r.id, kind: 'order', location: { latitude: r.lat, longitude: r.lng }, label: r.address ?? '', status: r.status, categoryId: r.category_id });
     }
     return pts;
+  },
+
+  async reports(q) {
+    let r = db().from('admin_reports').select('*', { count: 'exact' });
+    if (q.status !== 'all') r = r.eq('status', q.status);
+    const { data, count, error } = await r.order('created_at', { ascending: false }).range(...range(q.page, q.pageSize));
+    if (error) fail(error);
+    return { rows: (data ?? []).map(toReport), total: count ?? 0 };
+  },
+
+  async resolveReport(id, note) {
+    checkReason(note);
+    await rpc('admin_resolve_report', { p_report: id, p_note: clean(note) });
+  },
+
+  async funnel(days) {
+    const { data, error } = await db().rpc('admin_funnel', { p_days: days });
+    if (error) fail(error);
+    return ((data ?? []) as Row[]).map((r) => ({ name: r.name, devices: Number(r.devices), events: Number(r.events) }));
+  },
+
+  async errors(days) {
+    const { data, error } = await db().rpc('admin_errors', { p_days: days });
+    if (error) fail(error);
+    return ((data ?? []) as Row[]).map((r) => ({
+      message: r.message,
+      screen: r.screen,
+      platform: r.platform,
+      count: Number(r.count),
+      devices: Number(r.devices),
+      lastAt: ms(r.last_at) ?? 0,
+      stack: r.stack,
+    }));
   },
 };

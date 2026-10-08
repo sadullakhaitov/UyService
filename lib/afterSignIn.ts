@@ -5,17 +5,22 @@ import { useEffect } from 'react';
 import { useMaster, useUser } from '@/store';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { displayPhone, telegram, telegramSignIn } from './telegram';
+import { track } from './track';
 
 export function afterSignIn(phone: string, next: string | undefined, name?: string) {
   const u = useUser.getState();
   u.setPhone(phone);
   if (name && !u.name) u.setName(name);
+  track('signed_in', { next: next ?? '' });
   if (next === 'order') {
     router.dismissTo({ pathname: '/client/order', params: { autoSubmit: '1' } });
   } else if (next === 'master') {
     u.setRole('master');
     const registered = Boolean(useMaster.getState().profile.submittedAt);
     router.replace(!registered ? '/master/register' : u.billingPlan ? '/master' : '/master/plan');
+  } else if (next === 'support') {
+    router.dismissTo('/client/account');
+    router.push('/client/chat?id=support');
   } else {
     router.dismissTo('/client/account');
   }

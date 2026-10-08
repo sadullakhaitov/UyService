@@ -10,6 +10,10 @@ loyiha papkasida (`UyService`) yoziladi.
 > `powershell -ExecutionPolicy Bypass -File supabase\setup.ps1` (URL, anon kalit, baza paroli va bot tokenini
 > so'raydi; oxirida SQL Editor'ga qo'yiladigan 2 qatorni nusxalab beradi). Quyidagi bo'limlar — qo'lda qilish yoki
 > nima bo'layotganini tushunish uchun.
+>
+> **Keyingi yangilanishlar** (yangi migratsiya yoki funksiya qo'shilganda): `git pull`, keyin
+> `powershell -ExecutionPolicy Bypass -File supabase\update.ps1` — faqat `db push` va `functions deploy`
+> (sirlar, cron va Telegram o'zgarmaydi, SQL Editor'da hech narsa qilish shart emas).
 
 ---
 
@@ -244,6 +248,23 @@ Cloudflare'ga ham bir marta yozish kerak, aks holda sayt sinov rejimida qolavera
    (qiymatlari `.env`dagi bilan bir xil).
 3. **Deployments** → oxirgisi → **Retry deployment** (yoki GitHub'ga yangi push). Tepadagi "Sinov rejimi" belgisi
    yo'qolsa — sayt serverga ulandi.
+
+## 16. Mijozni himoya qilish, murojaatlar, statistika (`…_client_care.sql`)
+
+- **Uy tafsiloti**: `orders.entrance / floor / apartment / intercom / landmark` — usta qabul qilgach ko'radi, admin buyurtma sahifasida.
+- **Chegaralar** (`orders_limits`): mijozda bir vaqtda ko'pi bilan 3 ta faol buyurtma, sutkasiga 10 ta; 30 kunda 3 marta
+  "mijoz eshikni ochmadi" bo'lsa — yangi buyurtma yopiq (admin bilan gaplashguncha). Admin cheklanmaydi.
+- **Murojaatlar** (`order_reports`): mijoz — `report_order` (kafolat 30 kun ichida va faqat narxga rozi bo'lingan ishga;
+  ortiqcha pul, sifat, usta kelmadi, boshqa); usta — `master_client_absent` (yetib kelgandan keyin; buyurtma to'lovsiz yopiladi,
+  aktivlik kamaymaydi, mijozga xabar). Har murojaat qo'llab-quvvatlash chatiga ham yoziladi. Admin → "Murojaatlar" (`admin_reports`,
+  `admin_resolve_report`, jurnalga yoziladi).
+- **Chek**: "Ish tugadi" push/Telegram xabarida jami summa (naqd) va kafolat.
+- **Hisobni o'chirish** (`delete_my_account`): raqam, ism, push, Telegram, ustaning ismi/hujjat yo'llari, joylashuvi va
+  qo'llab-quvvatlash yozishmalari o'chadi; kirish yopiladi (auth.users raqami bo'shatiladi, bloklanadi). Buyurtmalar, baholar,
+  balans tarixi anonim qoladi. Faol buyurtma bo'lsa yoki admin bo'lsa — rad. Fayllarni ilova o'zi o'chiradi (Storage, o'z papkasi).
+- **Statistika** (`app_events`, `app_errors`): ilova yozadi (anon ham), faqat admin o'qiydi; qurilmadan daqiqasiga ≤ 60 hodisa,
+  ≤ 20 xato. Admin → "Statistika" (`admin_funnel`, `admin_errors`): voronka va xatolar.
+- Sinov: `tests/client_care_test.sql`.
 
 ## Eskiz.uz hali yo'q bo'lsa
 

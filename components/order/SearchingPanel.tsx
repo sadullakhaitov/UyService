@@ -2,6 +2,7 @@
 import { router } from 'expo-router';
 import { CalendarClock, ChevronLeft, SearchX } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
+import { track } from '@/lib/track';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MapBaseProps } from '@/components/map';
@@ -62,6 +63,9 @@ export function SearchingPanel({ order, onHeight, onRetry }: { order: ActiveOrde
 
   const cat = getCategory(order.categoryId);
   const none = order.none;
+  useEffect(() => {
+    if (none) track('no_master', { category: order.categoryId });
+  }, [none]); // eslint-disable-line react-hooks/exhaustive-deps
   const scheduled = order.status === 'scheduled';
   const info = searchInfo(order);
 

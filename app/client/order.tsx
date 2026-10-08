@@ -12,22 +12,35 @@ import { askNotifications } from '@/lib/notify';
 import { isOnline } from '@/lib/useOnline';
 import { DEMO } from '@/lib/demo';
 import { DAYS_AHEAD, dayOffsetOf, firstSlot, slotStillValid, slotsFor } from '@/lib/schedule';
-import { useOrder, useOrders, useUser } from '@/store';
+import { emptyDetails, useOrder, useOrders, useUser, type AddressDetails } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 import { pickImages } from '@/lib/photos';
 import { LIVE, liveCreateOrder } from '@/lib/live';
+import { track } from '@/lib/track';
 
 const MAX_PHOTOS = 3;
 
 export default function OrderScreen() {
   useScheme();
-  const { categoryId, problemId, description, photos, address, setDraft, scheduledAt } = useOrder();
+  const { categoryId, problemId, description, photos, address, setDraft, scheduledAt, details } = useOrder();
   const create = useOrders((s) => s.create);
   const phone = useUser((s) => s.phone);
   const { autoSubmit } = useLocalSearchParams<{ autoSubmit?: string }>();
   const category = getCategory(categoryId);
   const list = [...problemsOf(categoryId).map((p) => p.id), 'other'];
   const problem = problems.find((p) => p.id === problemId);
+
+  useEffect(() => track('order_open', { category: categoryId }), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Xuddi shu manzilga oldin buyurtma berilgan bo'lsa — podyezd/qavat/xonadon o'zi to'ldiriladi
+  useEffect(() => {
+    const saved = useUser.getState().savedDetails;
+    const empty = !Object.values(useOrder.getState().details).some(Boolean);
+    if (empty && saved && saved.address === address) {
+      const { address: _a, ...d } = saved;
+      setDraft({ details: d });
+    }
+  }, [address]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Ikki marta tez bosilsa ikkita buyurtma yaratilmasin
   const [submitting, setSubmitting] = useState(false);
@@ -70,6 +83,7 @@ export default function OrderScreen() {
       return;
     }
     askNotifications();
+    track('order_submit', { category: categoryId });
     busy.current = true;
     let serverId: string | undefined;
     if (LIVE) {
@@ -86,13 +100,20 @@ export default function OrderScreen() {
           return;
         }
         const reason = e instanceof Error ? e.message : String(e);
-        notice(t('order.sendFailedTitle'), `${t('order.sendFailedText')}\n\n${reason}`);
+        // Server chegaralari (suiiste'mollikdan himoya) va bloklangan mijoz — tushunarli matn
+        const limit = ['too_many_active', 'too_many_today', 'no_show_limit'].find((k) => reason.includes(k));
+        const blocked = reason.includes('row-level security');
+        track('order_failed', { reason: limit ?? (blocked ? 'blocked' : 'error') });
+        if (limit || blocked) notice(t('order.sendFailedTitle'), t(`order.limits.${limit ?? 'blocked'}`));
+        else notice(t('order.sendFailedTitle'), `${t('order.sendFailedText')}\n\n${reason}`);
         return;
       }
       setSubmitting(false);
     }
+    track('order_created', { category: categoryId, scheduled: scheduledAt !== null });
     const id = create(serverId);
     if (scheduledAt !== null) setDraft({ scheduledAt: null }); // keyingi buyurtma yana "Hozir kerak"
+    useUser.getState().setSavedDetails(Object.values(details).some(Boolean) ? { ...details, address } : null);
     router.replace(`/client/searching?id=${id}`);
   };
 
@@ -162,6 +183,8 @@ export default function OrderScreen() {
             <Text variant="caption">{t('order.photoHint')}</Text>
           </View>
 
+          <AddressSection address={address} details={details} onChange={(d) => setDraft({ details: d })} />
+
           <Card>
             <Row label={t('order.callFee')} value={formatSum(category.callFee)} />
             <Row
@@ -209,6 +232,53 @@ export default function OrderScreen() {
   );
 }
 
+// Manzil va uy tafsiloti: podyezd, qavat, xonadon, domofon, mo'ljal (ixtiyoriy; usta qabul qilgach ko'radi)
+function AddressSection({ address, details, onChange }: { address: string; details: AddressDetails; onChange: (d: AddressDetails) => void }) {
+  useScheme();
+  const set = (k: keyof AddressDetails) => (v: string) => onChange({ ...details, [k]: v });
+  const field = (k: keyof AddressDetails, numeric?: boolean) => (
+    <View style={styles.detailCell}>
+      <Text variant="caption">{t(`address.${k}`)}</Text>
+      <TextInput
+        value={details[k]}
+        onChangeText={set(k)}
+        maxLength={12}
+        keyboardType={numeric ? 'number-pad' : 'default'}
+        accessibilityLabel={t(`address.${k}`)}
+        style={styles.detailInput}
+      />
+    </View>
+  );
+  return (
+    <View style={styles.section}>
+      <Text variant="h3">{t('address.detailsTitle')}</Text>
+      <Squish accessibilityRole="button" onPress={() => router.push('/client/address')} style={styles.addrRow}>
+        <MapPin size={18} color={colors.accent} strokeWidth={2.4} />
+        <Text variant="bodyBold" numberOfLines={2} style={styles.flex}>
+          {address || t('client.mapPoint')}
+        </Text>
+        <Text style={styles.addrChange}>{t('address.change')}</Text>
+      </Squish>
+      <View style={styles.detailGrid}>
+        {field('entrance', true)}
+        {field('floor', true)}
+        {field('apartment')}
+        {field('intercom')}
+      </View>
+      <TextInput
+        value={details.landmark}
+        onChangeText={set('landmark')}
+        maxLength={120}
+        placeholder={t('address.landmarkPlaceholder')}
+        placeholderTextColor={colors.muted}
+        accessibilityLabel={t('address.landmark')}
+        style={styles.detailInput}
+      />
+      <Text variant="caption">{t('address.detailsHint')}</Text>
+    </View>
+  );
+}
+
 // Kun va soat tanlash (usta shu vaqtda keladi)
 /** "Bugun" / "Ertaga" / "Ju, 17-oktabr" — uzoq kunlarda hafta kuni ham */
 function dayLabel(ms: number) {
@@ -251,6 +321,21 @@ function SchedulePicker({ value, onChange, color, onColor }: { value: number; on
 
 const styles = themed(() => ({
   whenHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  addrRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.line },
+  addrChange: { fontFamily: fonts.bold, fontSize: 13, color: colors.primary },
+  detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  detailCell: { flexGrow: 1, flexBasis: '22%', minWidth: 72, gap: 4 },
+  detailInput: {
+    height: 46,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    fontFamily: fonts.regular,
+    fontSize: 16,
+    color: colors.ink,
+    backgroundColor: colors.surface,
+  },
   slots: { gap: 8 },
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },

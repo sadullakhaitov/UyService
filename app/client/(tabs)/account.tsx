@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ChevronRight, FileText, Globe, Info, LogIn, LogOut, ReceiptText, Shield, Wrench } from 'lucide-react-native';
+import { ChevronRight, FileText, Globe, Info, LifeBuoy, LogIn, LogOut, ReceiptText, Shield, Trash2, Wrench } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,8 @@ import { ThemePicker } from '@/components/ui/ThemePicker';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { confirm } from '@/lib/dialog';
 import { t } from '@/lib/i18n';
+import { deleteAccount } from '@/lib/account';
+import { DEMO } from '@/lib/demo';
 import { useMaster, useOrders, useUser } from '@/store';
 
 // Mijoz profili: ro'yxatdan o'tmagan bo'lsa ham ochiladi (mehmon)
@@ -71,6 +73,8 @@ export default function Account() {
         {guest ? <Row icon={LogIn} label={t('account.login')} onPress={() => router.push('/phone')} primary /> : null}
         <Row icon={ReceiptText} label={t('client.history')} onPress={() => router.push('/client/history')} />
         <Row icon={Wrench} label={t('account.beMaster')} hint={t('account.beMasterHint')} onPress={beMaster} />
+        {/* Qo'llab-quvvatlash: admin javob beradi (server rejimida raqam kerak — yozishma shu raqamga bog'lanadi) */}
+        <Row icon={LifeBuoy} label={t('account.support')} hint={t('account.supportHint')} onPress={() => router.push(guest && !DEMO ? '/phone?next=support' : '/client/chat?id=support')} />
 
         <Text style={styles.section}>{t('account.language')}</Text>
         <LanguagePicker />
@@ -84,23 +88,25 @@ export default function Account() {
         <Row icon={Shield} label={t('legal.privacy')} onPress={() => router.push('/legal/privacy')} />
 
         {!guest ? <Row icon={LogOut} label={t('account.logout')} onPress={onLogout} /> : null}
+        {!guest ? <Row icon={Trash2} label={t('account.delete')} hint={t('account.deleteHint')} onPress={() => void deleteAccount()} danger /> : null}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function Row({ icon: Icon, label, hint, onPress, primary }: { icon: typeof Globe; label: string; hint?: string; onPress: () => void; primary?: boolean }) {
+function Row({ icon: Icon, label, hint, onPress, primary, danger }: { icon: typeof Globe; label: string; hint?: string; onPress: () => void; primary?: boolean; danger?: boolean }) {
   useScheme();
+  const ink = primary ? colors.onPrimary : danger ? colors.danger : colors.ink;
   return (
     <Squish accessibilityRole="button" scaleTo={0.98} onPress={onPress} style={[styles.row, primary && { backgroundColor: colors.primary }]}>
       <View style={[styles.rowIcon, primary && { backgroundColor: 'rgba(255,255,255,0.16)' }]}>
-        <Icon size={22} color={primary ? colors.onPrimary : colors.ink} strokeWidth={2} />
+        <Icon size={22} color={ink} strokeWidth={2} />
       </View>
       <View style={styles.flex}>
-        <Text style={[styles.rowLabel, primary && { color: colors.onPrimary }]}>{label}</Text>
+        <Text style={[styles.rowLabel, { color: ink }]}>{label}</Text>
         {hint ? <Text variant="caption">{hint}</Text> : null}
       </View>
-      <ChevronRight size={20} color={primary ? colors.onPrimary : colors.ink} />
+      <ChevronRight size={20} color={ink} />
     </Squish>
   );
 }

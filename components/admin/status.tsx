@@ -29,6 +29,7 @@ export const KindBadge = ({ kind }: { kind: BalanceKind }) => <Badge label={t(`a
 export function cancelReasonText(reason: string | null, by?: CancelledBy | null) {
   if (!reason) return '—';
   if (reason === 'noMasters') return t('admin.orders.noMasters');
+  if (reason === 'client_absent') reason = 'clientAbsent';
   const k = `cancel.reasons.${reason}`;
   const tr = t(k);
   const text = tr === k ? reason : tr;

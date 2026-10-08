@@ -2,13 +2,18 @@ import type { ErrorBoundaryProps } from 'expo-router';
 import { TriangleAlert } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
+import { useEffect } from 'react';
+import { usePathname } from 'expo-router';
 import { t } from '@/lib/i18n';
+import { logError } from '@/lib/track';
 import { Button } from './Button';
 import { Text } from './Text';
 
-// Expo Router xato chegarasi: ekran ichida xato bo'lsa — shu ko'rinadi (8-bosqichda Sentry'ga yuboriladi)
+// Expo Router xato chegarasi: ekran ichida xato bo'lsa — shu ko'rinadi va xato jurnalga yoziladi (lib/track.ts → admin "Statistika")
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   useScheme();
+  const path = usePathname();
+  useEffect(() => logError(error, path), [error, path]);
   return (
     <View style={styles.root}>
       <View style={styles.icon}>

@@ -12,9 +12,11 @@ import type { DispatchState } from '@/lib/dispatch';
 import { distanceKm, type LatLng } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { notify } from '@/lib/notify';
+import { notice } from '@/lib/dialog';
 import { fetchRoute, resample } from '@/lib/routes';
-import { useChats, useMaster, useMasterWork, useOrders, useUser, type ActiveOrder, type ChatMessage, type MasterOrder, type OrderMaster } from '@/store';
+import { useChats, useHistory, useMaster, useMasterWork, useOrders, useUser, type ActiveOrder, type AddressDetails, type ChatMessage, type MasterOrder, type OrderMaster } from '@/store';
 import { getSupabase, isSupabaseConfigured } from './supabase';
+import type { HistoryItem } from '@/mocks';
 
 export const LIVE = isSupabaseConfigured;
 
@@ -72,8 +74,10 @@ type OrderRow = {
   scheduled_at: string | null;
   lat: number;
   lng: number;
+  cancel_reason: string | null;
+  cancelled_by: string | null;
 };
-const ORDER_COLS = 'id, status, master_id, dispatch, call_fee, price_status, price_work, price_parts, scheduled_at, lat, lng';
+const ORDER_COLS = 'id, status, master_id, dispatch, call_fee, price_status, price_work, price_parts, scheduled_at, lat, lng, cancel_reason, cancelled_by';
 
 /** Server qatori → mijoz store'idagi buyurtma (yo'l, usta kartasi alohida) */
 export function orderPatch(row: OrderRow, cur?: ActiveOrder): Partial<ActiveOrder> {
@@ -96,6 +100,17 @@ export function orderPatch(row: OrderRow, cur?: ActiveOrder): Partial<ActiveOrde
 }
 
 /** "Usta chaqirish": buyurtma serverda yaratiladi (rasmlar Storage'ga), qidiruv boshlanadi. Server id'sini qaytaradi */
+/** Uy tafsiloti ustunlari — faqat to'ldirilganlari (bo'sh bo'lsa ustun yuborilmaydi: server hali yangilanmagan bo'lsa ham buyurtma ketadi) */
+function detailCols(d: AddressDetails | undefined) {
+  const out: Record<string, string> = {};
+  if (!d) return out;
+  for (const k of ['entrance', 'floor', 'apartment', 'intercom', 'landmark'] as const) {
+    const v = d[k].trim();
+    if (v) out[k] = v;
+  }
+  return out;
+}
+
 export async function liveCreateOrder(d: {
   categoryId: CategoryId;
   problemId: string;
@@ -105,6 +120,7 @@ export async function liveCreateOrder(d: {
   location: LatLng;
   preferredMasterId: string | null;
   scheduledAt: number | null;
+  details?: AddressDetails;
 }): Promise<string> {
   const uid = await myId();
   if (!uid) throw new Error('not_signed_in');
@@ -124,12 +140,82 @@ export async function liveCreateOrder(d: {
         lng: d.location.longitude,
         preferred_master_id: d.preferredMasterId,
         scheduled_at: d.scheduledAt ? new Date(d.scheduledAt).toISOString() : null,
+        ...detailCols(d.details),
       })
       .select('id')
       .single(),
   ) as { id: string };
   if (!d.scheduledAt) await db().functions.invoke('dispatch', { body: { order_id: row.id } });
   return row.id;
+}
+
+type HistoryRow = {
+  id: string; category_id: CategoryId; problem_id: string | null; master_id: string | null; address: string | null;
+  status: 'completed' | 'cancelled'; price_status: string; price_work: number | null; price_parts: number | null; call_fee: number;
+  cancel_reason: string | null; cancelled_by: string | null; completed_at: string | null; updated_at: string;
+};
+
+/**
+ * Buyurtmalar tarixi serverdan (oxirgi 50 ta): telefon almashsa yoki Telegram'dan saytga o'tilsa ham yo'qolmaydi.
+ * Shu telefonda yozilgani bilan birlashadi (server ustun; mahalliy izoh/baho saqlanadi).
+ */
+export async function liveSyncHistory() {
+  const uid = await myId();
+  if (!uid) return;
+  const { data } = await db()
+    .from('orders')
+    .select('id, category_id, problem_id, master_id, address, status, price_status, price_work, price_parts, call_fee, cancel_reason, cancelled_by, completed_at, updated_at')
+    .eq('client_id', uid)
+    .in('status', ['completed', 'cancelled'])
+    .order('created_at', { ascending: false })
+    .limit(50);
+  const rows = (data ?? []) as HistoryRow[];
+  if (!rows.length) return;
+  const ids = rows.map((r) => r.id);
+  const masterIds = [...new Set(rows.map((r) => r.master_id).filter(Boolean))] as string[];
+  const [rev, cards] = await Promise.all([
+    db().from('reviews').select('order_id, stars, tags, comment').in('order_id', ids),
+    masterIds.length ? db().from('master_cards').select('id, first_name, last_name').in('id', masterIds) : Promise.resolve({ data: [] }),
+  ]);
+  const reviews = new Map(((rev.data ?? []) as { order_id: string; stars: number; tags: string[]; comment: string | null }[]).map((r) => [r.order_id, r]));
+  const names = new Map(((cards.data ?? []) as { id: string; first_name: string; last_name: string }[]).map((c) => [c.id, `${c.first_name} ${c.last_name}`.trim()]));
+  const local = new Map(useHistory.getState().items.map((i) => [i.id, i]));
+  const server: HistoryItem[] = rows.map((r) => {
+    const l = local.get(r.id);
+    const rv = reviews.get(r.id);
+    const approved = r.price_status === 'approved';
+    return {
+      id: r.id,
+      categoryId: r.category_id,
+      problemId: r.problem_id ?? 'other',
+      masterId: r.master_id,
+      masterName: (r.master_id && names.get(r.master_id)) || l?.masterName,
+      at: Date.parse(r.completed_at ?? r.updated_at),
+      price: approved ? (r.price_work ?? 0) + (r.price_parts ?? 0) : r.status === 'completed' ? r.call_fee : 0,
+      status: r.status,
+      inspectionOnly: r.status === 'completed' && !approved ? true : undefined,
+      address: r.address ?? undefined,
+      stars: rv?.stars ?? l?.stars,
+      tags: rv?.tags ?? l?.tags,
+      comment: rv?.comment ?? l?.comment,
+      cancelReason:
+        r.status !== 'cancelled' ? undefined : r.cancel_reason === 'client_absent' ? 'clientAbsent' : r.cancelled_by === 'admin' ? 'byAdmin' : (r.cancel_reason ?? l?.cancelReason),
+    };
+  });
+  const serverIds = new Set(ids);
+  const rest = useHistory.getState().items.filter((i) => !serverIds.has(i.id));
+  useHistory.setState({ items: [...server, ...rest].sort((a, b) => b.at - a.at) });
+}
+
+export type ReportKind = 'warranty' | 'overcharge' | 'quality' | 'no_show_master' | 'other';
+
+/** Mijoz murojaati (muammo yoki kafolat): order_reports + qo'llab-quvvatlash chatiga yoziladi. Xato kodi Error.message'da */
+export async function liveReportOrder(orderId: string, kind: ReportKind, text: string) {
+  const { error } = await db().rpc('report_order', { p_order: orderId, p_kind: kind, p_text: text });
+  if (error) {
+    const m = errText(error);
+    throw new Error(['warranty_expired', 'text_required', 'too_many_open', 'already_open'].find((k) => m.includes(k)) ?? m);
+  }
 }
 
 /** "Qayta urinish" yoki rejalashtirilganni "Hozir qidirish" */
@@ -255,6 +341,28 @@ export function useLiveOrders() {
         for (const row of (data ?? []) as OrderRow[]) {
           const cur = useOrders.getState().orders.find((o) => o.id === row.id);
           if (!cur) continue;
+          // Serverda yopildi (admin bekor qildi yoki usta kelib eshik ochilmadi) — faol buyurtmalardan tarixga
+          if (row.status === 'cancelled' && row.cancelled_by !== 'client') {
+            const absent = row.cancel_reason === 'client_absent';
+            useHistory.getState().add({
+              id: row.id,
+              categoryId: cur.categoryId,
+              problemId: cur.problemId,
+              masterId: row.master_id ?? cur.masterId,
+              masterName: cur.master?.name,
+              at: Date.now(),
+              price: 0,
+              status: 'cancelled',
+              address: cur.address,
+              cancelReason: absent ? 'clientAbsent' : 'byAdmin',
+            });
+            useOrders.getState().remove(row.id);
+            const title = t(absent ? 'notify.absentTitle' : 'notify.adminCancelTitle');
+            const body = t(absent ? 'notify.absentBody' : 'notify.adminCancelBody');
+            notify(title, body, { url: '/client/history' });
+            notice(title, body);
+            continue;
+          }
           // Usta bekor qildi — server buyurtmani qidiruvga qaytardi: usta kartasi va yo'l olib tashlanadi, qidiruv darhol
           if (cur.masterId && !row.master_id && row.status === 'searching') {
             useOrders.getState().update(row.id, { requeued: true, master: undefined, path: [], step: 0, routeReady: false });
@@ -535,7 +643,14 @@ export async function liveRespondOffer(accept: boolean): Promise<boolean> {
     fee_percent: number | null;
   } | null;
   const client = o ? ((await db().from('profiles').select('name, phone').eq('id', o.client_id).maybeSingle()).data as { name: string | null; phone: string | null } | null) : null;
-  useMasterWork.getState().setOffer({ ...offer, address: o?.address ?? offer.address, clientName: client?.name ?? '', clientPhone: client?.phone ?? '' });
+  // Uy tafsiloti alohida so'rov: ustunlar yo'q (server yangilanmagan) bo'lsa ham qabul qilish ishlaydi
+  const extra = (await db().from('orders').select('entrance, floor, apartment, intercom, landmark').eq('id', offer.id).maybeSingle()).data as Partial<
+    Record<'entrance' | 'floor' | 'apartment' | 'intercom' | 'landmark', string | null>
+  > | null;
+  const details = extra
+    ? { entrance: extra.entrance ?? '', floor: extra.floor ?? '', apartment: extra.apartment ?? '', intercom: extra.intercom ?? '', landmark: extra.landmark ?? '' }
+    : undefined;
+  useMasterWork.getState().setOffer({ ...offer, address: o?.address ?? offer.address, details, clientName: client?.name ?? '', clientPhone: client?.phone ?? '' });
   const pct = o?.fee_percent ?? feePercent(useUser.getState().billingPlan ?? 'commission', useMaster.getState().verified);
   useMasterWork.getState().acceptOffer(pct);
   return true;
@@ -554,6 +669,11 @@ export const liveJob = {
   /** Ish tugadi yoki "Faqat ko'rik" */
   complete: async (id: string) => {
     must(await db().from('orders').update({ status: 'completed' }).eq('id', id));
+    void syncMaster();
+  },
+  /** Yetib keldi, mijoz eshikni ochmadi: buyurtma to'lovsiz yopiladi, aktivlik kamaymaydi (master_client_absent) */
+  clientAbsent: async (id: string) => {
+    must(await db().rpc('master_client_absent', { p_order: id }));
     void syncMaster();
   },
   /** Usta bekor qildi: buyurtma yopilmaydi — server uni keyingi ustaga o'tkazadi (aktivlik −10) */

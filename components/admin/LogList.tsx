@@ -1,7 +1,7 @@
 // Admin amallari jurnali: kim, qachon, nima qildi (tushunarli matn bilan), obyektga havola
 import { router, type Href } from 'expo-router';
 import type { LucideIcon } from 'lucide-react-native';
-import { Ban, BadgeCheck, CalendarPlus, Gauge, ShieldPlus, Tag, Ticket, Trash2, Unlock, Wallet, XCircle } from 'lucide-react-native';
+import { Ban, BadgeCheck, CalendarPlus, CircleCheck, Gauge, ShieldPlus, Tag, Ticket, Trash2, Unlock, Wallet, XCircle } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -26,6 +26,7 @@ const ICON: Record<LogAction, LucideIcon> = {
   grant_admin: ShieldPlus,
   revoke_admin: ShieldPlus,
   promo: Ticket,
+  report_resolve: CircleCheck,
 };
 
 const str = (v: unknown) => (v == null || v === '' ? null : String(v));
@@ -74,6 +75,8 @@ export function logDetails(e: LogEntry): string {
       ]
         .filter(Boolean)
         .join(' · ');
+    case 'report_resolve':
+      return [t(`report.kinds.${str(d.kind) ?? 'other'}`), str(d.note)].filter(Boolean).join(' · ');
     default:
       return '';
   }
@@ -85,6 +88,7 @@ function targetHref(e: LogEntry): string | null {
   if (e.targetType === 'user') return `/admin/users/${e.targetId}`;
   if (e.targetType === 'order') return `/admin/orders/${e.targetId}`;
   if (e.targetType === 'category' || e.targetType === 'problem' || e.targetType === 'promo') return '/admin/catalog';
+  if (e.targetType === 'report') return '/admin/reports';
   return null;
 }
 function targetLabel(e: LogEntry) {

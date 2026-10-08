@@ -6,7 +6,7 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 type Lang = 'uz' | 'ru' | 'en';
-type Params = Record<string, string | number | null | undefined>;
+type Params = Record<string, string | number | boolean | null | undefined>;
 type Text = { title: string; body: string };
 
 const CATEGORIES: Record<Lang, Record<string, string>> = {
@@ -24,7 +24,14 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     found: (p) => ({ title: 'Usta topildi', body: `${p.name || 'Usta'} yo'lga chiqdi, ~${p.min} daqiqada yetib keladi` }),
     arrived: (p, l) => ({ title: 'Usta yetib keldi', body: `${CATEGORIES[l][String(p.category)] ?? 'Usta'} eshigingiz oldida` }),
     price: (p, l) => ({ title: 'Usta narx taklif qildi', body: `${sum(p.sum, l)}. Ko'rib chiqing: rozi bo'lsangiz ish boshlanadi` }),
-    done: () => ({ title: 'Ish tugadi', body: "Ustani baholang — bu boshqalarga yordam beradi" }),
+    // Chek: jami summa (naqd), kafolat; sum bo'lmasa (eski navbat) — oddiy matn
+    done: (p, l) => ({
+      title: 'Ish tugadi',
+      body: p.sum == null ? 'Ustani baholang — bu boshqalarga yordam beradi'
+        : p.inspection ? `Faqat ko'rik: ${sum(p.sum, l)} naqd. Ustani baholang`
+        : `Jami: ${sum(p.sum, l)} naqd. Kafolat 30 kun. Ustani baholang`,
+    }),
+    absent: () => ({ title: 'Usta sizni topa olmadi', body: "Usta keldi, lekin eshik ochilmadi — buyurtma yopildi. Xato bo'lsa, yordam chatiga yozing" }),
     requeued: () => ({ title: 'Usta bekor qildi', body: 'Qayta chaqirish shart emas — yangi usta qidirilmoqda' }),
     none: () => ({ title: "Hozir bo'sh usta yo'q", body: "Barcha yaqin ustalar band. Bir necha daqiqadan keyin qayta urinib ko'ring." }),
     cancelled: () => ({ title: 'Buyurtma bekor qilindi', body: "Mijoz buyurtmani bekor qildi. Yangi buyurtmalarni kutishingiz mumkin" }),
@@ -37,7 +44,13 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     found: (p) => ({ title: 'Мастер найден', body: `${p.name || 'Мастер'} выехал, будет через ~${p.min} мин` }),
     arrived: (p, l) => ({ title: 'Мастер на месте', body: `${CATEGORIES[l][String(p.category)] ?? 'Мастер'} у вашей двери` }),
     price: (p, l) => ({ title: 'Мастер предложил цену', body: `${sum(p.sum, l)}. Посмотрите: если согласны, работа начнётся` }),
-    done: () => ({ title: 'Работа завершена', body: 'Оцените мастера — это поможет другим' }),
+    done: (p, l) => ({
+      title: 'Работа завершена',
+      body: p.sum == null ? 'Оцените мастера — это поможет другим'
+        : p.inspection ? `Только осмотр: ${sum(p.sum, l)} наличными. Оцените мастера`
+        : `Итого: ${sum(p.sum, l)} наличными. Гарантия 30 дней. Оцените мастера`,
+    }),
+    absent: () => ({ title: 'Мастер не смог вас найти', body: 'Мастер приехал, но дверь не открыли — заказ закрыт. Если это ошибка, напишите в поддержку' }),
     requeued: () => ({ title: 'Мастер отменил заказ', body: 'Ничего делать не нужно — ищем другого мастера' }),
     none: () => ({ title: 'Сейчас нет свободных мастеров', body: 'Все мастера поблизости заняты. Попробуйте снова через несколько минут.' }),
     cancelled: () => ({ title: 'Заказ отменён', body: 'Клиент отменил заказ. Можно ждать новые заказы' }),
@@ -50,7 +63,13 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     found: (p) => ({ title: 'Handyman found', body: `${p.name || 'Your handyman'} is on the way, ~${p.min} min` }),
     arrived: (p, l) => ({ title: 'Handyman has arrived', body: `${CATEGORIES[l][String(p.category)] ?? 'Handyman'} is at your door` }),
     price: (p, l) => ({ title: 'The master proposed a price', body: `${sum(p.sum, l)}. Take a look: work starts once you agree` }),
-    done: () => ({ title: 'The job is done', body: 'Rate the master — it helps others' }),
+    done: (p, l) => ({
+      title: 'The job is done',
+      body: p.sum == null ? 'Rate the master — it helps others'
+        : p.inspection ? `Inspection only: ${sum(p.sum, l)} in cash. Rate the master`
+        : `Total: ${sum(p.sum, l)} in cash. 30-day warranty. Rate the master`,
+    }),
+    absent: () => ({ title: "The handyman couldn't reach you", body: 'The handyman arrived but nobody opened the door — the order is closed. If this is a mistake, write to support' }),
     requeued: () => ({ title: 'The handyman cancelled', body: "No need to call again — we're finding another handyman" }),
     none: () => ({ title: 'No free handymen right now', body: 'Everyone nearby is busy. Please try again in a few minutes.' }),
     cancelled: () => ({ title: 'Order cancelled', body: 'The client cancelled the order. New orders will keep coming' }),

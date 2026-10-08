@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { Camera, IdCard, ImagePlus, Percent, ShieldCheck, UserRound } from 'lucide-react-native';
 import { feePercent, UNVERIFIED_SURCHARGE_PERCENT } from '@/constants/billing';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Chip, ScreenHeader, Text } from '@/components/ui';
@@ -12,6 +12,7 @@ import { t } from '@/lib/i18n';
 import { AVATAR_MAX, DOC_MAX, pickImages, takePhoto } from '@/lib/photos';
 import { useMaster, useUser } from '@/store';
 import { LIVE, liveApplyInvite, liveSubmitMaster } from '@/lib/live';
+import { track } from '@/lib/track';
 import { notice } from '@/lib/dialog';
 
 const STEPS = 4;
@@ -29,6 +30,7 @@ export default function Register() {
   const setRole = useUser((s) => s.setRole);
   const [invite, setInvite] = useState(() => useUser.getState().inviteRef);
   const [step, setStep] = useState(0);
+  useEffect(() => track('master_register_open'), []);
 
   const valid = [
     // Profil surati majburiy: mijoz eshik ochishdan oldin ustaning yuzini ko'radi
@@ -51,6 +53,7 @@ export default function Register() {
       setSending(true);
       try {
         await liveSubmitMaster();
+        track('master_registered');
       } catch {
         setSending(false);
         return notice(t('register.sendFailedTitle'), t('register.sendFailedText'));

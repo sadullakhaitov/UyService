@@ -179,8 +179,30 @@ export default function OrderPage() {
                 <Text variant="caption" selectable>
                   {o.location.latitude.toFixed(5)}, {o.location.longitude.toFixed(5)}
                 </Text>
+                {o.entrance ? <KV label={t('address.entrance')} value={o.entrance} /> : null}
+                {o.floor ? <KV label={t('address.floor')} value={o.floor} /> : null}
+                {o.apartment ? <KV label={t('address.apartment')} value={o.apartment} /> : null}
+                {o.intercom ? <KV label={t('address.intercom')} value={o.intercom} /> : null}
+                {o.landmark ? <KV label={t('address.landmark')} value={o.landmark} /> : null}
                 {o.scheduledAt ? <KV label={t('admin.orders.scheduled')} value={fmtDateTime(o.scheduledAt)} /> : null}
               </Panel>
+              {d.reports?.length ? (
+                <Panel title={t('admin.reports.forOrder')} actions={<AButton size="sm" kind="ghost" title={t('admin.reports.all')} onPress={() => router.push('/admin/reports' as Href)} />}>
+                  {d.reports.map((r) => (
+                    <View key={r.id} style={styles.report}>
+                      <View style={styles.hero}>
+                        <Text style={[styles.flex, styles.reportKind]}>{t(`report.kinds.${r.kind}`)}</Text>
+                        <Badge label={t(`admin.reports.status.${r.status}`)} tone={r.status === 'open' ? 'warning' : 'success'} />
+                      </View>
+                      {r.text ? <Text style={styles.desc}>«{r.text}»</Text> : null}
+                      <Text variant="caption">
+                        {fmtDateTime(r.createdAt)} · {r.byMaster ? t('admin.orders.fromMaster') : t('admin.orders.fromClient')}
+                        {r.resolution ? ` · ${t('admin.reports.resolution')}: ${r.resolution}` : ''}
+                      </Text>
+                    </View>
+                  ))}
+                </Panel>
+              ) : null}
               {d.review ? (
                 <Panel title={t('admin.orders.review')}>
                   <ReviewItem r={d.review} />
@@ -255,6 +277,8 @@ function Timeline({ d }: { d: OrderDetail }) {
 }
 
 const styles = themed(() => ({
+  report: { gap: 6, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.line },
+  reportKind: { fontFamily: fonts.bold, fontSize: 14, color: colors.ink },
   flex: { flex: 1, minWidth: 0 },
   hero: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   alert: { marginTop: 12, padding: 12, borderRadius: 12, backgroundColor: colors.dangerSoft },

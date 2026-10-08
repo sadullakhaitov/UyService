@@ -42,6 +42,9 @@ type UserState = {
   lastAddress: string;
   /** Do'st taklif kodi (uyservice.uz/usta?ref=KOD havolasidan) — usta anketasida o'zi yoziladi */
   inviteRef: string;
+  /** Oxirgi buyurtmadagi podyezd/qavat/xonadon — xuddi shu manzilga yana buyurtma berilsa o'zi to'ldiriladi */
+  savedDetails: (AddressDetails & { address: string }) | null;
+  setSavedDetails: (d: (AddressDetails & { address: string }) | null) => void;
   setInviteRef: (code: string) => void;
   setLastLocation: (p: LatLng, address?: string) => void;
   setLanguage: (lang: Lang) => void;
@@ -66,6 +69,7 @@ const userDefaults = {
   lastLocation: null as LatLng | null,
   lastAddress: '',
   inviteRef: '',
+  savedDetails: null as (AddressDetails & { address: string }) | null,
 };
 
 export const useUser = create<UserState>()(
@@ -75,6 +79,7 @@ export const useUser = create<UserState>()(
   setLastLocation: (lastLocation, address) => set((s) => ({ lastLocation, lastAddress: address ?? s.lastAddress })),
   setLanguage: (language) => set({ language }),
   setInviteRef: (inviteRef) => set({ inviteRef }),
+  setSavedDetails: (savedDetails) => set({ savedDetails }),
   setPhone: (phone) => set({ phone }),
   setName: (name) => set({ name }),
   setThemeMode: (themeMode) => set({ themeMode }),
@@ -95,6 +100,22 @@ export const useUser = create<UserState>()(
   ),
 );
 
+/** Ko'p qavatli uyda usta adashmasligi uchun: podyezd, qavat, xonadon, domofon kodi, mo'ljal (hammasi ixtiyoriy) */
+export type AddressDetails = { entrance: string; floor: string; apartment: string; intercom: string; landmark: string };
+export const emptyDetails = (): AddressDetails => ({ entrance: '', floor: '', apartment: '', intercom: '', landmark: '' });
+/** "Podyezd 2 · 5-qavat · 34-xonadon · domofon 34K · mo'ljal: ..." — usta va admin ko'radi */
+export function detailsText(d: Partial<AddressDetails> | null | undefined) {
+  if (!d) return '';
+  const parts = [
+    d.entrance ? t('address.entranceShort', { v: d.entrance }) : '',
+    d.floor ? t('address.floorShort', { v: d.floor }) : '',
+    d.apartment ? t('address.apartmentShort', { v: d.apartment }) : '',
+    d.intercom ? t('address.intercomShort', { v: d.intercom }) : '',
+    d.landmark ? t('address.landmarkShort', { v: d.landmark }) : '',
+  ];
+  return parts.filter(Boolean).join(' · ');
+}
+
 // Buyurtma qoralamasi (yangi buyurtma yaratilayotganda) va mijoz manzili
 type OrderState = {
   categoryId: CategoryId;
@@ -106,7 +127,8 @@ type OrderState = {
   preferredMasterId: string | null; // "Mening ustalarim"dan tanlansa, taklif birinchi unga boradi
   /** "Vaqtni tanlash": usta kelishi kerak bo'lgan vaqt (ms); null — "Hozir kerak" */
   scheduledAt: number | null;
-  setDraft: (p: Partial<Pick<OrderState, 'categoryId' | 'problemId' | 'description' | 'photos' | 'preferredMasterId' | 'scheduledAt'>>) => void;
+  details: AddressDetails;
+  setDraft: (p: Partial<Pick<OrderState, 'categoryId' | 'problemId' | 'description' | 'photos' | 'preferredMasterId' | 'scheduledAt' | 'details'>>) => void;
   setAddress: (address: string, location?: LatLng) => void;
   reset: () => void;
 };
@@ -121,8 +143,10 @@ export const useOrder = create<OrderState>((set) => ({
   location: TASHKENT_CENTER,
   preferredMasterId: null,
   scheduledAt: null,
+  details: emptyDetails(),
   setDraft: (p) => set(p),
-  setAddress: (address, location) => set((s) => ({ address, location: location ?? s.location })),
+  // Boshqa manzil — podyezd/qavat boshqa (shu manzil uchun saqlangani order ekranida qayta to'ldiriladi)
+  setAddress: (address, location) => set((s) => ({ address, location: location ?? s.location, details: s.address === address ? s.details : emptyDetails() })),
   reset: () => set({ description: '', photos: [], preferredMasterId: null }),
 }));
 
@@ -288,6 +312,8 @@ export type MasterOrder = {
   sentAt: number;
   /** Eshikdagi tasdiq kodi: mijoz ilovasida ko'rinadi, usta yetib kelganda kiritadi */
   doorCode: string;
+  /** Podyezd, qavat, xonadon… — qabul qilgandan keyin ko'rinadi */
+  details?: Partial<AddressDetails>;
 };
 
 /** Ish bosqichlari: yo'lda → yetib keldi (kod) → narx kelishilmoqda → ish → yakunlandi */
@@ -401,6 +427,7 @@ export type ActiveOrder = {
   description: string;
   photos: string[];
   address: string;
+  details?: AddressDetails;
   location: LatLng;
   preferredMasterId: string | null;
   status: OrderStatus;
@@ -474,6 +501,7 @@ export const useOrders = create<OrdersState>()(
       description: d.description,
       photos: d.photos,
       address: d.address,
+      details: d.details,
       location: d.location,
       preferredMasterId: d.preferredMasterId,
       status: d.scheduledAt ? 'scheduled' : 'searching',

@@ -4,8 +4,10 @@ import { router, usePathname, type Href } from 'expo-router';
 import type { LucideIcon } from 'lucide-react-native';
 import {
   ArrowLeft,
+  ChartNoAxesColumn,
   CheckCircle2,
   ClipboardList,
+  Flag,
   History,
   Info,
   LayoutDashboard,
@@ -56,6 +58,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
       { key: 'masters', href: '/admin/masters', icon: Wrench },
       { key: 'users', href: '/admin/users', icon: Users },
       { key: 'reviews', href: '/admin/reviews', icon: Star },
+      { key: 'reports', href: '/admin/reports', icon: Flag },
       { key: 'support', href: '/admin/support', icon: MessagesSquare, badge: 'support' },
     ],
   },
@@ -63,6 +66,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
     title: 'system',
     items: [
       { key: 'finance', href: '/admin/finance', icon: Wallet },
+      { key: 'stats', href: '/admin/stats', icon: ChartNoAxesColumn },
       { key: 'catalog', href: '/admin/catalog', icon: Tags },
       { key: 'log', href: '/admin/log', icon: History },
       { key: 'settings', href: '/admin/settings', icon: Settings },

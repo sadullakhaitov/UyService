@@ -40,7 +40,8 @@
     "tgHint": "Telegram confirms your number — no need to wait for an SMS. Or type your number to get an SMS code.",
     "tgDenied": "The number wasn't shared. Try again or sign in with an SMS code.",
     "tgNotUz": "Your Telegram number isn't an Uzbek number. Type your number and sign in with an SMS code.",
-    "tgFailed": "Couldn't sign in with Telegram. Try again or sign in with an SMS code."
+    "tgFailed": "Couldn't sign in with Telegram. Try again or sign in with an SMS code.",
+    "loginToSupport": "The chat is linked to your number — replies will arrive here"
   },
   "categories": {
     "plumber": "Plumber",
@@ -109,7 +110,13 @@
     "noAddressText": "Choose where the master should come.",
     "removePhoto": "Remove photo",
     "sendFailedTitle": "The order wasn't sent",
-    "sendFailedText": "Check your internet connection and try again."
+    "sendFailedText": "Check your internet connection and try again.",
+    "limits": {
+      "too_many_active": "You can have at most 3 active orders at once. Wait for one to finish or cancel it.",
+      "too_many_today": "Too many orders today. Try again tomorrow or write to Support.",
+      "no_show_limit": "In the last 30 days the door wasn't opened for a pro 3 times. To order, write to the Support chat.",
+      "blocked": "Your account is temporarily blocked. Contact us via Profile → Support."
+    }
   },
   "searching": {
     "title": "Finding a handyman",
@@ -199,7 +206,9 @@
     "statusCompleted": "Completed",
     "statusCancelled": "Cancelled",
     "noMaster": "No handyman assigned",
-    "statusInspection": "Inspection only"
+    "statusInspection": "Inspection only",
+    "warranty": "Warranty · {{days}} d",
+    "problem": "Report a problem"
   },
   "master": {
     "online": "Online",
@@ -255,7 +264,11 @@
     "serverErrorTitle": "Not saved",
     "serverErrorText": "No connection to the server. Check your internet and tap again.",
     "codeLockedTitle": "Code not checked",
-    "codeLockedText": "Too many wrong attempts. Try again in 10 minutes or contact support."
+    "codeLockedText": "Too many wrong attempts. Try again in 10 minutes or contact support.",
+    "clientAbsent": "Client didn't open the door",
+    "clientAbsentTitle": "The client didn't open the door?",
+    "clientAbsentText": "Did you wait at least 10 minutes and call? The order closes without payment and your activity won't drop. An admin will review it.",
+    "clientAbsentConfirm": "Yes, close the order"
   },
   "earnings": {
     "changePlan": "Change plan"
@@ -405,7 +418,19 @@
     "logoutActive": {
       "one": "You have {{count}} active order. Logging out removes it from this phone.",
       "other": "You have {{count}} active orders. Logging out removes them from this phone."
-    }
+    },
+    "support": "Support",
+    "supportHint": "Got a question or a problem? Write to us",
+    "delete": "Delete account",
+    "deleteHint": "Your number, name and messages are deleted",
+    "deleteTitle": "Delete your account?",
+    "deleteText": "Your number, name, messages and uploaded photos will be deleted permanently. Order history is kept without your name (for accounting). This cannot be undone.",
+    "deleteConfirm": "Delete",
+    "deleteFailedTitle": "Account not deleted",
+    "deleteActive": "Finish or cancel your active order first.",
+    "deleteAdmin": "An admin can't delete their own account — another admin has to remove your admin rights first.",
+    "deletedTitle": "Account deleted",
+    "deletedText": "Your data has been deleted. You can sign up again any time."
   },
   "address": {
     "title": "Find address",
@@ -414,7 +439,21 @@
     "hint": "Type at least 3 letters. You can also pick on the map",
     "empty": "Nothing found. Try another spelling or pick on the map",
     "noLocationTitle": "Couldn't get your location",
-    "noLocationText": "Allow location access in settings and turn on GPS — or search for the address."
+    "noLocationText": "Allow location access in settings and turn on GPS — or search for the address.",
+    "detailsTitle": "Building details",
+    "detailsHint": "Fill in for an apartment building so the pro doesn't get lost. Shown to the pro after they accept",
+    "entrance": "Entrance",
+    "floor": "Floor",
+    "apartment": "Apartment",
+    "intercom": "Intercom code",
+    "landmark": "Landmark or note",
+    "landmarkPlaceholder": "E.g.: next to the school, blue gate",
+    "entranceShort": "entrance {{v}}",
+    "floorShort": "floor {{v}}",
+    "apartmentShort": "apt {{v}}",
+    "intercomShort": "intercom {{v}}",
+    "landmarkShort": "landmark: {{v}}",
+    "change": "Change"
   },
   "schedule": {
     "today": "Today",
@@ -440,7 +479,11 @@
     "doneTitle": "The job is done",
     "doneBody": "Rate the master — it helps others",
     "requeuedTitle": "The handyman cancelled",
-    "requeuedBody": "No need to call again — we're finding another handyman"
+    "requeuedBody": "No need to call again — we're finding another handyman",
+    "absentTitle": "The pro couldn't reach you",
+    "absentBody": "The pro arrived but nobody opened the door — the order is closed",
+    "adminCancelTitle": "Order cancelled",
+    "adminCancelBody": "UyService cancelled the order. Questions — Profile → Support"
   },
   "register": {
     "step": "Step {{n}} of {{total}}",
@@ -554,7 +597,9 @@
       "clientNoAnswer": "The client does not answer",
       "tooFar": "Too far away",
       "emergency": "Emergency (car broke down etc.)",
-      "wrongProblem": "Different problem, I cannot do it"
+      "wrongProblem": "Different problem, I cannot do it",
+      "clientAbsent": "The pro came, the door wasn't opened",
+      "byAdmin": "Cancelled by UyService"
     }
   },
   "reviews": {
@@ -670,7 +715,9 @@
       "finance": "Finance",
       "catalog": "Prices & catalog",
       "log": "Audit log",
-      "settings": "Settings"
+      "settings": "Settings",
+      "reports": "Reports",
+      "stats": "Analytics"
     },
     "navGroup": {
       "main": "Main",
@@ -828,7 +875,8 @@
       "revokeSelf": "You can't remove your own admin rights",
       "network": "No internet connection. Try again",
       "promoCode": "Code must be 3–20 Latin letters or digits",
-      "promoValue": "Set priority (0–50) or a bonus (up to 1M); limit 1–100,000"
+      "promoValue": "Set priority (0–50) or a bonus (up to 1M); limit 1–100,000",
+      "reportClosed": "The report is already closed"
     },
     "login": {
       "title": "Admin sign-in",
@@ -1237,7 +1285,8 @@
         "problem": "Price range changed",
         "grant_admin": "Admin added",
         "revoke_admin": "Admin removed",
-        "promo": "Promo code saved"
+        "promo": "Promo code saved",
+        "report_resolve": "Closed a report"
       },
       "t": {
         "master": "master",
@@ -1247,7 +1296,8 @@
         "category": "category",
         "problem": "problem",
         "support": "request",
-        "promo": "promo code"
+        "promo": "promo code",
+        "report": "Report"
       }
     },
     "settings": {
@@ -1303,6 +1353,65 @@
       "expired": "Expired",
       "full": "Limit reached",
       "off": "turned off"
+    },
+    "reports": {
+      "subtitle": "{{n}} reports",
+      "hint": "Client problem and warranty reports, and pros' \"client didn't open the door\" notes. Reply in the support chat, then close with a resolution.",
+      "tab": {
+        "open": "Open",
+        "resolved": "Resolved",
+        "all": "All"
+      },
+      "status": {
+        "open": "Open",
+        "resolved": "Resolved"
+      },
+      "empty": "No reports",
+      "emptyOpen": "No open reports — all resolved",
+      "fromClient": "Client",
+      "fromMaster": "Pro",
+      "resolution": "Resolution",
+      "reply": "Reply in chat",
+      "resolve": "Close",
+      "resolveTitle": "Close report",
+      "resolved": "Report closed",
+      "p1": "The pro came back and fixed it for free",
+      "p2": "Overcharge refunded",
+      "p3": "Checked, problem not confirmed",
+      "forOrder": "Reports",
+      "all": "All"
+    },
+    "stats": {
+      "subtitle": "Where clients drop off and what errors happen in the app",
+      "days": "{{n}} days",
+      "demo": "Test mode — sample numbers",
+      "clientFunnel": "Client funnel",
+      "funnelSub": "Devices; percent — reached from the previous step",
+      "masterFunnel": "Pro funnel",
+      "problems": "Problems",
+      "errors": "App errors",
+      "errorsSub": "Identical errors are grouped; tap for technical details",
+      "noErrors": "No errors",
+      "times": "{{n}} times",
+      "devices": "{{n}} devices",
+      "ev": {
+        "app_open": "Opened the app",
+        "order_open": "Order screen",
+        "order_submit": "Tapped \"Call a pro\"",
+        "phone_open": "Phone screen",
+        "signed_in": "Confirmed number",
+        "order_created": "Order created",
+        "order_completed": "Job done",
+        "rated": "Left a rating",
+        "master_register_open": "Opened pro application",
+        "master_registered": "Sent application",
+        "master_online": "Went online",
+        "no_master": "No pro found",
+        "order_failed": "Order not sent",
+        "report_sent": "Sent a report",
+        "account_deleted": "Deleted account"
+      },
+      "signin": "Sign-up"
     }
   },
   "home": {
@@ -1342,5 +1451,33 @@
     "4": "Thu",
     "5": "Fri",
     "6": "Sat"
+  },
+  "report": {
+    "title": "What went wrong?",
+    "hint": "An admin will review it and reply in the Support chat",
+    "warrantyTitle": "Warranty claim",
+    "warrantyHint": "Did the problem with this job come back? The pro returns for free; if they can't, UyService sends another one. The reply comes to the Support chat.",
+    "warrantyPlaceholder": "What happened? E.g.: the tap is leaking again",
+    "placeholder": "Add details (optional)",
+    "placeholderRequired": "Describe what happened",
+    "send": "Send",
+    "kinds": {
+      "warranty": "Warranty claim",
+      "overcharge": "Charged more than agreed",
+      "quality": "Poor quality work",
+      "no_show_master": "The pro didn't come",
+      "client_absent": "Client didn't open the door",
+      "other": "Other"
+    },
+    "sentTitle": "Report sent",
+    "sentText": "An admin will review it. The reply comes to Profile → Support.",
+    "sentWarranty": "We'll contact the pro. The reply comes to Profile → Support.",
+    "failedTitle": "Not sent",
+    "errors": {
+      "warranty_expired": "The 30-day warranty has ended or this order was inspection only. Use \"Report a problem\".",
+      "text_required": "Briefly describe what happened.",
+      "too_many_open": "You have 5 open reports. Please wait for a reply first.",
+      "already_open": "Your report for this order is already being reviewed."
+    }
   }
 }

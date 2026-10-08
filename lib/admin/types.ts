@@ -22,8 +22,9 @@ export type LogAction =
   | 'problem'
   | 'grant_admin'
   | 'revoke_admin'
-  | 'promo';
-export type LogTarget = 'master' | 'user' | 'order' | 'review' | 'category' | 'problem' | 'support' | 'promo';
+  | 'promo'
+  | 'report_resolve';
+export type LogTarget = 'master' | 'user' | 'order' | 'review' | 'category' | 'problem' | 'support' | 'promo' | 'report';
 
 export const ACTIVE_STATUSES: OrderStatus[] = ['assigned', 'on_the_way', 'arrived', 'in_progress'];
 
@@ -96,6 +97,14 @@ export type AdminOrder = {
   masterId: string | null;
   masterName: string | null;
   masterPhone: string | null;
+  /** Podyezd, qavat, xonadon, domofon, mo'ljal (mijoz yozgan bo'lsa) */
+  entrance?: string | null;
+  floor?: string | null;
+  apartment?: string | null;
+  intercom?: string | null;
+  landmark?: string | null;
+  /** Ochiq murojaatlar soni (muammo, kafolat, eshik ochilmadi) */
+  openReports?: number;
 };
 
 export type AdminUser = {
@@ -287,7 +296,36 @@ export type OrderDetail = {
   offers: OfferAttempt[];
   chat: ChatLine[];
   review: AdminReview | null;
+  reports?: AdminReport[];
 };
+
+// ---------- Murojaatlar (muammo, kafolat, mijoz eshikni ochmadi) ----------
+export type ReportKind = 'warranty' | 'overcharge' | 'quality' | 'no_show_master' | 'client_absent' | 'other';
+export type AdminReport = {
+  id: string;
+  orderId: string;
+  kind: ReportKind;
+  text: string | null;
+  status: 'open' | 'resolved';
+  resolution: string | null;
+  resolvedAt: number | null;
+  createdAt: number;
+  reporterId: string;
+  reporterName: string | null;
+  reporterPhone: string | null;
+  byMaster: boolean;
+  categoryId: CategoryId;
+  problemId: string | null;
+  orderStatus: OrderStatus;
+  clientId: string;
+  masterId: string | null;
+  masterName: string | null;
+};
+export type ReportQuery = { status: 'open' | 'resolved' | 'all'; page: number; pageSize: number };
+
+// ---------- Statistika: voronka va xatolar (app_events / app_errors) ----------
+export type FunnelRow = { name: string; devices: number; events: number };
+export type AppErrorRow = { message: string; screen: string | null; platform: string | null; count: number; devices: number; lastAt: number; stack: string | null };
 
 // ---------- Interfeys ----------
 export interface AdminApi {
@@ -330,6 +368,11 @@ export interface AdminApi {
   setAdmin(phone: string, admin: boolean): Promise<void>;
 
   live(): Promise<LivePoint[]>;
+
+  reports(q: ReportQuery): Promise<Page<AdminReport>>;
+  resolveReport(id: string, note: string): Promise<void>;
+  funnel(days: number): Promise<FunnelRow[]>;
+  errors(days: number): Promise<AppErrorRow[]>;
 }
 
 /** Foydalanuvchiga ko'rsatiladigan xato (matni tarjima kaliti yoki server xabari) */

@@ -62,9 +62,9 @@ app/                      ← ekranlar (Expo Router)
                             muammo bo'yicha qidiruv, faol buyurtmalar, "Ko'p so'raladi" chiplari, 6 xizmat, Hozir/Vaqtni tanlash, Mening ustalarim
     map.tsx               ← Xarita (/client/map): oldingi xaritali bosh sahifa o'zgarishsiz (pin, atrofdagi ustalar, kategoriyalar)
     orders.tsx            ← Buyurtmalar: hozirgi buyurtmalar + tarix (components/order/HistoryList.tsx)
-    account.tsx           ← Profil (/client/account): mehmon/kirgan, "Usta bo'lib ishlash", til, ko'rinish
+    account.tsx           ← Profil (/client/account): mehmon/kirgan, "Usta bo'lib ishlash", "Yordam" (qo'llab-quvvatlash chati), til, ko'rinish, "Hisobni o'chirish"
   client/address.tsx      ← manzilni yozib qidirish (lib/geocode.ts)
-  client/order.tsx        ← muammo, tavsif, rasm, narx; rejalashtirishda kun va soat
+  client/order.tsx        ← muammo, tavsif, rasm, uy tafsiloti (podyezd, qavat, xonadon, domofon, mo'ljal), narx; rejalashtirishda kun va soat
   client/searching.tsx    ← usta qidirilmoqda (to'lqinlar, radius, takliflar) yoki rejalashtirilgan buyurtma ┐ ikkalasi bitta ekran —
   client/chat.tsx         ← mijoz ↔ usta chati (buyurtma bo'yicha)
   client/tracking.tsx     ← usta yo'lda (bekor qilish — sabab bilan, components/sheets/CancelSheet.tsx) ┘ components/order/LiveOrder.tsx:
@@ -77,7 +77,7 @@ app/                      ← ekranlar (Expo Router)
   admin/                  ← admin panel (uyservice.uz/admin): login.tsx — kirish; (panel)/ — himoyalangan bo'limlar
     (panel)/_layout.tsx   ← huquq tekshiruvi (adminApi.me), 8 soat harakatsizlik → qayta kirish, AdminShell + Stack
     (panel)/index.tsx     ← bosh sahifa: KPI (oldingi davrga nisbatan), hozirgi holat, grafiklar, kategoriyalar, top ustalar
-    (panel)/verification, orders/, masters/, users/, reviews, support, map, finance, catalog, log, settings
+    (panel)/verification, orders/, masters/, users/, reviews, reports (murojaatlar), support, map, finance, stats (voronka, xatolar), catalog, log, settings
   legal/[doc].tsx         ← foydalanish shartlari va maxfiylik siyosati (constants/legal.ts, 3 tilda, ⚠️ QORALAMA — yurist tekshirishi kerak)
   master/(tabs)/          ← usta ilovasi, pastki menyu 4 bo'lim (Yandex Pro tuzilmasi)
     index.tsx             ← Buyurtmalar: xarita, filtr, zoom, aktivlik, "surib ishga chiqish"
@@ -104,6 +104,7 @@ components/
                             Dialog.tsx (tasdiqlash / sabab bilan), Charts.tsx (dataviz qoidalari), Shell.tsx (menyu, sahifa, toast), format.ts, csv.ts
   sheets/Sheet.tsx        ← pastdan chiqadigan panel (kompyuterda — chapda suzuvchi oyna); ichidagi matn maydoni — `SheetInput`
   sheets/ModalSheet.tsx   ← oyna ustidagi panel (bekor qilish, filtr): telefonda pastdan, kompyuterda o'rtada dialog
+  sheets/ReportSheet.tsx  ← murojaat: "Muammo bor" (ortiqcha pul, sifat, usta kelmadi, boshqa) yoki "Kafolat" (30 kun)
   ui/PageFrame.tsx        ← kompyuter brauzeri: oddiy sahifalar o'rtada ustun (navigator `screenLayout`)
 lib/                      ← i18n, geo, location, routes, supabase
   dispatch.ts             ← usta qidirish algoritmi (TZ 7-bo'lim), toza funksiyalar — 7-bosqichda Edge Function'ga ko'chadi
@@ -126,6 +127,8 @@ lib/                      ← i18n, geo, location, routes, supabase
   demo.ts                 ← `DEMO` — sinov rejimi (Supabase kaliti yo'q)
   dialog.ts               ← `notice` / `confirm` — brauzerda ham ishlaydi (RN-web'da `Alert.alert` jim). `Alert` ishlatmang
   masterGuard.ts          ← `guardActiveJob` — faol ish bo'lsa rol almashish/chiqish to'xtatiladi
+  account.ts              ← hisobni o'chirish (Storage fayllari + `delete_my_account` + telefon tozalanadi)
+  track.ts                ← o'z statistikamiz: `track(hodisa)` → app_events, `logError` → app_errors (ErrorBoundary, ushlanmagan xatolar); faqat server rejimida
   admin/                  ← admin ma'lumotlari: types.ts (AdminApi), supabase.ts (admin_* view/RPC), demo.ts (sinov rejimi, namunaviy
                             ma'lumotlar butun O'zbekiston bo'ylab, shu brauzerda saqlanadi), rules.ts (chegaralar = server), hooks.ts, session.ts
   supabase.ts, auth.ts    ← Supabase mijozi (faqat .env'da kalit bo'lsa), SMS kod bilan kirish
@@ -135,11 +138,11 @@ locales/uz.json           ← ilovadagi barcha matnlar
 mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
 design/logo/              ← logotip asl fayllari (SVG, ko'rinish varag'i)
 design/print/             ← bosma varaqalar (HTML + PDF + PNG): ustalar uchun A5 (QR → uyservice.uz/usta), podyezd e'loni A4 (QR → uyservice.uz, yirtib olinadigan qismlar)
-supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma; setup.ps1 — hammasini bitta skript bilan sozlash
-  migrations/             ← 14 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push, ochiq sharhlar, Telegram, Telegram orqali bildirishnoma, usta bekor qilsa — keyingi ustaga, promokod va do'st taklifi
+supabase/                 ← server (joylangan): README.md — joylash bo'yicha qo'llanma; setup.ps1 — birinchi marta hammasini sozlash; update.ps1 — keyingi yangilanishlar (db push + functions deploy)
+  migrations/             ← 15 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push, ochiq sharhlar, Telegram, Telegram orqali bildirishnoma, usta bekor qilsa — keyingi ustaga, promokod va do'st taklifi, mijozni himoya qilish (uy tafsiloti, chegaralar, murojaatlar, hisobni o'chirish, statistika)
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
   functions/{dispatch,offer-respond,offer-timeout,send-sms,push-send,telegram-auth,telegram-bot} ← Edge Functions (send-sms — Eskiz.uz orqali SMS; push-send — push_outbox → Expo Push API yoki Telegram bot; telegram-* — Telegram orqali kirish va bot)
-  tests/                  ← run.sh — hammasi: supabase_stub.sql + rls/admin/price/push/telegram/master_cancel/promo_test.sql + unit/ (Telegram imzosi, yo'l bo'yicha vaqt) + e2e/ (usta qidirish va push, Deno + PostgREST)
+  tests/                  ← run.sh — hammasi: supabase_stub.sql + rls/admin/price/push/telegram/master_cancel/promo/client_care_test.sql + unit/ (Telegram imzosi, yo'l bo'yicha vaqt) + e2e/ (usta qidirish va push, Deno + PostgREST)
 .github/workflows/ci.yml  ← har push'da: typecheck, deno check, server sinovlari (Postgres+PostGIS+PostgREST)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
@@ -151,7 +154,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 
 ## 4. Ekranlar
 
-**Mijoz** (pastki menyu: Asosiy · Xarita · Buyurtmalar · Profil; bir vaqtda bir nechta usta chaqira oladi — masalan, santexnik va elektrik; faol buyurtmalar bosh sahifada kartalar bo'lib turadi, `useOrders` + `lib/orderSimulator.ts`): Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim", 4–5 yulduzda "Do'stlarga tavsiya qilish") → Tarix (qayta chaqirish).
+**Mijoz** (pastki menyu: Asosiy · Xarita · Buyurtmalar · Profil; bir vaqtda bir nechta usta chaqira oladi — masalan, santexnik va elektrik; faol buyurtmalar bosh sahifada kartalar bo'lib turadi, `useOrders` + `lib/orderSimulator.ts`): Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim", 4–5 yulduzda "Do'stlarga tavsiya qilish") → Tarix (qayta chaqirish; server rejimida serverdan ham yuklanadi — `liveSyncHistory`; "Kafolat · N kun" va "Muammo bor" — murojaat, javob "Yordam" chatiga). Cheklovlar (server): bir vaqtda ≤ 3 faol buyurtma, sutkasiga ≤ 10, 30 kunda 3 marta eshik ochilmasa — buyurtma yopiq; xato matnlari `order.limits.*`. Serverda yopilgan buyurtma (admin bekor qildi / eshik ochilmadi) faol ro'yxatdan tarixga o'tadi.
 
 **Usta** (pastki menyu: Buyurtmalar · Pul · Chatlar · Profil — Yandex Pro tuzilmasi, Mejgorod yo'q):
 - Buyurtmalar: to'liq xarita, filtr (kategoriya, radius), zoom ±, joylashuv; panelda aktivlik va bugungi daromad, tarif kartasi, "surib ishga chiqish" tugmasi. Buyurtma yopiq bo'lsa tepada qizil banner (balans limitdan past / obuna tugagan); hujjatsiz ishlayotgan bo'lsa — to'q sariq eslatma (bloklamaydi).
@@ -159,6 +162,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 - Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar bilan yozishmalar (server rejimida — `chat_messages`, Realtime + har 3 s; admin qo'llab-quvvatlashdan javob beradi; sinovda — mahalliy).
 - Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; o'qish (qo'llanma); sozlamalar (bildirishnomalar, til), chiqish. Promokodlar: server rejimida admin yaratadi (admin → Narxlar va katalog → Promokodlar: prioritet 0–50 va/yoki balansga bonus, chegara, muddat; har usta bir marta; `redeem_promo`); sinov rejimida — `UYSERVICE` (+10 prioritet), `BIRINCHI` (+20 000 balans), `USTA2026`. Do'st taklifi: har ustaning kodi `masters.invite_code` (server beradi), yangi usta anketada kiritadi yoki `uyservice.uz/usta?ref=KOD` havolasidan keladi (`apply_invite_code`); u `INVITE_JOBS` = 5 ta ishni bajargach taklif qilganga `INVITE_BONUS` = 30 000 (⚠️ tasdiqlanmagan; server — `invite_bonus()`), balans tarixiga va xabar bilan.
 - Tarif tanlash (birinchi kirishda) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → eshik kodi → narx yuborish → mijoz rozi bo'lsa ish → Tugatdim; mijozdan naqd olinadigan summa va platforma ulushi — qabul paytidagi foiz bo'yicha).
+- Usta yetib kelgach mijoz eshikni ochmasa — "Mijoz eshikni ochmadi" (`master_client_absent`): buyurtma to'lovsiz yopiladi, aktivlik kamaymaydi, mijozga xabar, adminga murojaat.
 - Usta ish boshlanmasdan (yo'lda / yetib kelgach) sabab bilan bekor qilsa — buyurtma yopilmaydi, **keyingi ustaga o'tadi** (`master_cancel_order`): aktivlik −10, shu usta qayta taklif olmaydi, mijozga "Usta bekor qildi — yangi usta qidirilmoqda" (push + qidiruv ekrani), sabab admin buyurtma sahifasida.
 
 **Narx kelishuvi va eshik kodi** (soxta mijoz/usta — `lib/orderSimulator.ts`: `approvePrice`, `declinePrice`, `completeOrder`; usta — `master/job.tsx`; server rejimida — `lib/live.ts` → RPC'lar):
@@ -171,7 +175,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 **Saqlanadigan holat** (AsyncStorage, `version` + `migrate`): mijoz buyurtmalari (`uyservice-orders`), tarix (bo'sh boshlanadi), ustaning taklifi va joriy ishi (`uyservice-master-work`) — sahifa yangilansa yo'qolmaydi. Usta daromadi kunlar bo'yicha (`earnings`, `dayKey`, `earningOn`) — "bugun" har kuni noldan. Yangi usta: reyting yo'q ("—"), balans 0 (sinovda 50 000), kategoriyalar bo'sh. Chiqish (`logoutAll`) — hamma store tozalanadi (til, mavzu, oxirgi joy qoladi), oldin tasdiq so'raladi. Usta **profil surati majburiy** (`profile.photo`, old kamera). Brauzerda tanlangan har qanday rasm (muammo rasmi, ish namunalari, hujjat, profil) kichraytirilib data: URL bo'lib saqlanadi — sahifa yangilansa yo'qolmaydi (`lib/photos.ts`: `PHOTO_MAX` 800, `DOC_MAX` 1280, `AVATAR_MAX` 320 px). Telefon raqami operator kodi bilan tekshiriladi (20, 33, 50, 55, 77, 88, 90, 91, 93, 94, 95, 97, 98, 99). Buyurtma topilmasa — `components/ui/NotFound.tsx`.
 
 **Admin** (`app/admin/`, ma'lumot — `lib/admin`: server ulangan bo'lsa `supabase.ts`, aks holda `demo.ts`; ikkalasi bitta `AdminApi`):
-- Bo'limlar: Bosh sahifa · Hujjat tekshiruvi · Buyurtmalar · Jonli xarita · Ustalar · Foydalanuvchilar · Sharhlar · Qo'llab-quvvatlash · Moliya · Narxlar va katalog · Amallar jurnali · Sozlamalar.
+- Bo'limlar: Bosh sahifa · Hujjat tekshiruvi · Buyurtmalar · Jonli xarita · Ustalar · Foydalanuvchilar · Sharhlar · Murojaatlar · Qo'llab-quvvatlash · Moliya · Statistika (voronka, ilova xatolari) · Narxlar va katalog · Amallar jurnali · Sozlamalar.
 - Amallar (hammasi jurnalga yoziladi, sabab kerak bo'lganlari — sababsiz bajarilmaydi): hujjatni tasdiqlash/rad etish/qayta tekshiruvga; balans (to'ldirish, bonus, qaytarish, tuzatish — `balance_ops` tarixi); obuna qayd etish; prioritet (−50…+50); bloklash (usta taklif olmaydi, mijoz buyurtma bera olmaydi; adminni bloklab bo'lmaydi); buyurtmani bekor qilish (`cancelled_by = 'admin'`); sharhni o'chirish (reyting qayta hisoblanadi); chaqiruv narxi va narx oraliqlari; adminlarni raqam bo'yicha qo'shish/olib tashlash (o'zini emas); qo'llab-quvvatlashga javob.
 - Chegaralar `lib/admin/rules.ts` = server (`…_admin.sql`). Filtrlar manzil satrida (`?f=active&q=...`) — havolani ulashsa bo'ladi. Ro'yxatlar CSV (Excel) ga yuklanadi. Grafiklarda "Jadval" ko'rinishi bor.
 - Sinov rejimida shu qurilmada ro'yxatdan o'tgan usta ham ro'yxatda (`LOCAL_MASTER_ID`) — admin tasdiqlasa/balans qo'shsa, ilovadagi `useMaster` ham o'zgaradi. Sozlamalar → "Sinov ma'lumotlarini tiklash".
@@ -211,6 +215,8 @@ Qo'shimcha (tarif qarori uchun):
 `categories.call_fee` = 50 000 (hammasi uchun).
 
 Admin uchun (`…_admin.sql`): `profiles.blocked_at/blocked_reason`, `masters.photo_path` (profil surati, `works` bucket), `admin_log` (jurnal, faqat o'qiladi), `balance_ops` (balans tarixi; ish yakunidagi ulush ham yoziladi), `admin_*` ko'rinishlari va funksiyalari, `admin_stats(days)`. Narx: `order_total` = ish (chaqiruv ichida) + qism, narx bo'lmasa — chaqiruv; `platform_fee` = `order_total` × ulush %.
+
+Mijozni himoya qilish (`…_client_care.sql`, batafsil — `supabase/README.md` 16-bo'lim): `orders.entrance/floor/apartment/intercom/landmark`, `orders_limits` (chegaralar), `order_reports` (murojaatlar: `report_order`, `master_client_absent`, `admin_resolve_report`), `delete_my_account` (`profiles.deleted_at`), `app_events` / `app_errors` (statistika, `admin_funnel`, `admin_errors`).
 
 Buyurtma holatlari: `scheduled → searching → assigned → on_the_way → arrived → in_progress → completed`, istalgan joyda `cancelled`. `orders.scheduled_at` — rejalashtirilgan vaqt (null — "Hozir kerak").
 

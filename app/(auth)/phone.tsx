@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { track } from '@/lib/track';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
@@ -27,6 +28,7 @@ export default function PhoneScreen() {
   const { next } = useLocalSearchParams<{ next?: string }>();
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
+  useEffect(() => track('phone_open', { next: next ?? '' }), []); // eslint-disable-line react-hooks/exhaustive-deps
   // Ikki raqam yozilgach operator kodi tekshiriladi — noto'g'ri raqamga SMS yuborilmaydi
   const badCode = digits.length >= 2 && !OPERATORS.includes(digits.slice(0, 2));
   const ready = digits.length === 9 && !badCode;
@@ -96,7 +98,7 @@ export default function PhoneScreen() {
       <View style={styles.head}>
         <Text variant="h1">{t('auth.phoneTitle')}</Text>
         <Text variant="small">
-          {next === 'order' ? t('auth.loginToOrder') : next === 'master' ? t('auth.loginToMaster') : t('auth.phoneHint')}
+          {next === 'order' ? t('auth.loginToOrder') : next === 'master' ? t('auth.loginToMaster') : next === 'support' ? t('auth.loginToSupport') : t('auth.phoneHint')}
         </Text>
       </View>
       {/* Maydonning istalgan joyiga bosilsa (+998 ustiga ham) — yozish boshlanadi */}

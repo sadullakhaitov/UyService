@@ -20,6 +20,7 @@ import { locateMe, useMyLocation } from '@/lib/useMyLocation';
 import { MAP_ATTRIBUTION_H, useWide } from '@/lib/useLayout';
 import { useWatchLocation } from '@/lib/useWatchLocation';
 import { mockMasterSelf } from '@/mocks';
+import { track } from '@/lib/track';
 import { earningOn, useLocationLog, useMaster, useMasterWork, useUser } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 
@@ -223,6 +224,7 @@ export default function MasterOrders() {
             onComplete={() => {
               askNotifications();
               setOnline(true);
+              track('master_online');
             }}
           />
         )}

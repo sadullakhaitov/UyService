@@ -179,6 +179,8 @@ export type HistoryItem = {
   categoryId: CategoryId;
   problemId: string;
   masterId: string | null;
+  /** Usta ismi (server rejimida — master_cards; sinovda mockMasters'dan olinadi) */
+  masterName?: string;
   at: number;
   price: number;
   status: 'completed' | 'cancelled';
