@@ -1306,5 +1306,14 @@
     "active": "Hozirgi buyurtmalar",
     "noActive": "Hozir faol buyurtma yo'q",
     "callMaster": "Usta chaqirish"
+  },
+  "weekday": {
+    "0": "Ya",
+    "1": "Du",
+    "2": "Se",
+    "3": "Ch",
+    "4": "Pa",
+    "5": "Ju",
+    "6": "Sh"
   }
 }

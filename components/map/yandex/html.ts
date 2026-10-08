@@ -118,8 +118,14 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
 
   // Tungi rejim: faqat xarita qatlami (ko'chalar, binolar) qorong'ilashadi, belgilar o'z rangida qoladi
   var DARK = 'invert(92%) hue-rotate(180deg) saturate(0.55) brightness(0.92) contrast(0.92)';
-  function applyDark(){
+  // Plitkalar yuklanguncha Yandex oq nuqtali fon ko'rsatadi (filtrdan tashqarida) — tungi rejimda xarita foni rangida
+  var darkBg = document.createElement('style');
+  document.head.appendChild(darkBg);
+  function applyDark(bg){
     try { map.panes.get('ground').getElement().style.filter = init.dark ? DARK : ''; } catch (e) {}
+    darkBg.textContent = init.dark
+      ? '[class*="-map-bg"],[class*="-inner-panes"]{background:' + (bg || C.map) + ' !important}'
+      : '';
   }
 
   ymaps.ready(function(){
@@ -253,7 +259,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
       S = s;
       // Kunduzgi ↔ tungi: filtr, fon va belgi ranglari joyida almashadi
       if (prev && (prev.dark !== s.dark || prev.primary !== s.primary)) {
-        init.dark = s.dark; C.primary = s.primary; applyDark();
+        init.dark = s.dark; C.primary = s.primary; applyDark(s.mapBg);
         document.documentElement.style.background = document.body.style.background = document.getElementById('map').style.background = s.mapBg;
         prev = Object.assign({}, prev, { nearby: null });
       }

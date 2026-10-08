@@ -1,6 +1,6 @@
-// "Vaqtni tanlash": usta kelishi mumkin bo'lgan vaqtlar — bugun, ertaga, indinga; 08:00–21:00, har soatda.
+// "Vaqtni tanlash": usta kelishi mumkin bo'lgan vaqtlar — bugundan 30 kun oldinga; 08:00–21:00, har soatda.
 // Bugungi kun uchun eng erta vaqt — hozirdan kamida 1,5 soat keyin (usta topishga ulgurish uchun).
-export const DAYS_AHEAD = 3;
+export const DAYS_AHEAD = 30;
 export const FIRST_HOUR = 8;
 export const LAST_HOUR = 21;
 export const MIN_LEAD_MS = 90 * 60_000;

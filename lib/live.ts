@@ -115,7 +115,8 @@ export async function liveCreateOrder(d: {
       .insert({
         client_id: uid,
         category_id: d.categoryId,
-        problem_id: d.problemId || null,
+        // "Boshqa" — serverdagi katalogda yo'q, null bo'lib saqlanadi (o'qishda yana 'other')
+        problem_id: d.problemId && d.problemId !== 'other' ? d.problemId : null,
         description: d.description || null,
         photos,
         address: d.address,
@@ -412,7 +413,7 @@ function offerToMasterOrder(f: OfferRow, o: OfferOrderRow): MasterOrder {
   return {
     id: o.id,
     categoryId: o.category_id,
-    problemId: o.problem_id ?? '',
+    problemId: o.problem_id ?? 'other',
     description: o.description ?? '',
     address: o.address ?? '',
     location: { latitude: o.lat, longitude: o.lng },

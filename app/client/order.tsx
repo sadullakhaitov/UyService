@@ -210,6 +210,12 @@ export default function OrderScreen() {
 }
 
 // Kun va soat tanlash (usta shu vaqtda keladi)
+/** "Bugun" / "Ertaga" / "Ju, 17-oktabr" — uzoq kunlarda hafta kuni ham */
+function dayLabel(ms: number) {
+  const day = formatDay(ms);
+  return dayOffsetOf(ms) < 2 ? day : `${t(`weekday.${new Date(ms).getDay()}`)}, ${day}`;
+}
+
 function SchedulePicker({ value, onChange, color, onColor }: { value: number; onChange: (v: number) => void; color: string; onColor: string }) {
   useScheme();
   const day = Math.max(0, dayOffsetOf(value));
@@ -227,11 +233,12 @@ function SchedulePicker({ value, onChange, color, onColor }: { value: number; on
         <CalendarClock size={20} color={color} strokeWidth={2.2} />
         <Text variant="h3">{t('schedule.when')}</Text>
       </View>
-      <View style={styles.chips}>
+      {/* Istalgan kun (30 kungacha) — surib tanlanadi */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slots}>
         {days.map((d) => (
-          <Chip key={d} label={formatDay(slotsFor(d)[0])} selected={d === day} onPress={() => pickDay(d)} color={color} onColor={onColor} />
+          <Chip key={d} label={dayLabel(slotsFor(d)[0])} selected={d === day} onPress={() => pickDay(d)} color={color} onColor={onColor} />
         ))}
-      </View>
+      </ScrollView>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slots}>
         {slots.map((s) => (
           <Chip key={s} label={formatTime(s)} selected={s === value} onPress={() => onChange(s)} color={color} onColor={onColor} />

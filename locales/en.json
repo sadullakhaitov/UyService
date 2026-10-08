@@ -1333,5 +1333,14 @@
     "active": "Current orders",
     "noActive": "No active orders right now",
     "callMaster": "Call a master"
+  },
+  "weekday": {
+    "0": "Sun",
+    "1": "Mon",
+    "2": "Tue",
+    "3": "Wed",
+    "4": "Thu",
+    "5": "Fri",
+    "6": "Sat"
   }
 }
