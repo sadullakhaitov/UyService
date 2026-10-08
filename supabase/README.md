@@ -5,6 +5,11 @@ Quyidagi qadamlarni **bir marta**, tartib bilan bajaring. Hamma buyruqlar **Wind
 loyiha papkasida (`UyService`) yoziladi.
 
 > Kalitlar bo'lmasa ilova hozirgidek demo rejimda ishlayveradi — hech narsa buzilmaydi.
+>
+> **Qisqa yo'l:** 1-bo'limdagi loyihani yaratgach, qolgan 2–5, 8–11-bo'limlarni bitta skript bajaradi:
+> `powershell -ExecutionPolicy Bypass -File supabase\setup.ps1` (URL, anon kalit, baza paroli va bot tokenini
+> so'raydi; oxirida SQL Editor'ga qo'yiladigan 2 qatorni nusxalab beradi). Quyidagi bo'limlar — qo'lda qilish yoki
+> nima bo'layotganini tushunish uchun.
 
 ---
 

@@ -135,7 +135,7 @@ locales/uz.json           ← ilovadagi barcha matnlar
 mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
 design/logo/              ← logotip asl fayllari (SVG, ko'rinish varag'i)
 design/print/             ← bosma varaqalar (HTML + PDF + PNG): ustalar uchun A5 (QR → uyservice.uz/usta), podyezd e'loni A4 (QR → uyservice.uz, yirtib olinadigan qismlar)
-supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma
+supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma; setup.ps1 — hammasini bitta skript bilan sozlash
   migrations/             ← 14 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push, ochiq sharhlar, Telegram, Telegram orqali bildirishnoma, usta bekor qilsa — keyingi ustaga, promokod va do'st taklifi
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
   functions/{dispatch,offer-respond,offer-timeout,send-sms,push-send,telegram-auth,telegram-bot} ← Edge Functions (send-sms — Eskiz.uz orqali SMS; push-send — push_outbox → Expo Push API yoki Telegram bot; telegram-* — Telegram orqali kirish va bot)
