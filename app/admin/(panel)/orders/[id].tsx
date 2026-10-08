@@ -127,6 +127,7 @@ export default function OrderPage() {
                           {f.etaMin != null ? ` · ${t('common.min', { value: f.etaMin })}` : ''}
                           {f.distanceKm != null ? ` · ${t('common.km', { value: f.distanceKm })}` : ''}
                           {f.score != null ? ` · ${t('admin.orders.score', { n: f.score })}` : ''}
+                          {f.cancelReason ? ` · ${cancelReasonText(f.cancelReason)}` : ''}
                         </Text>
                       </View>
                       <Badge label={t(`admin.offer.${f.status}`)} tone={OFFER_TONE[f.status]} />
@@ -213,7 +214,7 @@ export default function OrderPage() {
   );
 }
 
-const OFFER_TONE: Record<string, Tone> = { sent: 'info', accepted: 'success', declined: 'danger', expired: 'neutral' };
+const OFFER_TONE: Record<string, Tone> = { sent: 'info', accepted: 'success', declined: 'danger', expired: 'neutral', cancelled: 'warning' };
 
 /** Vaqt chizig'i: buyurtma hayoti bosqichma-bosqich */
 function Timeline({ d }: { d: OrderDetail }) {

@@ -10,6 +10,8 @@ import type { CategoryId } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
 import type { DispatchState } from '@/lib/dispatch';
 import { distanceKm, type LatLng } from '@/lib/geo';
+import { t } from '@/lib/i18n';
+import { notify } from '@/lib/notify';
 import { fetchRoute, resample } from '@/lib/routes';
 import { useChats, useMaster, useMasterWork, useOrders, useUser, type ActiveOrder, type ChatMessage, type MasterOrder, type OrderMaster } from '@/store';
 import { getSupabase, isSupabaseConfigured } from './supabase';
@@ -252,6 +254,12 @@ export function useLiveOrders() {
         for (const row of (data ?? []) as OrderRow[]) {
           const cur = useOrders.getState().orders.find((o) => o.id === row.id);
           if (!cur) continue;
+          // Usta bekor qildi — server buyurtmani qidiruvga qaytardi: usta kartasi va yo'l olib tashlanadi, qidiruv darhol
+          if (cur.masterId && !row.master_id && row.status === 'searching') {
+            useOrders.getState().update(row.id, { requeued: true, master: undefined, path: [], step: 0, routeReady: false });
+            notify(t('notify.requeuedTitle'), t('notify.requeuedBody'), { url: `/client/searching?id=${row.id}` });
+            void db().functions.invoke('dispatch', { body: { order_id: row.id } });
+          }
           useOrders.getState().update(row.id, orderPatch(row, cur));
           if (!cur.doorCode || cur.doorCode === '----') {
             const code = await db().rpc('order_door_code', { p_order: row.id });
@@ -356,6 +364,32 @@ export async function liveSubmitMaster() {
   await db().from('profiles').update({ role: 'master', name: `${profile.firstName} ${profile.lastName}`.trim() }).eq('id', uid);
 }
 
+/** Promokod (Profil → Promokod). Xato: Error('invalid' | 'used' | 'expired') */
+export async function liveRedeemPromo(code: string): Promise<{ priority: number; bonus: number }> {
+  const { data, error } = await db().rpc('redeem_promo', { p_code: code });
+  if (error) {
+    const c = (error as { code?: string }).code;
+    throw new Error(c === '23505' ? 'used' : c === '22023' ? 'expired' : 'invalid');
+  }
+  void syncMaster();
+  const r = data as { priority: number; bonus: number };
+  return { priority: r.priority ?? 0, bonus: r.bonus ?? 0 };
+}
+
+/** Anketada do'stning taklif kodi. Qaytaradi: taklif qilgan ustaning ismi */
+export async function liveApplyInvite(code: string): Promise<string> {
+  const { data, error } = await db().rpc('apply_invite_code', { p_code: code });
+  if (error) throw new Error(errText(error));
+  return String(data ?? '');
+}
+
+/** "Do'stni taklif qilish": mening kodim va natija */
+export async function liveMyInvites(): Promise<{ code: string; invited: number; paid: number } | null> {
+  const { data } = await db().rpc('my_invites');
+  const r = (data as { code: string; invited: number; paid: number }[] | null)?.[0];
+  return r?.code ? r : null;
+}
+
 export async function liveSetPlan(plan: 'subscription' | 'commission') {
   const uid = await myId();
   if (uid) await db().from('masters').update({ billing_plan: plan }).eq('id', uid);
@@ -450,15 +484,17 @@ export function useLiveMasterFeed() {
   useEffect(() => {
     if (!LIVE || !jobId) return;
     const check = async () => {
-      const { data } = await db().from('orders').select('status, price_status, price_work, price_parts, call_fee').eq('id', jobId).maybeSingle();
+      const { data, error } = await db().from('orders').select('status, price_status, price_work, price_parts, call_fee').eq('id', jobId).maybeSingle();
       const o = data as { status: string; price_status: string; price_work: number | null; price_parts: number | null; call_fee: number } | null;
       const job = useMasterWork.getState().job;
-      if (!o || !job || job.id !== jobId) return;
-      if (o.status === 'cancelled' && job.stage !== 'completed') {
+      if (error || !job || job.id !== jobId) return;
+      // Buyurtma endi bu ustaniki emas (bekor qilingan / boshqa ustaga o'tgan) yoki mijoz bekor qildi
+      if ((!o || o.status === 'cancelled') && job.stage !== 'completed') {
         useMasterWork.getState().finishJob();
         router.replace('/master');
         return;
       }
+      if (!o) return;
       if (job.priceStatus === 'sent' && o.price_status === 'approved') useMasterWork.getState().updateJob({ priceStatus: 'approved', stage: 'in_progress' });
       if (job.priceStatus === 'sent' && o.price_status === 'declined') {
         // Mijoz rozi bo'lmadi — server buyurtmani faqat chaqiruv bilan yopdi
@@ -519,7 +555,11 @@ export const liveJob = {
     must(await db().from('orders').update({ status: 'completed' }).eq('id', id));
     void syncMaster();
   },
-  cancel: async (id: string, reason: string) => must(await db().from('orders').update({ status: 'cancelled', cancel_reason: reason }).eq('id', id)),
+  /** Usta bekor qildi: buyurtma yopilmaydi — server uni keyingi ustaga o'tkazadi (aktivlik −10) */
+  cancel: async (id: string, reason: string) => {
+    must(await db().rpc('master_cancel_order', { p_order: id, p_reason: reason }));
+    void syncMaster();
+  },
 };
 
 // ---------- Chat ----------

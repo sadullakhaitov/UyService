@@ -72,6 +72,7 @@ app/                      ← ekranlar (Expo Router)
   client/master.tsx       ← usta haqida: reyting, maqtovlar, sharhlar
   client/rate.tsx         ← ish tugadi, baholash
   client/history.tsx      ← buyurtmalar tarixi (useHistory, telefonda saqlanadi: baho, izoh, bekor sababi)
+  usta.tsx                ← uyservice.uz/usta?ref=KOD — do'st yuborgan "Usta bo'lib ishlash" havolasi (kod anketaga o'zi yoziladi)
   about.tsx               ← "Biz haqimizda": logotip bosilganda ochiladi (missiya, qanday ishlaydi, kafolatlar, aloqa — constants/company.ts: support@uyservice.uz, Telegram @uyservice_bot, +998 90 121 88 87, 08:00–22:00)
   admin/                  ← admin panel (uyservice.uz/admin): login.tsx — kirish; (panel)/ — himoyalangan bo'limlar
     (panel)/_layout.tsx   ← huquq tekshiruvi (adminApi.me), 8 soat harakatsizlik → qayta kirish, AdminShell + Stack
@@ -117,6 +118,7 @@ lib/                      ← i18n, geo, location, routes, supabase
   push.ts                 ← serverdan push: Expo push tokeni → profiles.push_token (til, "Yangi buyurtma" sozlamasi bilan); chiqishda o'chiriladi
   geocode.ts              ← manzil qidirish butun O'zbekiston bo'ylab, foydalanuvchiga yaqinlari birinchi (Yandex Geocoder, kalit bo'lmasa OSM Nominatim)
   schedule.ts, photos.ts  ← rejalashtirish vaqtlari; rasm tanlash/suratga olish
+  share.ts                ← ulashish (telefonda tizim oynasi, brauzerda nusxalash): taklif havolasi, "Do'stlarga tavsiya qilish"
   yandex.ts               ← Yandex kaliti + HTTP Geocoder (qidiruv, koordinatadan manzil); kalit bo'lmasa — Nominatim / telefon xizmati
   useLayout.ts            ← `useWide()` — kompyuter brauzeri (≥ 900 px): yon panel, o'rtadagi ustun, chap menyu
   useMyLocation.ts        ← telefon joyi (bitta, butun ilova uchun): avval oxirgi ma'lum joy, keyin aniq GPS; `useLocStatus`
@@ -132,30 +134,32 @@ constants/                ← theme, categories (+ CALL_FEE), dispatch, billing
 locales/uz.json           ← ilovadagi barcha matnlar
 mocks/                    ← soxta ma'lumotlar (5-bosqichgacha); soxta ustalar har doim mijoz manzili atrofida (`mastersAround`)
 design/logo/              ← logotip asl fayllari (SVG, ko'rinish varag'i)
+design/print/             ← bosma varaqalar (HTML + PDF + PNG): ustalar uchun A5 (QR → uyservice.uz/usta), podyezd e'loni A4 (QR → uyservice.uz, yirtib olinadigan qismlar)
 supabase/                 ← server (tayyor, hali joylanmagan): README.md — joylash bo'yicha qo'llanma
-  migrations/             ← 12 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push, ochiq sharhlar, Telegram, Telegram orqali bildirishnoma
+  migrations/             ← 14 ta: jadvallar, mantiq (triggerlar, nearby_masters), RLS, katalog, storage+realtime, cron, admin, narx kelishuvi, push, ochiq sharhlar, Telegram, Telegram orqali bildirishnoma, usta bekor qilsa — keyingi ustaga, promokod va do'st taklifi
   functions/_shared/dispatch.ts ← usta qidirish algoritmining YAGONA manbai (ilova ham shuni ishlatadi)
   functions/{dispatch,offer-respond,offer-timeout,send-sms,push-send,telegram-auth,telegram-bot} ← Edge Functions (send-sms — Eskiz.uz orqali SMS; push-send — push_outbox → Expo Push API yoki Telegram bot; telegram-* — Telegram orqali kirish va bot)
-  tests/                  ← run.sh — hammasi: supabase_stub.sql + rls/admin/price/push/telegram_test.sql + unit/ (Telegram imzosi) + e2e/ (usta qidirish va push, Deno + PostgREST)
+  tests/                  ← run.sh — hammasi: supabase_stub.sql + rls/admin/price/push/telegram/master_cancel/promo_test.sql + unit/ (Telegram imzosi, yo'l bo'yicha vaqt) + e2e/ (usta qidirish va push, Deno + PostgREST)
 .github/workflows/ci.yml  ← har push'da: typecheck, deno check, server sinovlari (Postgres+PostGIS+PostgREST)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
 wrangler.jsonc            ← sayt (uyservice.uz) Cloudflare Workers'da: build `npx expo export --platform web` → `dist`, deploy `npx wrangler deploy`; hamma yo'llar index.html'ga (SPA)
-eas.json                  ← do'kon uchun build: preview (APK), production
+eas.json                  ← do'kon uchun build: preview (APK), production; kalitlar expo.dev muhitlaridan (`environment`, supabase/README.md 14-bo'lim)
 ```
 
 Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `index.tsx`i bir xil `/` manzilga to'qnashgani uchun oddiy `client/` va `master/` papkalari ishlatildi.
 
 ## 4. Ekranlar
 
-**Mijoz** (pastki menyu: Asosiy · Xarita · Buyurtmalar · Profil; bir vaqtda bir nechta usta chaqira oladi — masalan, santexnik va elektrik; faol buyurtmalar bosh sahifada kartalar bo'lib turadi, `useOrders` + `lib/orderSimulator.ts`): Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim") → Tarix (qayta chaqirish).
+**Mijoz** (pastki menyu: Asosiy · Xarita · Buyurtmalar · Profil; bir vaqtda bir nechta usta chaqira oladi — masalan, santexnik va elektrik; faol buyurtmalar bosh sahifada kartalar bo'lib turadi, `useOrders` + `lib/orderSimulator.ts`): Bosh sahifa (to'liq ekran xarita, manzil, qidiruv, "Hozir kerak", 6 kategoriya, "Mening ustalarim") → Buyurtma (muammo chiplari, taxminiy narx, tavsif, 3 tagacha rasm, chaqiruv narxi 50 000, kafolat) → Qidirilmoqda (to'lqinlar, miltillovchi ustalar, holat matni, progress) → Usta yo'lda (harakatlanuvchi belgi, yo'l chizig'i, "N daqiqa", profil, qo'ng'iroq) → Ish tugadi (narx tafsiloti, kafolat sanasi, 5 yulduz, teglar, "Mening ustalarim", 4–5 yulduzda "Do'stlarga tavsiya qilish") → Tarix (qayta chaqirish).
 
 **Usta** (pastki menyu: Buyurtmalar · Pul · Chatlar · Profil — Yandex Pro tuzilmasi, Mejgorod yo'q):
 - Buyurtmalar: to'liq xarita, filtr (kategoriya, radius), zoom ±, joylashuv; panelda aktivlik va bugungi daromad, tarif kartasi, "surib ishga chiqish" tugmasi. Buyurtma yopiq bo'lsa tepada qizil banner (balans limitdan past / obuna tugagan); hujjatsiz ishlayotgan bo'lsa — to'q sariq eslatma (bloklamaydi).
 - Pul: kunlik daromad + 7 kunlik tanlov, komissiya tarifida balans va limit (`BALANCE_LIMIT`, platforma ulushi ish yakunida balansdan yechiladi), obuna tarifida obuna muddati; "Yordam" → qo'llab-quvvatlash chati.
 - Chatlar: qo'llab-quvvatlash, yangiliklar, mijozlar bilan yozishmalar (server rejimida — `chat_messages`, Realtime + har 3 s; admin qo'llab-quvvatlashdan javob beradi; sinovda — mahalliy).
-- Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; o'qish (qo'llanma); sozlamalar (bildirishnomalar, til), chiqish. Demo promokodlar: `UYSERVICE` (+10 prioritet), `BIRINCHI` (+20 000 balans), `USTA2026`. Do'st uchun bonus `INVITE_BONUS` = 30 000 (⚠️ tasdiqlanmagan).
+- Profil: reyting, aktivlik, prioritet; kategoriyalar, tarif, to'lov; ish namunalari; hujjatlar, shaxsni tasdiqlash; promokod, do'stni taklif; o'qish (qo'llanma); sozlamalar (bildirishnomalar, til), chiqish. Promokodlar: server rejimida admin yaratadi (admin → Narxlar va katalog → Promokodlar: prioritet 0–50 va/yoki balansga bonus, chegara, muddat; har usta bir marta; `redeem_promo`); sinov rejimida — `UYSERVICE` (+10 prioritet), `BIRINCHI` (+20 000 balans), `USTA2026`. Do'st taklifi: har ustaning kodi `masters.invite_code` (server beradi), yangi usta anketada kiritadi yoki `uyservice.uz/usta?ref=KOD` havolasidan keladi (`apply_invite_code`); u `INVITE_JOBS` = 5 ta ishni bajargach taklif qilganga `INVITE_BONUS` = 30 000 (⚠️ tasdiqlanmagan; server — `invite_bonus()`), balans tarixiga va xabar bilan.
 - Tarif tanlash (birinchi kirishda) → Yangi buyurtma (60 s aylana taymer, tebranish, qabul/rad) → Ish jarayoni (Yetib keldim → eshik kodi → narx yuborish → mijoz rozi bo'lsa ish → Tugatdim; mijozdan naqd olinadigan summa va platforma ulushi — qabul paytidagi foiz bo'yicha).
+- Usta ish boshlanmasdan (yo'lda / yetib kelgach) sabab bilan bekor qilsa — buyurtma yopilmaydi, **keyingi ustaga o'tadi** (`master_cancel_order`): aktivlik −10, shu usta qayta taklif olmaydi, mijozga "Usta bekor qildi — yangi usta qidirilmoqda" (push + qidiruv ekrani), sabab admin buyurtma sahifasida.
 
 **Narx kelishuvi va eshik kodi** (soxta mijoz/usta — `lib/orderSimulator.ts`: `approvePrice`, `declinePrice`, `completeOrder`; usta — `master/job.tsx`; server rejimida — `lib/live.ts` → RPC'lar):
 1. Buyurtmada 4 xonali **eshik kodi** (`makeDoorCode`). Mijoz kuzatuv ekranida ko'radi; usta yetib kelgach mijozdan so'rab kiritadi — noto'g'ri bo'lsa davom etmaydi (kelgan odam o'sha usta ekani tasdiqlanadi).
@@ -218,7 +222,7 @@ Koeffitsientlar: `constants/dispatch.ts`. Filtr (kategoriya, onlayn, band emas, 
 
 Eng yuqori ballga taklif, 60 s taymer (usta ma'lumotlarni o'qib ulgurishi uchun). Rad/vaqt o'tdi → aktivlik −5, keyingi ustaga. Radiusda hech kim bo'lmasa `radiusWaitSec` (10 s) kutib, keyingi radiusga. 3 radiusdan keyin ham topilmasa yoki `giveUpAfterSec` (3 daqiqa) o'tsa — "Hozir bo'sh usta yo'q" + "Qayta urinish". Aktivlik: qabul +2, rad −5, bekor −10; 0–100. "Mening ustalarim"dan tanlansa — taklif birinchi unga (10 km ichida bo'lsa, radiusdan qat'i nazar).
 
-Kod: `lib/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, `applyActivity`) — tashqi holatsiz, hozir `lib/orderSimulator.ts` ishlatadi, 7-bosqichda shu fayl `supabase/functions/dispatch`ga ko'chadi. Yetib kelish vaqti hozir taxminiy (`estimateEtaMin`), keyin Google Routes / Yandex.
+Kod: `supabase/functions/_shared/dispatch.ts` (`rankCandidates`, `advanceDispatch`, `respondDispatch`, `applyActivity`) — tashqi holatsiz; ilova (`lib/dispatch.ts` → sinov rejimida `lib/orderSimulator.ts`) va Edge Functions (`_shared/engine.ts`) bir xil faylni ishlatadi. Yetib kelish vaqti serverda haqiqiy yo'l bo'yicha: eng yaqin 10 ta uchun bitta OSRM "table" so'rovi (`_shared/eta.ts`, 2,5 s; javob bo'lmasa — taxminiy `estimateEtaMin`; `DISPATCH_ROUTING=off` — o'chirish, `OSRM_URL` — o'z server); keyin Google Routes / Yandex — faqat shu fayl o'zgaradi.
 
 ## 8. Dizayn qoidalari
 

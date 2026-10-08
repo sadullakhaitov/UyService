@@ -1,6 +1,6 @@
 // Admin amallari chegaralari — server (supabase/migrations/…_admin.sql) bilan bir xil.
 // Ekran tugmani bosishdan oldin tekshiradi, sinov rejimi (demo.ts) ham shularga amal qiladi.
-import { AdminError, type BalanceKind } from './types';
+import { AdminError, type BalanceKind, type PromoInput } from './types';
 
 export const RULES = {
   balanceMax: 10_000_000,
@@ -13,6 +13,9 @@ export const RULES = {
   priceMax: 100_000_000,
   reasonMax: 500,
   messageMax: 4000,
+  promoPriorityMax: 50,
+  promoBonusMax: 1_000_000,
+  promoUsesMax: 100_000,
 } as const;
 
 export const clean = (s: string | null | undefined, max: number = RULES.reasonMax) => (s ?? '').trim().slice(0, max);
@@ -44,6 +47,15 @@ export function checkCallFee(fee: number) {
 export function checkPriceRange(min: number | null, max: number | null) {
   if ((min == null) !== (max == null)) throw new AdminError('errors.priceRange');
   if (min != null && max != null && (min < 0 || max > RULES.priceMax || min > max)) throw new AdminError('errors.priceRange');
+}
+
+/** Promokod: 3–20 ta lotin harfi/raqam; prioritet 0–50 va/yoki bonus 0–1 000 000; chegara 1–100 000 (…_promo_referrals.sql) */
+export function checkPromo(p: PromoInput) {
+  if (!/^[A-Z0-9]{3,20}$/.test(p.code)) throw new AdminError('errors.promoCode');
+  const int = (n: number, max: number) => Number.isInteger(n) && n >= 0 && n <= max;
+  if (!int(p.priority, RULES.promoPriorityMax) || !int(p.bonus, RULES.promoBonusMax) || (p.priority === 0 && p.bonus === 0))
+    throw new AdminError('errors.promoValue');
+  if (p.maxUses != null && (!Number.isInteger(p.maxUses) || p.maxUses < 1 || p.maxUses > RULES.promoUsesMax)) throw new AdminError('errors.promoValue');
 }
 
 /** "+998 90 123 45 67" / "901234567" → "+998901234567"; noto'g'ri bo'lsa — null */

@@ -17,7 +17,9 @@ import {
   type DispatchMaster,
   type DispatchOrder,
   type DispatchState,
+  type EtaFn,
 } from './dispatch.ts';
+import { roadEta } from './eta.ts';
 
 /** Rejalashtirilgan buyurtmada qidiruv shuncha oldin boshlanadi (lib/orderSimulator.ts → SCHEDULE_LEAD_MS) */
 export const SCHEDULE_LEAD_MS = 30 * 60_000;
@@ -91,9 +93,13 @@ async function tryStep(db: SupabaseClient, orderId: string, opts: StepOptions): 
     preferredMasterId: order.preferred_master_id,
   };
   let masters: DispatchMaster[] = [];
+  let eta: EtaFn = estimateEtaMin;
   if (!st.done) {
     masters = await loadCandidates(db, order);
-    st = advanceDispatch(st, dOrder, masters, now);
+    // Yangi taklif yuboriladigan bo'lsa — yetib kelish vaqti haqiqiy yo'l bo'yicha (eng yaqin 10 ta)
+    const offerDue = !st.offer || now - st.offer.sentAt >= DISPATCH.offerTimeoutSec * 1000;
+    if (offerDue && masters.length) eta = await roadEta(dOrder.location, masters.map((m) => m.location));
+    st = advanceDispatch(st, dOrder, masters, now, eta);
   }
   if (st === prev) return { ok: true, status: order.status, dispatch: prev, changed: false };
 
@@ -115,7 +121,7 @@ async function tryStep(db: SupabaseClient, orderId: string, opts: StepOptions): 
   if (upd.error) return { ok: false, error: upd.error.message };
   if (!upd.data?.length) return 'conflict';
 
-  await applyEvents(db, order, fresh, masters);
+  await applyEvents(db, order, fresh, masters, eta);
   return { ok: true, status: accepted ? 'on_the_way' : order.status, dispatch: st, changed: true };
 }
 
@@ -142,7 +148,7 @@ async function loadCandidates(db: SupabaseClient, order: OrderRow): Promise<Disp
   }));
 }
 
-async function applyEvents(db: SupabaseClient, order: OrderRow, events: DispatchEvent[], masters: DispatchMaster[]) {
+async function applyEvents(db: SupabaseClient, order: OrderRow, events: DispatchEvent[], masters: DispatchMaster[], eta: EtaFn) {
   const here = { latitude: order.lat, longitude: order.lng };
   for (const e of events) {
     if (e.kind === 'offer') {
@@ -153,11 +159,10 @@ async function applyEvents(db: SupabaseClient, order: OrderRow, events: Dispatch
         sent_at: new Date(e.at).toISOString(),
         expires_at: new Date(e.at + DISPATCH.offerTimeoutSec * 1000).toISOString(),
         score: e.score,
-        eta_min: m ? estimateEtaMin(m.location, here) : null,
+        eta_min: m ? eta(m.location, here) : null,
         distance_km: m ? Math.round(distanceKm(m.location, here) * 10) / 10 : null,
       });
       if (error) console.error('offers.insert', error.message);
-      // TODO (8-bosqich): ustaga push — profiles.push_token orqali Expo Push API
     } else if (e.kind === 'expired' || e.kind === 'declined' || e.kind === 'accepted') {
       await db
         .from('offers')

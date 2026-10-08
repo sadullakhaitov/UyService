@@ -129,7 +129,7 @@ uchun kerak.
    ```
    Endi buyurtma o'zgarganda baza `push-send`ni darhol chaqiradi (zaxira — `offer-timeout` har 15 s).
 2. Telefon ilovasi tokenni o'zi yozadi (`lib/push.ts`), lekin buning uchun ilova **EAS orqali yig'ilgan** bo'lishi
-   kerak (Expo Go'da Android push ishlamaydi): `npx eas init` → `app.config.ts`ga `extra.eas.projectId` yoziladi;
+   kerak (Expo Go'da Android push ishlamaydi): `npx eas init` → chiqqan ID'ni `EAS_PROJECT_ID` qilib yozing (`.env` va expo.dev, 14-bo'lim);
    Android uchun Firebase (FCM) kaliti — `npx eas credentials` → Android → Push Notifications.
 3. Tekshirish: `select kind, sent_at, error from push_outbox order by id desc limit 20;`
 
@@ -208,6 +208,25 @@ Kerak bo'lsa SQL Editor'dan ham qilish mumkin (masalan, server ulanmasdan oldin)
 `update public.masters set verify_status = 'approved' where id = '...'`.
 
 ---
+
+## 14. Telefon ilovasini (APK) yig'ish
+
+`.env` fayli git'ga yuklanmaydi, shuning uchun EAS bulutida yig'ilgan APK uni ko'rmaydi — kalitlar **expo.dev**'ga
+bir marta yoziladi (`eas.json`: `preview` → `preview` muhiti, `production` → `production`):
+
+```powershell
+npx eas login
+npx eas init                       # chiqqan ID — EAS_PROJECT_ID
+npx eas env:create --environment preview --name EXPO_PUBLIC_SUPABASE_URL --value "https://PROJECT_REF.supabase.co" --visibility plaintext
+npx eas env:create --environment preview --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "ANON_KALIT" --visibility plaintext
+npx eas env:create --environment preview --name EXPO_PUBLIC_YANDEX_MAPS_KEY --value "YANDEX_KALIT" --visibility plaintext
+npx eas env:create --environment preview --name EAS_PROJECT_ID --value "EAS_ID" --visibility plaintext
+npx eas build --profile preview --platform android   # tayyor APK havolasi chiqadi
+```
+
+`production` uchun ham xuddi shu buyruqlar (`--environment production`). Bu kalitlar ilova ichida baribir ochiq
+turadi (anon kalit va Yandex kaliti shunday mo'ljallangan) — maxfiy kalitlar (service_role, Eskiz, Telegram) bu
+yerga **yozilmaydi**, ular faqat Supabase sirlarida.
 
 ## Nima qayerda
 

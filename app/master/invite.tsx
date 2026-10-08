@@ -1,52 +1,32 @@
 import { Copy, Gift, Share2 } from 'lucide-react-native';
-import { Platform, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
-import { INVITE_BONUS } from '@/constants/billing';
+import { useEffect, useState } from 'react';
+import { INVITE_BONUS, INVITE_JOBS } from '@/constants/billing';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
-import { notice } from '@/lib/dialog';
 import { formatSum, t } from '@/lib/i18n';
+import { LIVE, liveMyInvites } from '@/lib/live';
+import { copyText, shareText } from '@/lib/share';
 import { useUser } from '@/store';
 
-/** Raqamdan yasalgan, lekin raqamni oshkor qilmaydigan kod (5-bosqichda server beradi) */
+/** Sinov rejimi: raqamdan yasalgan, lekin raqamni oshkor qilmaydigan kod. Server rejimida kodni server beradi (masters.invite_code) */
 function inviteCode(phone: string) {
   let h = 5381;
   for (const ch of phone.replace(/\D/g, '') || '0') h = (h * 33 + ch.charCodeAt(0)) >>> 0;
   return `US${h.toString(36).toUpperCase().padStart(6, '0').slice(-6)}`;
 }
 
-/** Brauzerda "ulashish" bo'lmasa — matn nusxalanadi */
-async function shareText(message: string) {
-  if (Platform.OS === 'web' && !(navigator as Navigator & { share?: unknown }).share) return copyText(message);
-  try {
-    await Share.share({ message });
-  } catch {
-    // foydalanuvchi bekor qildi
-  }
-}
-
-async function copyText(text: string) {
-  if (Platform.OS === 'web' && navigator.clipboard) {
-    try {
-      await navigator.clipboard.writeText(text);
-      notice(t('invite.copied'));
-      return;
-    } catch {
-      // ruxsat yo'q — quyida ulashish oynasi
-    }
-  }
-  try {
-    await Share.share({ message: text });
-  } catch {
-    // bekor qilindi
-  }
-}
-
-// Do'st taklif qilish: kod va havola (5-bosqichda referrals jadvali)
+// Do'st taklif qilish: kod va havola. Do'st anketada kodni kiritadi (yoki havoladan o'zi yoziladi, app/usta.tsx),
+// u INVITE_JOBS ta ishni bajargach bonus balansga tushadi (server: …_promo_referrals.sql)
 export default function Invite() {
   useScheme();
   const phone = useUser((s) => s.phone);
-  const code = inviteCode(phone);
+  const [server, setServer] = useState<{ code: string; invited: number; paid: number } | null>(null);
+  useEffect(() => {
+    if (LIVE) void liveMyInvites().then(setServer);
+  }, []);
+  const code = LIVE ? (server?.code ?? '······') : inviteCode(phone);
   const link = `https://uyservice.uz/usta?ref=${code}`;
   const share = () => shareText(t('invite.message', { code, link }));
 
@@ -64,6 +44,7 @@ export default function Invite() {
           <Text style={styles.code} selectable>
             {code}
           </Text>
+          {server?.invited ? <Text variant="caption">{t('invite.stats', { n: server.invited, paid: server.paid })}</Text> : null}
         </View>
         {[1, 2, 3].map((n) => (
           <View key={n} style={styles.step}>
@@ -71,14 +52,14 @@ export default function Invite() {
               <Text style={styles.numText}>{n}</Text>
             </View>
             <Text variant="small" style={styles.flex}>
-              {t(`invite.step${n}`, { sum: formatSum(INVITE_BONUS) })}
+              {t(`invite.step${n}`, { sum: formatSum(INVITE_BONUS), jobs: INVITE_JOBS })}
             </Text>
           </View>
         ))}
       </ScrollView>
       <View style={styles.bottom}>
-        <Button title={t('invite.share')} icon={Share2} big onPress={share} />
-        <Button title={t('invite.copyLink')} icon={Copy} kind="secondary" onPress={() => copyText(link)} />
+        <Button title={t('invite.share')} icon={Share2} big disabled={LIVE && !server} onPress={share} />
+        <Button title={t('invite.copyLink')} icon={Copy} kind="secondary" disabled={LIVE && !server} onPress={() => copyText(link)} />
       </View>
     </SafeAreaView>
   );

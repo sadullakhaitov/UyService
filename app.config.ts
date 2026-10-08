@@ -65,6 +65,8 @@ const config: ExpoConfig = {
     ],
     ['expo-notifications', { color: '#0E5A4B' }],
   ],
+  // EAS loyiha raqami (push uchun): `npx eas init` chiqargan ID — expo.dev → loyiha → Environment variables → EAS_PROJECT_ID
+  extra: process.env.EAS_PROJECT_ID ? { eas: { projectId: process.env.EAS_PROJECT_ID } } : {},
   experiments: { typedRoutes: false },
 };
 

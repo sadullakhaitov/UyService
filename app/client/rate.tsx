@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Check, Heart, ShieldCheck } from 'lucide-react-native';
+import { Check, Heart, Share2, ShieldCheck } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
 import { useActiveOrder, useHistory, useOrders, useUser } from '@/store';
 import { LIVE, liveRate } from '@/lib/live';
+import { shareText } from '@/lib/share';
 
 const TAGS = ['onTime', 'clean', 'fair', 'polite', 'fast'] as const;
 
@@ -134,6 +135,18 @@ export default function Rate() {
           <Text style={styles.favText}>{t('rate.addFavorite')}</Text>
           <Heart size={18} color={colors.accent} fill={fav ? colors.accent : 'transparent'} strokeWidth={2.2} />
         </Squish>
+
+        {/* Mamnun mijoz — eng yaxshi reklama: do'stlariga tavsiya qilsin */}
+        {stars >= 4 ? (
+          <Squish
+            accessibilityRole="button"
+            onPress={() => shareText(t('rate.shareMessage', { category: t(`categories.${categoryId}`).toLowerCase() }))}
+            style={styles.fav}
+          >
+            <Share2 size={18} color={colors.primary} strokeWidth={2.2} />
+            <Text style={styles.favText}>{t('rate.share')}</Text>
+          </Squish>
+        ) : null}
       </ScrollView>
 
       <SafeAreaView edges={['bottom']} style={styles.bottom}>

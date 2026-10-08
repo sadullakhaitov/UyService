@@ -29,13 +29,14 @@ import {
   type OfferAttempt,
   type OrderStatus,
   type Page,
+  type PromoCode,
   type Stats,
   type Subscription,
   type UserRole,
   type VerifyStatus,
 } from './types';
 import { useAdminSession } from './session';
-import { checkBalance, checkCallFee, checkPriceRange, checkPriority, checkReason, checkSubscription, clean, normalizePhone, RULES } from './rules';
+import { checkBalance, checkCallFee, checkPriceRange, checkPriority, checkPromo, checkReason, checkSubscription, clean, normalizePhone, RULES } from './rules';
 
 /** Sinov rejimida admin bo'lib kira oladigan raqam (kompaniya raqami) */
 export const DEMO_ADMIN_PHONE = normalizePhone(COMPANY.phone) ?? '+998901218887';
@@ -115,6 +116,7 @@ type DB = {
   log: DLog[];
   categories: CatalogCategory[];
   problems: CatalogProblem[];
+  promos: PromoCode[];
   /** Shu qurilmadagi usta uchun admin qarorlari (blok, rad sababi) — qolgani ilova store'idan */
   local: { blockedAt: number | null; blockedReason: string | null; verifyNote: string | null; createdAt: number };
   seq: number;
@@ -452,6 +454,7 @@ function generate(now: number): DB {
     log: [],
     categories: CATEGORIES.map((c) => ({ id: c.id, callFee: c.callFee, active: true })),
     problems: PROBLEMS.map((p) => ({ id: p.id, categoryId: p.categoryId, priceMin: p.priceMin, priceMax: p.priceMax })),
+    promos: demoPromos(now),
     local: { blockedAt: null, blockedReason: null, verifyNote: null, createdAt: now },
     seq: 1,
   };
@@ -510,6 +513,12 @@ function shift(db: DB, now: number) {
   db.generatedAt = now;
 }
 
+/** Sinov rejimidagi promokodlar — usta ilovasidagi (app/master/promo.tsx) bilan bir xil */
+function demoPromos(now: number): PromoCode[] {
+  const p = (code: string, priority: number, bonus: number, uses: number): PromoCode => ({ code, priority, bonus, maxUses: null, uses, expiresAt: null, active: true, createdAt: now - 20 * DAY });
+  return [p('UYSERVICE', 10, 0, 14), p('BIRINCHI', 0, 20_000, 9), p('USTA2026', 5, 10_000, 3)];
+}
+
 async function load(): Promise<DB> {
   if (cache) return cache;
   loading ??= (async () => {
@@ -522,6 +531,7 @@ async function load(): Promise<DB> {
       // buzilgan bo'lsa — qaytadan yasaymiz
     }
     db ??= generate(Date.now());
+    db.promos ??= demoPromos(Date.now()); // oldin saqlangan sinov ma'lumotlarida promokodlar yo'q edi
     shift(db, Date.now());
     cache = db;
     save();
@@ -1165,6 +1175,24 @@ export const demoAdmin: AdminApi = {
     log(db, 'problem', 'problem', id, { from: [p.priceMin, p.priceMax], to: [min, max] });
     p.priceMin = min;
     p.priceMax = max;
+    save();
+    await wait();
+  },
+
+  async promos() {
+    const db = await load();
+    await wait();
+    return [...db.promos].sort((a, b) => b.createdAt - a.createdAt).map((p) => ({ ...p }));
+  },
+
+  async savePromo(input) {
+    const db = await load();
+    const p = { ...input, code: input.code.trim().toUpperCase() };
+    checkPromo(p);
+    const old = db.promos.find((x) => x.code === p.code);
+    if (old) Object.assign(old, p);
+    else db.promos.push({ ...p, uses: 0, createdAt: Date.now() });
+    log(db, 'promo', 'promo', p.code, { new: !old, priority: p.priority, bonus: p.bonus, max_uses: p.maxUses, active: p.active });
     save();
     await wait();
   },

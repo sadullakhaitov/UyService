@@ -16,7 +16,7 @@ import {
   type LogEntry,
   type Stats,
 } from './types';
-import { checkBalance, checkCallFee, checkPriceRange, checkPriority, checkReason, checkSubscription, clean, normalizePhone, RULES } from './rules';
+import { checkBalance, checkCallFee, checkPriceRange, checkPriority, checkPromo, checkReason, checkSubscription, clean, normalizePhone, RULES } from './rules';
 
 type Row = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -357,6 +357,7 @@ export const supabaseAdmin: AdminApi = {
         sentAt: ms(o.sent_at) ?? 0,
         respondedAt: ms(o.responded_at),
         status: o.status,
+        cancelReason: o.cancel_reason,
         etaMin: o.eta_min,
         distanceKm: o.distance_km,
         score: o.score,
@@ -460,6 +461,30 @@ export const supabaseAdmin: AdminApi = {
   async updateProblem(id, min, max) {
     checkPriceRange(min, max);
     await rpc('admin_update_problem', { p_id: id, p_min: min, p_max: max });
+  },
+  async promos() {
+    const rows = (await rpc('admin_promos', {})) as Row[] | null;
+    return (rows ?? []).map((r) => ({
+      code: r.code,
+      priority: r.priority,
+      bonus: r.bonus,
+      maxUses: r.max_uses,
+      uses: r.uses,
+      expiresAt: ms(r.expires_at),
+      active: r.active,
+      createdAt: ms(r.created_at) ?? 0,
+    }));
+  },
+  async savePromo(p) {
+    checkPromo(p);
+    await rpc('admin_save_promo', {
+      p_code: p.code,
+      p_priority: p.priority,
+      p_bonus: p.bonus,
+      p_max_uses: p.maxUses,
+      p_expires_at: p.expiresAt ? new Date(p.expiresAt).toISOString() : null,
+      p_active: p.active,
+    });
   },
 
   async log(q) {

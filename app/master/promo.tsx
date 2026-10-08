@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
+import { LIVE, liveRedeemPromo } from '@/lib/live';
 import { useMaster } from '@/store';
 
-// Soxta promokodlar (5-bosqichda: promo_codes jadvali va Edge Function orqali tekshiriladi)
+// Sinov rejimidagi promokodlar. Server rejimida kodlarni admin yaratadi (admin → Narxlar va katalog → Promokodlar),
+// tekshirish va bonus — serverda (redeem_promo)
 const CODES: Record<string, { priority?: number; bonus?: number }> = {
   UYSERVICE: { priority: 10 },
   BIRINCHI: { bonus: 20_000 },
@@ -20,16 +22,35 @@ export default function Promo() {
   const [code, setCode] = useState('');
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const apply = () => {
+  const [busy, setBusy] = useState(false);
+  const done = (c: string, p: { priority?: number; bonus?: number }) => {
+    const parts = [p.priority ? t('promo.gotPriority', { n: p.priority }) : null, p.bonus ? t('promo.gotBonus', { sum: formatSum(p.bonus) }) : null];
+    setResult({ ok: true, text: parts.filter(Boolean).join(' · ') });
+    setCode('');
+  };
+  const apply = async () => {
     const c = code.trim().toUpperCase();
+    if (LIVE) {
+      if (busy) return;
+      setBusy(true);
+      try {
+        const p = await liveRedeemPromo(c);
+        addPriority(0, c); // faqat "Ishlatilgan" ro'yxati uchun; prioritet va balans serverdan (syncMaster)
+        done(c, p);
+      } catch (e) {
+        const k = (e as Error).message;
+        setResult({ ok: false, text: t(k === 'used' ? 'promo.used' : k === 'expired' ? 'promo.expired' : 'promo.invalid') });
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
     const p = CODES[c];
     if (!p) return setResult({ ok: false, text: t('promo.invalid') });
     if (usedPromos.includes(c)) return setResult({ ok: false, text: t('promo.used') });
     addPriority(p.priority ?? 0, c);
     if (p.bonus) charge(-p.bonus); // balansga bonus
-    const parts = [p.priority ? t('promo.gotPriority', { n: p.priority }) : null, p.bonus ? t('promo.gotBonus', { sum: formatSum(p.bonus) }) : null];
-    setResult({ ok: true, text: parts.filter(Boolean).join(' · ') });
-    setCode('');
+    done(c, p);
   };
 
   return (
@@ -71,7 +92,7 @@ export default function Promo() {
         </ScrollView>
       </KeyboardAvoidingView>
       <View style={styles.bottom}>
-        <Button title={t('promo.apply')} big disabled={code.trim().length < 3} onPress={apply} />
+        <Button title={t('promo.apply')} big disabled={code.trim().length < 3} loading={busy} onPress={apply} />
       </View>
     </SafeAreaView>
   );

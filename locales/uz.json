@@ -126,7 +126,8 @@
     "retry": "Qayta urinish",
     "nextMaster": "Usta band ekan — keyingi eng mos ustaga yuborilmoqda",
     "radius": "Qidiruv radiusi",
-    "offered": "Taklif yuborilgan ustalar"
+    "offered": "Taklif yuborilgan ustalar",
+    "requeued": "Oldingi usta bekor qildi — yangi usta qidirilmoqda"
   },
   "active": {
     "searching": "Usta qidirilmoqda…",
@@ -178,7 +179,9 @@
     "inspection": "Chaqiruv (ko'rik)",
     "feeIncluded": "Chaqiruv ({{fee}}) ish narxi ichida",
     "declinedNote": "Ish qilinmagani uchun kafolat yo'q",
-    "paidCash": "Naqd to'ladim · {{sum}}"
+    "paidCash": "Naqd to'ladim · {{sum}}",
+    "share": "Do'stlarga tavsiya qilish",
+    "shareMessage": "UyService orqali {{category}} chaqirdim — tez keldi, narx oldindan kelishildi, kafolat bor. Sizga ham kerak bo'lsa: https://uyservice.uz"
   },
   "history": {
     "title": "Buyurtmalar tarixi",
@@ -411,7 +414,9 @@
     "priceTitle": "Usta narx taklif qildi",
     "priceBody": "Ko'rib chiqing: rozi bo'lsangiz ish boshlanadi",
     "doneTitle": "Ish tugadi",
-    "doneBody": "Ustani baholang — bu boshqalarga yordam beradi"
+    "doneBody": "Ustani baholang — bu boshqalarga yordam beradi",
+    "requeuedTitle": "Usta bekor qildi",
+    "requeuedBody": "Qayta chaqirish shart emas — yangi usta qidirilmoqda"
   },
   "register": {
     "step": "{{n}}/{{total}}-qadam",
@@ -440,7 +445,10 @@
     "photo": "Profil surati",
     "photoHint": "Majburiy. Mijoz eshikni ochishdan oldin sizning yuzingizni ko'radi.",
     "sendFailedTitle": "Anketa yuborilmadi",
-    "sendFailedText": "Internetni tekshirib, qayta urinib ko'ring."
+    "sendFailedText": "Internetni tekshirib, qayta urinib ko'ring.",
+    "inviteCode": "Do'stingizning taklif kodi (ixtiyoriy)",
+    "inviteHint": "Sizni taklif qilgan usta bonus oladi — sizga hech narsa yo'qotmaysiz",
+    "inviteBad": "Taklif kodi topilmadi — anketa yuborildi, kodni keyin qo'llab-quvvatlashga yozishingiz mumkin"
   },
   "docs": {
     "none": "Hujjatlar yuklanmagan",
@@ -473,7 +481,8 @@
     "used": "Bu promokod allaqachon ishlatilgan",
     "gotPriority": "+{{n}} prioritet ball",
     "gotBonus": "Balansga +{{sum}}",
-    "history": "Ishlatilgan"
+    "history": "Ishlatilgan",
+    "expired": "Promokod muddati tugagan yoki chegarasi to'lgan"
   },
   "invite": {
     "title": "Do'st uchun {{sum}}",
@@ -481,11 +490,12 @@
     "yourCode": "Sizning kodingiz",
     "step1": "Havolani do'stingizga yuboring",
     "step2": "U ro'yxatdan o'tib, kodingizni kiritadi",
-    "step3": "U 5 ta ishni bajargach, balansingizga {{sum}} tushadi",
+    "step3": "U {{jobs}} ta ishni bajargach, balansingizga {{sum}} tushadi",
     "share": "Havolani yuborish",
     "copyLink": "Faqat havola",
     "message": "UyService'da usta bo'lib ishlang — buyurtmalar o'zi keladi. Kodim: {{code}}\n{{link}}",
-    "copied": "Nusxalandi"
+    "copied": "Nusxalandi",
+    "stats": "Taklif qilganlaringiz: {{n}} · bonus olindi: {{paid}}"
   },
   "learn": {
     "dispatchTitle": "Buyurtma qanday keladi?",
@@ -756,7 +766,8 @@
       "sent": "Javob kutilmoqda",
       "accepted": "Qabul qildi",
       "declined": "Rad etdi",
-      "expired": "Vaqt o'tdi"
+      "expired": "Vaqt o'tdi",
+      "cancelled": "Bekor qildi"
     },
     "fmt": {
       "bln": "{{value}} mlrd so'm",
@@ -788,7 +799,9 @@
       "orderClosed": "Buyurtma allaqachon yakunlangan",
       "phoneNotRegistered": "Bu raqam ilovada ro'yxatdan o'tmagan. Avval u ilovaga shu raqam bilan kirsin",
       "revokeSelf": "O'zingizni adminlikdan olib tashlay olmaysiz",
-      "network": "Internet bilan aloqa yo'q. Qayta urinib ko'ring"
+      "network": "Internet bilan aloqa yo'q. Qayta urinib ko'ring",
+      "promoCode": "Kod — 3–20 ta lotin harfi yoki raqam",
+      "promoValue": "Prioritet (0–50) yoki bonus (1 mln gacha) kerak; chegara 1–100 000"
     },
     "login": {
       "title": "Admin panelga kirish",
@@ -1190,7 +1203,8 @@
         "category": "Kategoriya o'zgardi",
         "problem": "Narx oralig'i o'zgardi",
         "grant_admin": "Admin qo'shildi",
-        "revoke_admin": "Admin olib tashlandi"
+        "revoke_admin": "Admin olib tashlandi",
+        "promo": "Promokod saqlandi"
       },
       "t": {
         "master": "usta",
@@ -1199,7 +1213,8 @@
         "review": "sharh",
         "category": "kategoriya",
         "problem": "muammo",
-        "support": "murojaat"
+        "support": "murojaat",
+        "promo": "promokod"
       }
     },
     "settings": {
@@ -1238,6 +1253,23 @@
       "resetTitle": "Sinov ma'lumotlari boshidan yaratilsinmi?",
       "resetText": "Shu brauzerda qilgan barcha sinov amallaringiz o'chadi.",
       "resetDone": "Sinov ma'lumotlari yangilandi"
+    },
+    "promo": {
+      "title": "Promokodlar",
+      "subtitle": "Usta Profil → Promokod'da kiritadi. Har usta bitta kodni bir marta ishlatadi",
+      "code": "Kod",
+      "priority": "Prioritet",
+      "bonus": "Bonus, so'm",
+      "limit": "Necha marta",
+      "days": "Muddat, kun",
+      "add": "Qo'shish",
+      "saved": "{{code}} saqlandi",
+      "empty": "Hali promokod yo'q",
+      "uses": "ishlatildi: {{n}} / {{max}}",
+      "until": "{{date}} gacha",
+      "expired": "Muddati o'tgan",
+      "full": "Chegara to'ldi",
+      "off": "o'chirildi"
     }
   },
   "home": {

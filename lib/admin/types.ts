@@ -21,8 +21,9 @@ export type LogAction =
   | 'category'
   | 'problem'
   | 'grant_admin'
-  | 'revoke_admin';
-export type LogTarget = 'master' | 'user' | 'order' | 'review' | 'category' | 'problem' | 'support';
+  | 'revoke_admin'
+  | 'promo';
+export type LogTarget = 'master' | 'user' | 'order' | 'review' | 'category' | 'problem' | 'support' | 'promo';
 
 export const ACTIVE_STATUSES: OrderStatus[] = ['assigned', 'on_the_way', 'arrived', 'in_progress'];
 
@@ -150,11 +151,27 @@ export type OfferAttempt = {
   masterName: string | null;
   sentAt: number;
   respondedAt: number | null;
-  status: 'sent' | 'accepted' | 'declined' | 'expired';
+  /** cancelled — qabul qilib, keyin bekor qildi (buyurtma keyingi ustaga o'tdi) */
+  status: 'sent' | 'accepted' | 'declined' | 'expired' | 'cancelled';
+  cancelReason?: string | null;
   etaMin: number | null;
   distanceKm: number | null;
   score: number | null;
 };
+
+/** Promokod (ustalar uchun): prioritet ballari va/yoki balansga bonus */
+export type PromoCode = {
+  code: string;
+  priority: number;
+  bonus: number;
+  /** Necha marta ishlatish mumkin (null — cheklanmagan) */
+  maxUses: number | null;
+  uses: number;
+  expiresAt: number | null;
+  active: boolean;
+  createdAt: number;
+};
+export type PromoInput = Pick<PromoCode, 'code' | 'priority' | 'bonus' | 'maxUses' | 'expiresAt' | 'active'>;
 
 export type ChatLine = { id: string; senderId: string; mine: boolean; text: string; at: number };
 
@@ -305,6 +322,8 @@ export interface AdminApi {
   catalog(): Promise<{ categories: CatalogCategory[]; problems: CatalogProblem[] }>;
   updateCategory(id: CategoryId, callFee: number, active: boolean): Promise<void>;
   updateProblem(id: string, min: number | null, max: number | null): Promise<void>;
+  promos(): Promise<PromoCode[]>;
+  savePromo(p: PromoInput): Promise<void>;
 
   log(q: LogQuery): Promise<Page<LogEntry>>;
   admins(): Promise<AdminUser[]>;

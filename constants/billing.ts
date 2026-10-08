@@ -35,3 +35,5 @@ export function planLabel(plan: BillingPlan, verified: boolean) {
 
 // Do'st (boshqa usta) taklif qilgani uchun bonus, so'm (⚠️ hali tasdiqlanmagan)
 export const INVITE_BONUS = 30_000;
+// Bonus do'st shuncha ishni bajargach beriladi (server: invite_jobs())
+export const INVITE_JOBS = 5;

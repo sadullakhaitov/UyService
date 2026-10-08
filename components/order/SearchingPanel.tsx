@@ -88,7 +88,9 @@ export function SearchingPanel({ order, onHeight, onRetry }: { order: ActiveOrde
     startSearch(order.id);
   };
 
-  const status = info.lastDeclined
+  const status = order.requeued && !info.offered
+    ? t('searching.requeued')
+    : info.lastDeclined
     ? t('searching.nextMaster')
     : [t('searching.s1'), t('searching.s2'), t('searching.s3'), t('searching.s4')][info.step];
 

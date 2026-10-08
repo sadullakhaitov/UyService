@@ -1,16 +1,18 @@
-// Narxlar va katalog: har kategoriyaning chaqiruv narxi va yoqilganligi, muammolarning taxminiy narx oralig'i.
+// Narxlar va katalog: har kategoriyaning chaqiruv narxi va yoqilganligi, muammolarning taxminiy narx oralig'i,
+// ustalar uchun promokodlar (prioritet / balansga bonus).
 // O'zgarish saqlashdan oldin tekshiriladi va jurnalga yoziladi.
-import { Save } from 'lucide-react-native';
+import { Plus, Save } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Switch, TextInput, View } from 'react-native';
 import { CategoryIcon } from '@/components/admin/CategoryIcon';
-import { AButton, ErrorBox, Panel, SkeletonRows } from '@/components/admin/kit';
+import { AButton, Badge, Empty, ErrorBox, Panel, SkeletonRows } from '@/components/admin/kit';
+import { fmtDateOnly, fmtSum } from '@/components/admin/format';
 import { AdminPage, useAdminLayout } from '@/components/admin/Shell';
 import { Text } from '@/components/ui/Text';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
-import { adminApi, type CatalogCategory, type CatalogProblem } from '@/lib/admin';
+import { adminApi, type CatalogCategory, type CatalogProblem, type PromoCode } from '@/lib/admin';
 import { adminErrorText, invalidateAdmin, toast, useAdminQuery } from '@/lib/admin/hooks';
-import { checkCallFee, checkPriceRange } from '@/lib/admin/rules';
+import { checkCallFee, checkPriceRange, checkPromo } from '@/lib/admin/rules';
 import { formatRange, t } from '@/lib/i18n';
 
 const digits = (s: string) => s.replace(/\D/g, '');
@@ -29,7 +31,130 @@ export default function Catalog() {
       ) : (
         q.data.categories.map((c) => <CategoryBlock key={c.id} c={c} problems={q.data!.problems.filter((p) => p.categoryId === c.id)} />)
       )}
+      <Promos />
     </AdminPage>
+  );
+}
+
+const DAY = 86_400_000;
+
+/** Promokodlar: usta Profil → Promokod'da kiritadi; har usta bitta kodni bir marta ishlatadi */
+function Promos() {
+  useScheme();
+  const q = useAdminQuery('promos', () => adminApi.promos());
+  const [code, setCode] = useState('');
+  const [priority, setPriority] = useState('');
+  const [bonus, setBonus] = useState('');
+  const [limit, setLimit] = useState('');
+  const [days, setDays] = useState('');
+  const [busy, setBusy] = useState(false);
+  const input = {
+    code: code.trim().toUpperCase(),
+    priority: Number(digits(priority)) || 0,
+    bonus: Number(digits(bonus)) || 0,
+    maxUses: digits(limit) ? Number(digits(limit)) : null,
+    expiresAt: digits(days) ? Date.now() + Number(digits(days)) * DAY : null,
+    active: true,
+  };
+  let error: string | null = null;
+  try {
+    checkPromo(input);
+  } catch (e) {
+    error = adminErrorText(e);
+  }
+  const save = async (p: Parameters<typeof adminApi.savePromo>[0], msg: string) => {
+    setBusy(true);
+    try {
+      await adminApi.savePromo(p);
+      toast(msg);
+      invalidateAdmin();
+      return true;
+    } catch (e) {
+      toast(adminErrorText(e), 'error');
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  };
+  const add = async () => {
+    if (await save(input, t('admin.promo.saved', { code: input.code }))) {
+      setCode('');
+      setPriority('');
+      setBonus('');
+      setLimit('');
+      setDays('');
+    }
+  };
+  const toggle = (p: PromoCode) =>
+    save({ code: p.code, priority: p.priority, bonus: p.bonus, maxUses: p.maxUses, expiresAt: p.expiresAt, active: !p.active }, t('admin.promo.saved', { code: p.code }));
+
+  const field = (label: string, value: string, set: (v: string) => void, max: number, w = 110) => (
+    <View style={styles.feeBox}>
+      <Text style={styles.label}>{label}</Text>
+      <TextInput value={fmtIn(value)} onChangeText={(v) => set(digits(v).slice(0, max))} keyboardType="number-pad" accessibilityLabel={label} style={[styles.input, { minWidth: 0, width: w }]} />
+    </View>
+  );
+  return (
+    <Panel title={t('admin.promo.title')} subtitle={t('admin.promo.subtitle')}>
+      <View style={styles.catRow}>
+        <View style={styles.feeBox}>
+          <Text style={styles.label}>{t('admin.promo.code')}</Text>
+          <TextInput
+            value={code}
+            onChangeText={(v) => setCode(v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20))}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            placeholder="BAHOR2026"
+            placeholderTextColor={colors.muted}
+            accessibilityLabel={t('admin.promo.code')}
+            style={[styles.input, { minWidth: 160 }]}
+          />
+        </View>
+        {field(t('admin.promo.priority'), priority, setPriority, 2, 90)}
+        {field(t('admin.promo.bonus'), bonus, setBonus, 7, 130)}
+        {field(t('admin.promo.limit'), limit, setLimit, 6, 100)}
+        {field(t('admin.promo.days'), days, setDays, 3, 90)}
+        <AButton title={t('admin.promo.add')} icon={Plus} kind="primary" size="sm" disabled={!code || !!error} loading={busy} onPress={add} />
+      </View>
+      {code && error ? <Text style={[styles.label, { color: colors.danger }]}>{error}</Text> : null}
+      <View style={styles.problems}>
+        {!q.data ? (
+          <SkeletonRows />
+        ) : !q.data.length ? (
+          <Empty text={t('admin.promo.empty')} />
+        ) : (
+          q.data.map((p) => {
+            const expired = p.expiresAt != null && p.expiresAt < Date.now();
+            const full = p.maxUses != null && p.uses >= p.maxUses;
+            return (
+              <View key={p.code} style={styles.problem}>
+                <View style={styles.flex}>
+                  <Text style={styles.pName}>{p.code}</Text>
+                  <Text variant="caption">
+                    {[
+                      p.priority ? t('promo.gotPriority', { n: p.priority }) : null,
+                      p.bonus ? `+${fmtSum(p.bonus)}` : null,
+                      t('admin.promo.uses', { n: p.uses, max: p.maxUses ?? '∞' }),
+                      p.expiresAt ? t('admin.promo.until', { date: fmtDateOnly(p.expiresAt) }) : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </Text>
+                </View>
+                {expired || full ? <Badge label={t(expired ? 'admin.promo.expired' : 'admin.promo.full')} tone="neutral" /> : null}
+                <Switch
+                  value={p.active}
+                  onValueChange={() => void toggle(p)}
+                  disabled={busy}
+                  trackColor={{ true: colors.primary, false: colors.track }}
+                  accessibilityLabel={`${p.code} — ${t('admin.catalog.active')}`}
+                />
+              </View>
+            );
+          })
+        )}
+      </View>
+    </Panel>
   );
 }
 

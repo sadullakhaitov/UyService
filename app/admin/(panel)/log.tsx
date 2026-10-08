@@ -9,7 +9,7 @@ import type { LogAction } from '@/lib/admin';
 import { invalidateAdmin } from '@/lib/admin/hooks';
 import { t } from '@/lib/i18n';
 
-const ACTIONS: (LogAction | null)[] = [null, 'verify', 'balance', 'subscription', 'priority', 'block', 'unblock', 'cancel', 'delete_review', 'category', 'problem', 'grant_admin', 'revoke_admin'];
+const ACTIONS: (LogAction | null)[] = [null, 'verify', 'balance', 'subscription', 'priority', 'block', 'unblock', 'cancel', 'delete_review', 'category', 'problem', 'grant_admin', 'revoke_admin', 'promo'];
 
 export default function Log() {
   useScheme();

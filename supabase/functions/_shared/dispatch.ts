@@ -16,7 +16,7 @@ export const DISPATCH = {
   activityWeight: 0.2,
 
   radiiKm: [3, 6, 10],
-  routesTopN: 10, // Google Routes faqat eng yaqin 10 ta uchun so'raladi
+  routesTopN: 10, // yo'l bo'yicha vaqt (eta.ts) faqat eng yaqin 10 ta uchun so'raladi
   offerTimeoutSec: 60, // usta buyurtma ma'lumotlarini o'qib ulgurishi uchun
   radiusWaitSec: 10, // radiusda bo'sh usta bo'lmasa, kengaytirishdan oldin shuncha kutiladi (yangi usta onlayn bo'lishi mumkin)
   giveUpAfterSec: 180,
@@ -103,7 +103,7 @@ export type DispatchState = {
   events: DispatchEvent[];
 };
 
-/** Yetib kelish vaqti. Hozir taxminiy; 7-bosqichda Google Routes (eng yaqin `routesTopN` ta uchun) */
+/** Yetib kelish vaqti. Serverda — yo'l bo'yicha (eta.ts → roadEta, eng yaqin `routesTopN` ta), ilovaning sinov rejimida — taxminiy */
 export type EtaFn = (from: LatLng, to: LatLng) => number;
 
 // ---------- Algoritm ----------

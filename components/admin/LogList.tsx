@@ -1,7 +1,7 @@
 // Admin amallari jurnali: kim, qachon, nima qildi (tushunarli matn bilan), obyektga havola
 import { router, type Href } from 'expo-router';
 import type { LucideIcon } from 'lucide-react-native';
-import { Ban, BadgeCheck, CalendarPlus, Gauge, ShieldPlus, Tag, Trash2, Unlock, Wallet, XCircle } from 'lucide-react-native';
+import { Ban, BadgeCheck, CalendarPlus, Gauge, ShieldPlus, Tag, Ticket, Trash2, Unlock, Wallet, XCircle } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -25,6 +25,7 @@ const ICON: Record<LogAction, LucideIcon> = {
   problem: Tag,
   grant_admin: ShieldPlus,
   revoke_admin: ShieldPlus,
+  promo: Ticket,
 };
 
 const str = (v: unknown) => (v == null || v === '' ? null : String(v));
@@ -65,6 +66,14 @@ export function logDetails(e: LogEntry): string {
     case 'grant_admin':
     case 'revoke_admin':
       return fmtPhone(str(d.phone));
+    case 'promo':
+      return [
+        num(d.priority) ? t('promo.gotPriority', { n: num(d.priority) }) : null,
+        num(d.bonus) ? `+${fmtSum(num(d.bonus))}` : null,
+        d.active === false ? t('admin.promo.off') : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
     default:
       return '';
   }
@@ -75,13 +84,14 @@ function targetHref(e: LogEntry): string | null {
   if (e.targetType === 'master') return `/admin/masters/${e.targetId}`;
   if (e.targetType === 'user') return `/admin/users/${e.targetId}`;
   if (e.targetType === 'order') return `/admin/orders/${e.targetId}`;
-  if (e.targetType === 'category' || e.targetType === 'problem') return '/admin/catalog';
+  if (e.targetType === 'category' || e.targetType === 'problem' || e.targetType === 'promo') return '/admin/catalog';
   return null;
 }
 function targetLabel(e: LogEntry) {
   if (e.targetType === 'order' && e.targetId) return t('admin.log.order', { id: shortId(e.targetId) });
   if (e.targetType === 'category' && e.targetId) return t(`categories.${e.targetId}`);
   if (e.targetType === 'problem' && e.targetId) return t(`problems.${e.targetId}`);
+  if (e.targetType === 'promo' && e.targetId) return e.targetId;
   return t(`admin.log.t.${e.targetType}`);
 }
 

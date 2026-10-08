@@ -11,7 +11,7 @@ import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { AVATAR_MAX, DOC_MAX, pickImages, takePhoto } from '@/lib/photos';
 import { useMaster, useUser } from '@/store';
-import { LIVE, liveSubmitMaster } from '@/lib/live';
+import { LIVE, liveApplyInvite, liveSubmitMaster } from '@/lib/live';
 import { notice } from '@/lib/dialog';
 
 const STEPS = 4;
@@ -27,6 +27,7 @@ export default function Register() {
   const billingPlan = useUser((s) => s.billingPlan);
   const plan = billingPlan ?? 'commission';
   const setRole = useUser((s) => s.setRole);
+  const [invite, setInvite] = useState(() => useUser.getState().inviteRef);
   const [step, setStep] = useState(0);
 
   const valid = [
@@ -53,6 +54,16 @@ export default function Register() {
       } catch {
         setSending(false);
         return notice(t('register.sendFailedTitle'), t('register.sendFailedText'));
+      }
+      // Do'stining taklif kodi (ixtiyoriy): noto'g'ri bo'lsa anketa baribir yuborilgan, faqat xabar beramiz
+      const code = invite.trim();
+      if (code) {
+        try {
+          await liveApplyInvite(code);
+          useUser.getState().setInviteRef('');
+        } catch {
+          await notice(t('register.inviteBad'));
+        }
       }
       setSending(false);
     }
@@ -108,6 +119,13 @@ export default function Register() {
                   />
                 ))}
               </View>
+              <Field
+                label={t('register.inviteCode')}
+                value={invite}
+                onChange={(v) => setInvite(v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12))}
+                caps="characters"
+              />
+              <Text variant="caption">{t('register.inviteHint')}</Text>
             </>
           ) : null}
 
@@ -204,7 +222,7 @@ export default function Register() {
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function Field({ label, value, onChange, caps = 'words' }: { label: string; value: string; onChange: (v: string) => void; caps?: 'words' | 'characters' }) {
   useScheme();
   return (
     <View style={styles.field}>
@@ -213,7 +231,7 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
         value={value}
         onChangeText={onChange}
         accessibilityLabel={label}
-        autoCapitalize="words"
+        autoCapitalize={caps}
         autoCorrect={false}
         style={styles.input}
         placeholderTextColor={colors.muted}

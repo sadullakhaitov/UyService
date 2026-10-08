@@ -40,6 +40,9 @@ type UserState = {
   /** Oxirgi aniqlangan haqiqiy joy — keyingi ochilishda xarita darhol shu yerdan boshlanadi */
   lastLocation: LatLng | null;
   lastAddress: string;
+  /** Do'st taklif kodi (uyservice.uz/usta?ref=KOD havolasidan) — usta anketasida o'zi yoziladi */
+  inviteRef: string;
+  setInviteRef: (code: string) => void;
   setLastLocation: (p: LatLng, address?: string) => void;
   setLanguage: (lang: Lang) => void;
   setPhone: (phone: string) => void;
@@ -62,6 +65,7 @@ const userDefaults = {
   favorites: [] as string[],
   lastLocation: null as LatLng | null,
   lastAddress: '',
+  inviteRef: '',
 };
 
 export const useUser = create<UserState>()(
@@ -70,6 +74,7 @@ export const useUser = create<UserState>()(
   ...userDefaults,
   setLastLocation: (lastLocation, address) => set((s) => ({ lastLocation, lastAddress: address ?? s.lastAddress })),
   setLanguage: (language) => set({ language }),
+  setInviteRef: (inviteRef) => set({ inviteRef }),
   setPhone: (phone) => set({ phone }),
   setName: (name) => set({ name }),
   setThemeMode: (themeMode) => set({ themeMode }),
@@ -425,6 +430,8 @@ export type ActiveOrder = {
   finalPrice: number | null;
   /** Server rejimi: tayinlangan usta haqida (master_cards + profiles) */
   master?: OrderMaster;
+  /** Usta bekor qildi — buyurtma o'zi keyingi ustaga o'tdi (server: master_cancel_order) */
+  requeued?: boolean;
 };
 
 /** Mijoz ko'radigan usta kartasi (server rejimida; sinov rejimida mocks/mastersAround) */

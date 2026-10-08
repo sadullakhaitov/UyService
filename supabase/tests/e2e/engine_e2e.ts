@@ -1,6 +1,7 @@
 // E2E: usta qidirish (engine.ts) ↔ PostgREST ↔ Postgres (stub + migratsiyalar + fixture.sql)
 import { activeSearches, dispatchStep, startDueScheduled } from '../../functions/_shared/engine.ts';
-import { check, db, proxy } from './harness.ts';
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { check, db, jwt, proxy } from './harness.ts';
 
 const O1 = '00000000-0000-4000-c000-000000000001';
 const O2 = '00000000-0000-4000-c000-000000000002';
@@ -92,6 +93,20 @@ await db.from('masters').update({ busy: false }).eq('id', M2);
 await Promise.all([1, 2, 3, 4, 5].map(() => dispatchStep(db, O4)));
 of = await offers(O4);
 check(of.length === 1 && of[0].status === 'sent', 'parallel qadamlar — faqat bitta taklif', of);
+
+// 9) usta bekor qildi (master_cancel_order) → buyurtma qidiruvga qaytadi, keyingi taklif boshqa ustaga
+await db.from('offers').update({ status: 'expired' }).eq('order_id', O4).eq('status', 'sent');
+const before = (await master(M2)).activity as number;
+const asM2 = createClient(`http://127.0.0.1:${Deno.env.get('E2E_PORT') ?? 54331}`, await jwt({ role: 'authenticated', sub: M2 }), {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+const cancel = await asM2.rpc('master_cancel_order', { p_order: O1, p_reason: 'Mashina buzildi' });
+check(!cancel.error, 'usta (M2) bekor qildi', cancel.error);
+o = await order(O1);
+check(o.status === 'searching' && !o.master_id && (await master(M2)).activity === before - 10, 'O1 qidiruvga qaytdi, M2 aktivligi −10', o);
+await dispatchStep(db, O1);
+o = await order(O1);
+check(o.dispatch.offer?.masterId === M1, 'qayta qidiruv: taklif M1 ga (bekor qilgan M2 ga emas)', o.dispatch);
 
 console.log('ALL ENGINE E2E TESTS PASSED');
 await proxy.shutdown();

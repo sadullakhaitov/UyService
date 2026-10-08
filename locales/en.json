@@ -126,7 +126,8 @@
     "retry": "Try again",
     "nextMaster": "That handyman is busy — sending to the next best match",
     "radius": "Search radius",
-    "offered": "Handymen offered"
+    "offered": "Handymen offered",
+    "requeued": "The handyman cancelled — finding another one"
   },
   "active": {
     "searching": "Finding a handyman…",
@@ -187,7 +188,9 @@
     "inspection": "Call-out (inspection)",
     "feeIncluded": "Call fee ({{fee}}) included",
     "declinedNote": "No work was done, so there's no warranty",
-    "paidCash": "Paid in cash · {{sum}}"
+    "paidCash": "Paid in cash · {{sum}}",
+    "share": "Recommend to friends",
+    "shareMessage": "I called a handyman ({{category}}) through UyService — quick arrival, price agreed upfront, with a warranty. If you need one: https://uyservice.uz"
   },
   "history": {
     "title": "Order history",
@@ -429,7 +432,9 @@
     "priceTitle": "The master proposed a price",
     "priceBody": "Take a look: work starts once you agree",
     "doneTitle": "The job is done",
-    "doneBody": "Rate the master — it helps others"
+    "doneBody": "Rate the master — it helps others",
+    "requeuedTitle": "The handyman cancelled",
+    "requeuedBody": "No need to call again — we're finding another handyman"
   },
   "register": {
     "step": "Step {{n}} of {{total}}",
@@ -458,7 +463,10 @@
     "photo": "Profile photo",
     "photoHint": "Required. The client sees your face before opening the door.",
     "sendFailedTitle": "The application wasn't sent",
-    "sendFailedText": "Check your internet connection and try again."
+    "sendFailedText": "Check your internet connection and try again.",
+    "inviteCode": "Friend's invite code (optional)",
+    "inviteHint": "The master who invited you gets a bonus — it costs you nothing",
+    "inviteBad": "Invite code not found — your application was sent; you can send the code to support later"
   },
   "docs": {
     "none": "No documents uploaded",
@@ -491,7 +499,8 @@
     "used": "This code was already used",
     "gotPriority": "+{{n}} priority points",
     "gotBonus": "+{{sum}} to balance",
-    "history": "Used"
+    "history": "Used",
+    "expired": "This promo code has expired or reached its limit"
   },
   "invite": {
     "title": "{{sum}} per friend",
@@ -499,11 +508,12 @@
     "yourCode": "Your code",
     "step1": "Send the link to a friend",
     "step2": "They sign up and enter your code",
-    "step3": "After their 5th job you get {{sum}} on your balance",
+    "step3": "After their {{jobs}}th job you get {{sum}} on your balance",
     "share": "Share link",
     "copyLink": "Link only",
     "message": "Work as a handyman on UyService — orders come to you. My code: {{code}}\n{{link}}",
-    "copied": "Copied"
+    "copied": "Copied",
+    "stats": "Invited: {{n}} · bonuses received: {{paid}}"
   },
   "learn": {
     "dispatchTitle": "How do orders reach me?",
@@ -777,7 +787,8 @@
       "sent": "Awaiting reply",
       "accepted": "Accepted",
       "declined": "Declined",
-      "expired": "Timed out"
+      "expired": "Timed out",
+      "cancelled": "Cancelled"
     },
     "fmt": {
       "bln": "{{value}} bn UZS",
@@ -809,7 +820,9 @@
       "orderClosed": "The order is already closed",
       "phoneNotRegistered": "This number isn't registered in the app. Ask them to sign in to the app with it first",
       "revokeSelf": "You can't remove your own admin rights",
-      "network": "No internet connection. Try again"
+      "network": "No internet connection. Try again",
+      "promoCode": "Code must be 3–20 Latin letters or digits",
+      "promoValue": "Set priority (0–50) or a bonus (up to 1M); limit 1–100,000"
     },
     "login": {
       "title": "Admin sign-in",
@@ -1217,7 +1230,8 @@
         "category": "Category changed",
         "problem": "Price range changed",
         "grant_admin": "Admin added",
-        "revoke_admin": "Admin removed"
+        "revoke_admin": "Admin removed",
+        "promo": "Promo code saved"
       },
       "t": {
         "master": "master",
@@ -1226,7 +1240,8 @@
         "review": "review",
         "category": "category",
         "problem": "problem",
-        "support": "request"
+        "support": "request",
+        "promo": "promo code"
       }
     },
     "settings": {
@@ -1265,6 +1280,23 @@
       "resetTitle": "Recreate the test data?",
       "resetText": "All your test actions in this browser will be erased.",
       "resetDone": "Test data refreshed"
+    },
+    "promo": {
+      "title": "Promo codes",
+      "subtitle": "Masters enter them in Profile → Promo code. Each master can use a code once",
+      "code": "Code",
+      "priority": "Priority",
+      "bonus": "Bonus, UZS",
+      "limit": "Uses limit",
+      "days": "Valid, days",
+      "add": "Add",
+      "saved": "{{code}} saved",
+      "empty": "No promo codes yet",
+      "uses": "used: {{n}} / {{max}}",
+      "until": "until {{date}}",
+      "expired": "Expired",
+      "full": "Limit reached",
+      "off": "turned off"
     }
   },
   "home": {
