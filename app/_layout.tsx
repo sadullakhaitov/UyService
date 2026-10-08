@@ -19,6 +19,7 @@ import { pageLayout } from '@/components/ui/PageFrame';
 import { useNotificationTaps } from '@/lib/notify';
 import { usePushRegistration } from '@/lib/push';
 import { useTelegramApp } from '@/lib/telegram';
+import { useSessionSync } from '@/lib/afterSignIn';
 import { ThemeRevealProvider } from '@/components/ui/ThemeReveal';
 import { useMaster, useUser } from '@/store';
 
@@ -87,6 +88,8 @@ export default function RootLayout() {
     };
   }, []);
   const hydrated = userReady && masterReady;
+  // Server rejimida: telefondagi raqam sessiyaga mos bo'lsin (Telegram ichida — avtomatik kirish)
+  useSessionSync(hydrated);
   const lang = useUser((s) => s.language) ?? 'uz';
   setLanguage(lang);
   // Kunduzgi / tungi rejim: "Avtomatik" — telefon sozlamasiga qarab o'zi almashadi

@@ -14,18 +14,43 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(raw,
   // Kompyuterda panel chapda turadi — fokus nuqtasi (pin, kamera) o'ng tomondagi bo'sh joy markazida
   const wide = useWide();
   const props = wide && !raw.fullBleed ? { ...raw, insets: { top: raw.insets?.top ?? 0, bottom: 0, left: SIDE_INSET } } : raw;
-  const [mode, setMode] = useState<'loading' | 'yandex' | 'fake'>('loading');
-  if (mode === 'fake') return <FakeMap ref={handle} {...props} />;
-  return <YandexFrame {...props} handle={handle} ready={mode === 'yandex'} onMode={setMode} />;
+  // loading → yandex; 8 s ichida chiqmasa — slow: soxta xarita ko'rinadi, Yandex esa orqada yuklanishda davom etadi
+  // va tayyor bo'lishi bilan almashadi (sekin mobil internet). fake — skript umuman yuklanmadi.
+  const [mode, setMode] = useState<'loading' | 'yandex' | 'slow' | 'fake'>('loading');
+  // Kamera buyruqlari ikkalasiga ham boradi — almashganda Yandex xaritasi ham to'g'ri joyda turadi
+  const fake = useRef<MapHandle>(null);
+  const real = useRef<MapHandle>(null);
+  useImperativeHandle(handle, () => ({
+    flyTo: (c, z) => (fake.current?.flyTo(c, z), real.current?.flyTo(c, z)),
+    panTo: (c) => (fake.current?.panTo?.(c), real.current?.panTo?.(c)),
+    zoomBy: (d) => (fake.current?.zoomBy?.(d), real.current?.zoomBy?.(d)),
+  }));
+  const showFake = mode === 'slow' || mode === 'fake';
+  return (
+    <View style={styles.fill}>
+      {mode === 'fake' ? null : (
+        <YandexFrame
+          {...props}
+          handle={real}
+          ready={mode === 'yandex'}
+          hidden={showFake}
+          onMode={(m) => setMode((cur) => (m === 'slow' && cur !== 'loading' ? cur : m))}
+        />
+      )}
+      {showFake ? <FakeMap ref={fake} {...props} /> : null}
+    </View>
+  );
 });
 
 type FrameProps = MapBaseProps & {
   handle: React.ForwardedRef<MapHandle>;
   ready: boolean;
-  onMode: (m: 'yandex' | 'fake') => void;
+  /** Soxta xarita ustida turibdi: Yandex yuklanishda davom etadi, lekin hodisalari (surish, bosish) ishlatilmaydi */
+  hidden: boolean;
+  onMode: (m: 'yandex' | 'slow' | 'fake') => void;
 };
 
-function YandexFrame({ handle, ready, onMode, ...props }: FrameProps) {
+function YandexFrame({ handle, ready, hidden, onMode, ...props }: FrameProps) {
   useScheme();
   const { html, json, onEvent } = useYandexMap(props);
   const { insets = { top: 0, bottom: 0 }, overlay } = props;
@@ -52,11 +77,11 @@ function YandexFrame({ handle, ready, onMode, ...props }: FrameProps) {
     sendState();
   }, [json]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const cb = useRef({ onEvent, onMode, ready });
-  cb.current = { onEvent, onMode, ready };
+  const cb = useRef({ onEvent, onMode, ready, hidden });
+  cb.current = { onEvent, onMode, ready, hidden };
   useEffect(() => {
-    // 8 s ichida xarita chiqmasa — soxta xaritaga o'tamiz
-    const timer = setTimeout(() => !cb.current.ready && cb.current.onMode('fake'), 8000);
+    // 8 s ichida xarita chiqmasa — vaqtincha soxta xarita (Yandex tayyor bo'lsa, o'zi almashadi)
+    const timer = setTimeout(() => !cb.current.ready && cb.current.onMode('slow'), 8000);
     const onMessage = (e: MessageEvent) => {
       if (e.source !== frame.current?.contentWindow || !e.data?.__ysmap) return;
       const m = e.data.msg as MapEvent;
@@ -70,7 +95,8 @@ function YandexFrame({ handle, ready, onMode, ...props }: FrameProps) {
         cb.current.onMode('yandex');
       } else if (m.type === 'error') {
         if (!cb.current.ready && (m.message === 'script' || m.message === 'ymaps')) cb.current.onMode('fake');
-      } else if (m.type === 'press') Keyboard.dismiss();
+      } else if (cb.current.hidden) return;
+      else if (m.type === 'press') Keyboard.dismiss();
       else cb.current.onEvent(m);
     };
     window.addEventListener('message', onMessage);

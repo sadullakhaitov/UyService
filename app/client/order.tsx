@@ -79,7 +79,14 @@ export default function OrderScreen() {
       } catch (e) {
         busy.current = false;
         setSubmitting(false);
-        notice(t('order.sendFailedTitle'), t('order.sendFailedText'));
+        // Sessiya yo'q (muddati o'tgan yoki boshqa joyda chiqilgan) — raqamni qayta tasdiqlaymiz, keyin o'zi yuboriladi
+        if (e instanceof Error && e.message === 'not_signed_in') {
+          useUser.getState().setPhone('');
+          router.push('/phone?next=order');
+          return;
+        }
+        const reason = e instanceof Error ? e.message : String(e);
+        notice(t('order.sendFailedTitle'), `${t('order.sendFailedText')}\n\n${reason}`);
         return;
       }
       setSubmitting(false);

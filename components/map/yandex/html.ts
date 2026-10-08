@@ -53,10 +53,12 @@ export const MAP_BASE_URL = 'https://uyservice.uz/';
 
 export function buildMapHtml({ apiKey, lang, init, colors }: { apiKey: string; lang: string; init: MapInit; colors: Record<string, string> }) {
   const src = `https://api-maps.yandex.ru/2.1/?lang=${YANDEX_LANG[lang] ?? 'ru_RU'}${apiKey ? `&apikey=${encodeURIComponent(apiKey)}` : ''}`;
+  // referrer: Yandex kaliti sayt manzili (Referer) bo'yicha cheklangan — /admin'dagi "same-origin" siyosati xaritaga o'tmasin
   const boot = JSON.stringify({ init, colors }).replace(/</g, '\\u003c');
   return `<!doctype html>
 <html><head>
 <meta charset="utf-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <style>
 html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:${colors.map}}

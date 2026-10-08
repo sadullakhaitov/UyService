@@ -7,7 +7,6 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { colors, useScheme } from '@/constants/theme';
-import { useUser } from '@/store';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 
 type Contact = { phone_number?: string; first_name?: string; last_name?: string; user_id?: number };
@@ -112,7 +111,7 @@ export async function telegramSignIn(contact?: { phone: string | null; raw?: str
   }
 }
 
-/** Ildiz _layout'da: Telegram oynasini sozlaydi; server rejimida bog'langan foydalanuvchi o'zi kiradi */
+/** Ildiz _layout'da: Telegram oynasini sozlaydi */
 export function useTelegramApp() {
   const scheme = useScheme();
   useEffect(() => {
@@ -126,13 +125,7 @@ export function useTelegramApp() {
     } catch {
       // eski Telegram versiyasi
     }
-    if (!isSupabaseConfigured || useUser.getState().phone) return;
-    void telegramSignIn().then((r) => {
-      if (!r.ok) return;
-      const u = useUser.getState();
-      u.setPhone(r.phone);
-      if (!u.name && r.name) u.setName(r.name);
-    });
+    // Server rejimida avtomatik kirish — lib/afterSignIn.ts → useSessionSync (sessiya tekshirilgach)
   }, []);
   // Telegram sarlavhasi va foni — ilova rangida (kunduzgi / tungi)
   useEffect(() => {
