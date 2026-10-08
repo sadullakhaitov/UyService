@@ -364,7 +364,13 @@
   },
   "welcome": {
     "title": "UyService'ga xush kelibsiz!",
-    "choose": "Tilni tanlang"
+    "choose": "Tilni tanlang",
+    "roleTitle": "Kim sifatida kirasiz?",
+    "roleHint": "Keyin Profil bo'limida o'zgartirsa bo'ladi",
+    "client": "Usta chaqiraman",
+    "clientText": "Uyda biror narsa buzildi",
+    "master": "Usta bo'lib ishlayman",
+    "masterText": "Buyurtma olib, daromad qilaman"
   },
   "lang": {
     "uz": "O'zbek",

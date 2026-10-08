@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight, House, Wrench } from 'lucide-react-native';
 import { ScrollView, View, useWindowDimensions } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,7 +10,7 @@ import { LogoMark } from '@/components/ui/Logo';
 import { categories } from '@/constants/categories';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { LANGS, setLanguage, t, type Lang } from '@/lib/i18n';
-import { useUser } from '@/store';
+import { useMaster, useUser } from '@/store';
 
 // Pufakchalar joyi (illyustratsiya maydoni 320×300 ichida): kategoriya ranglarida suzib turadi
 const BUBBLES = [
@@ -31,11 +32,25 @@ export default function Welcome() {
   const k = height < 700 ? 0.62 : height < 820 ? 0.78 : 1;
   const compact = k < 1;
 
+  // 1-qadam — til, 2-qadam — kim sifatida: mijoz (darhol bosh sahifa) yoki usta (raqam → anketa)
+  const [step, setStep] = useState<'lang' | 'role'>(useUser.getState().language ? 'role' : 'lang');
   const choose = (lang: Lang) => {
     setLanguage(lang);
     setLang(lang);
+    setStep('role');
+  };
+  const asClient = () => {
+    useUser.getState().setRole('client');
     // Ro'yxatdan o'tish shart emas — mijoz darhol xizmatni tanlaydi
     router.replace('/client');
+  };
+  const asMaster = () => {
+    const u = useUser.getState();
+    // push: raqam ekranidan orqaga qaytsa — shu tanlovga
+    if (!u.phone) return router.push('/phone?next=master');
+    u.setRole('master');
+    const registered = Boolean(useMaster.getState().profile.submittedAt);
+    router.replace(!registered ? '/master/register' : u.billingPlan ? '/master' : '/master/plan');
   };
 
   return (
@@ -58,22 +73,54 @@ export default function Welcome() {
         </View>
 
         <View style={[styles.texts, compact && styles.textsCompact]}>
-          <Text style={[styles.title, compact && styles.titleCompact]}>{t('welcome.title')}</Text>
+          <Text style={[styles.title, compact && styles.titleCompact]}>{t(step === 'lang' ? 'welcome.title' : 'welcome.roleTitle')}</Text>
           <Text variant="body" style={styles.choose}>
-            {t('welcome.choose')}
+            {t(step === 'lang' ? 'welcome.choose' : 'welcome.roleHint')}
           </Text>
         </View>
 
-        <View style={[styles.list, compact && styles.listCompact]}>
-          {LANGS.map((l) => (
-            <Squish key={l} accessibilityRole="button" accessibilityState={{ selected: l === current }} onPress={() => choose(l)} scaleTo={0.97} style={[styles.item, compact && styles.itemCompact]}>
-              <Text style={styles.itemText}>{t(`lang.${l}`)}</Text>
-              <Flag lang={l} size={compact ? 42 : 52} />
+        {step === 'lang' ? (
+          <View style={[styles.list, compact && styles.listCompact]}>
+            {LANGS.map((l) => (
+              <Squish key={l} accessibilityRole="button" accessibilityState={{ selected: l === current }} onPress={() => choose(l)} scaleTo={0.97} style={[styles.item, compact && styles.itemCompact]}>
+                <Text style={styles.itemText}>{t(`lang.${l}`)}</Text>
+                <Flag lang={l} size={compact ? 42 : 52} />
+              </Squish>
+            ))}
+          </View>
+        ) : (
+          <View style={[styles.list, compact && styles.listCompact]}>
+            <RoleCard icon={House} title={t('welcome.client')} text={t('welcome.clientText')} onPress={asClient} primary />
+            <RoleCard icon={Wrench} title={t('welcome.master')} text={t('welcome.masterText')} onPress={asMaster} />
+            <Squish accessibilityRole="button" onPress={() => setStep('lang')} scaleTo={0.97} style={styles.back}>
+              <ChevronLeft size={18} color={colors.muted} strokeWidth={2.2} />
+              <Text variant="small" style={styles.backText}>
+                {t(`lang.${current}`)}
+              </Text>
             </Squish>
-          ))}
-        </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function RoleCard({ icon: Icon, title, text, onPress, primary }: { icon: typeof House; title: string; text: string; onPress: () => void; primary?: boolean }) {
+  useScheme();
+  const ink = primary ? colors.onPrimary : colors.ink;
+  return (
+    <Squish accessibilityRole="button" onPress={onPress} scaleTo={0.97} style={[styles.role, primary && styles.rolePrimary]}>
+      <View style={[styles.roleIcon, primary && styles.roleIconPrimary]}>
+        <Icon size={26} color={primary ? colors.onPrimary : colors.primary} strokeWidth={2.2} />
+      </View>
+      <View style={styles.flex}>
+        <Text style={[styles.itemText, { color: ink }]}>{title}</Text>
+        <Text variant="small" style={{ color: primary ? colors.onPrimaryMuted : colors.muted }}>
+          {text}
+        </Text>
+      </View>
+      <ChevronRight size={22} color={primary ? colors.onPrimary : colors.muted} strokeWidth={2.2} />
+    </Squish>
   );
 }
 
@@ -106,4 +153,10 @@ const styles = themed(() => ({
   item: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 76, paddingHorizontal: 20, borderRadius: radius.card, backgroundColor: colors.field },
   itemCompact: { height: 60 },
   itemText: { fontFamily: fonts.bold, fontSize: 18, color: colors.ink },
+  role: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 88, paddingHorizontal: 18, paddingVertical: 14, borderRadius: radius.card, backgroundColor: colors.field },
+  rolePrimary: { backgroundColor: colors.primary },
+  roleIcon: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
+  roleIconPrimary: { backgroundColor: 'rgba(255,255,255,0.16)' },
+  back: { flexDirection: 'row', alignItems: 'center', alignSelf: 'center', gap: 4, minHeight: 44, paddingHorizontal: 12 },
+  backText: { color: colors.muted, fontFamily: fonts.medium },
 }));

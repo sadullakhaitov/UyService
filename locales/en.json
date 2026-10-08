@@ -379,7 +379,13 @@
   },
   "welcome": {
     "title": "Welcome to UyService!",
-    "choose": "Choose a language"
+    "choose": "Choose a language",
+    "roleTitle": "How will you use UyService?",
+    "roleHint": "You can change this later in Profile",
+    "client": "I need a handyman",
+    "clientText": "Something at home needs fixing",
+    "master": "I want to work as a pro",
+    "masterText": "Take orders and earn money"
   },
   "lang": {
     "uz": "O'zbek",
