@@ -24,12 +24,25 @@ if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
 Write-Host "Node.js: $(node --version)"
 
 Write-Host "`nSupabase -> Project Settings -> API sahifasidan:"
-$url = (Read-Host "Project URL (https://XXXX.supabase.co)").Trim().TrimEnd('/')
-$ref = $url -replace '^https?://', '' -replace '\.supabase\.co.*$', ''
-if ($ref -notmatch '^[a-z0-9]{10,40}$') { Write-Host "Project URL noto'g'ri: $url" -ForegroundColor Red; exit 1 }
+# "NEXT_PUBLIC_SUPABASE_URL=https://..." kabi butun qatorni qo'ysa ham bo'ladi - faqat qiymat olinadi
+function Value([string]$s) { $s = $s.Trim().Trim('"', "'"); if ($s -match '=\s*(\S+)\s*$') { $s = $Matches[1] }; return $s.Trim('"', "'") }
+# Eski (eyJ...) kalitning ichidagi rol: anon yoki service_role
+function JwtRole([string]$t) {
+  try { $p = $t.Split('.')[1].Replace('-', '+').Replace('_', '/'); while ($p.Length % 4) { $p += '=' }
+        return ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($p)) | ConvertFrom-Json).role } catch { return '' }
+}
+do {
+  $raw = Read-Host "Project URL (https://XXXX.supabase.co)"
+  $ref = if ($raw -match '([a-z0-9]{15,40})\.supabase\.co') { $Matches[1] } elseif ((Value $raw) -match '^[a-z0-9]{15,40}$') { Value $raw } else { '' }
+  if (-not $ref) { Write-Host "Tushunmadim. Masalan: https://abcdefghijklmnop.supabase.co" -ForegroundColor Red }
+} until ($ref)
 $url = "https://$ref.supabase.co"
-$anon = (Read-Host "anon public (yoki publishable) kalit - service_role EMAS").Trim()
-if ($anon -match 'service_role' -or $anon -like 'sb_secret_*') { Write-Host "Bu maxfiy kalit! anon/publishable kalitni kiriting." -ForegroundColor Red; exit 1 }
+Write-Host "Loyiha: $url"
+do {
+  $anon = Value (Read-Host "anon public (eyJ...) yoki publishable (sb_publishable_...) kalit - secret EMAS")
+  $bad = -not $anon -or $anon -like 'sb_secret_*' -or (JwtRole $anon) -eq 'service_role'
+  if ($bad) { Write-Host "Bu maxfiy (secret/service_role) kalit yoki bo'sh. anon yoki publishable kalitni kiriting." -ForegroundColor Red }
+} while ($bad)
 
 Step "1/6 Supabase'ga kirish (brauzer ochiladi -> Authorize)"
 Run "supabase login" { npx --yes supabase login }
