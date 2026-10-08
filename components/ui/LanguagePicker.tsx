@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { LANGS, t } from '@/lib/i18n';
 import { useUser } from '@/store';
@@ -6,7 +6,7 @@ import { Flag } from './Flag';
 import { Squish } from './Pressable';
 import { Text } from './Text';
 
-// Til tanlash ro'yxati (mijoz profili, usta sozlamalari)
+// Til tanlash — 3 ta yonma-yon kartochka, "Ko'rinish" (ThemePicker) bilan bir xil uslubda (mijoz profili, usta sozlamalari)
 export function LanguagePicker() {
   useScheme();
   const { language, setLanguage } = useUser();
@@ -20,8 +20,10 @@ export function LanguagePicker() {
           onPress={() => setLanguage(l)}
           style={[styles.lang, l === language && styles.langOn]}
         >
-          <Flag lang={l} size={36} />
-          <Text style={styles.langText}>{t(`lang.${l}`)}</Text>
+          <Flag lang={l} size={32} />
+          <Text style={[styles.langText, l === language && { color: colors.primary }]} numberOfLines={1}>
+            {t(`lang.${l}`)}
+          </Text>
         </Squish>
       ))}
     </View>
@@ -29,8 +31,8 @@ export function LanguagePicker() {
 }
 
 const styles = themed(() => ({
-  langs: { gap: 8 },
-  lang: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.card, backgroundColor: colors.surface, borderWidth: 2, borderColor: 'transparent' },
-  langOn: { borderColor: colors.primary },
-  langText: { fontFamily: fonts.bold, fontSize: 16, color: colors.ink },
+  langs: { flexDirection: 'row', gap: 8 },
+  lang: { flex: 1, alignItems: 'center', gap: 8, paddingVertical: 14, paddingHorizontal: 4, borderRadius: radius.card, backgroundColor: colors.surface, borderWidth: 2, borderColor: 'transparent' },
+  langOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  langText: { fontFamily: fonts.bold, fontSize: 14, color: colors.ink },
 }));
