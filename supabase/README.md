@@ -228,6 +228,26 @@ npx eas build --profile preview --platform android   # tayyor APK havolasi chiqa
 turadi (anon kalit va Yandex kaliti shunday mo'ljallangan) — maxfiy kalitlar (service_role, Eskiz, Telegram) bu
 yerga **yozilmaydi**, ular faqat Supabase sirlarida.
 
+## 15. Sayt (uyservice.uz) uchun kalitlar — Cloudflare
+
+`.env` fayli git'ga yuklanmaydi, sayt esa Cloudflare'da GitHub'dagi koddan yig'iladi — shuning uchun kalitlarni
+Cloudflare'ga ham bir marta yozish kerak, aks holda sayt sinov rejimida qolaveradi:
+
+1. dash.cloudflare.com → **Workers & Pages** → `uyservice` → **Settings** → **Build** → **Variables and secrets**
+   (build vaqtidagi o'zgaruvchilar).
+2. Qo'shing: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_YANDEX_MAPS_KEY`
+   (qiymatlari `.env`dagi bilan bir xil).
+3. **Deployments** → oxirgisi → **Retry deployment** (yoki GitHub'ga yangi push). Tepadagi "Sinov rejimi" belgisi
+   yo'qolsa — sayt serverga ulandi.
+
+## Eskiz.uz hali yo'q bo'lsa
+
+- **Mijoz va ustalar** Telegram orqali kiradi (11-bo'lim) — SMS kerak emas. Oddiy brauzerda raqam + SMS bilan kirish
+  Eskiz ulanmaguncha ishlamaydi (6, 7-bo'limlarning SMS qismini keyinga qoldiring).
+- **Admin panel** SMS kod bilan kiradi. Vaqtincha: Authentication → Sign In / Providers → Phone → **Test Phone Numbers**
+  ga o'z raqamingizni va faqat o'zingiz biladigan 6 xonali kodni yozing (`998901234567=******`) — shu raqamga SMS
+  ketmaydi, kod har doim shu. Bu kod parol kabi: hech kimga bermang, Eskiz ulangach o'chiring.
+
 ## Nima qayerda
 
 | Fayl | Nima |
