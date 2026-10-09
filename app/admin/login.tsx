@@ -52,7 +52,8 @@ export default function AdminLogin() {
     setError(null);
     const r = await sendCode(fmtPhone(e164));
     setBusy(false);
-    if (!r.ok) return setError(t(noChannel(r) ? 'auth.noChannel' : 'auth.sendFailed'));
+    // Admin uchun server xatosi ham ko'rsatiladi (sozlashda sababini topish oson)
+    if (!r.ok) return setError(noChannel(r) ? t('auth.noChannel') : `${t('auth.sendFailed')}${r.error ? ` (${r.error})` : ''}`);
     setStep('code');
     setTimeout(() => codeRef.current?.focus(), 50);
   };
