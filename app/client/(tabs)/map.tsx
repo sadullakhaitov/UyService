@@ -17,7 +17,7 @@ import { reverseGeocode } from '@/lib/location';
 import { MAP_ATTRIBUTION_H, useWide } from '@/lib/useLayout';
 import { estimateEtaMin } from '@/lib/routes';
 import { locateMe, useLocStatus, useMyLocation } from '@/lib/useMyLocation';
-import { mastersAround, mockMasters } from '@/mocks';
+import { useFavoriteMaster, useMastersAround } from '@/lib/around';
 import { useOrder, useUser } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 
@@ -40,7 +40,8 @@ export default function ClientMap() {
   const wide = useWide();
   const userMoved = useRef(false);
 
-  const around = useMemo(() => mastersAround(location).filter((m) => distanceKm(m.location, location) < 3), [location]);
+  // Sinovda — soxta, serverda — haqiqiy onlayn ustalar (masters_around, ~100 m aniqlikda)
+  const around = useMastersAround(location);
   const nearby = useMemo(() => around.map((m) => blur(m.location)), [around]);
   // Pin ustida: eng yaqin ustagacha taxminiy vaqt (Yandex'dagidek)
   const etaLabel = around.length
@@ -92,7 +93,7 @@ export default function ClientMap() {
   }, [query]);
 
   // Eng oxirgi qo'shilgan sevimli usta (yangi foydalanuvchida — yo'q)
-  const favorite = [...favorites].reverse().map((id) => mockMasters.find((m) => m.id === id)).find(Boolean);
+  const favorite = useFavoriteMaster(favorites);
 
   const pick = (categoryId: CategoryId, preferredMasterId: string | null = null) => {
     reset();

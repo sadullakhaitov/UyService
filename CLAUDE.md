@@ -127,6 +127,7 @@ lib/                      ← i18n, geo, location, routes, supabase
   demo.ts                 ← `DEMO` — sinov rejimi (Supabase kaliti yo'q)
   dialog.ts               ← `notice` / `confirm` — brauzerda ham ishlaydi (RN-web'da `Alert.alert` jim). `Alert` ishlatmang
   masterGuard.ts          ← `guardActiveJob` — faol ish bo'lsa rol almashish/chiqish to'xtatiladi
+  around.ts               ← atrofdagi ustalar (`useMastersAround`: sinovda — mocks, serverda — `masters_around`, ~100 m aniqlikda) va "Mening ustalarim" (`useFavoriteMaster`: serverda — master_cards)
   account.ts              ← hisobni o'chirish (Storage fayllari + `delete_my_account` + telefon tozalanadi)
   track.ts                ← o'z statistikamiz: `track(hodisa)` → app_events, `logError` → app_errors (ErrorBoundary, ushlanmagan xatolar); faqat server rejimida
   admin/                  ← admin ma'lumotlari: types.ts (AdminApi), supabase.ts (admin_* view/RPC), demo.ts (sinov rejimi, namunaviy

@@ -14,7 +14,7 @@ import { formatSchedule, formatSum, t } from '@/lib/i18n';
 import { reverseGeocode } from '@/lib/location';
 import { firstSlot } from '@/lib/schedule';
 import { useMyLocation } from '@/lib/useMyLocation';
-import { mockMasters } from '@/mocks';
+import { useFavoriteMaster } from '@/lib/around';
 import { useOrder, useUser } from '@/store';
 
 /** Ko'p so'raladigan muammolar (bir bosishda shu muammo tanlangan buyurtma ochiladi) */
@@ -73,7 +73,7 @@ export default function Home() {
   }, [query]);
 
   // Eng oxirgi qo'shilgan sevimli usta (yangi foydalanuvchida — yo'q)
-  const favorite = [...favorites].reverse().map((id) => mockMasters.find((m) => m.id === id)).find(Boolean);
+  const favorite = useFavoriteMaster(favorites);
   const displayName = name.trim() || (phone ? t('home.client') : t('home.guest'));
 
   return (

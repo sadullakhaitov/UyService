@@ -14,7 +14,8 @@ import { colors, themed, useScheme } from '@/constants/theme';
 import { blur } from '@/lib/geo';
 import { formatSchedule, formatSum, t } from '@/lib/i18n';
 import { SCHEDULE_LEAD_MS, searchInfo, startSearch } from '@/lib/orderSimulator';
-import { mastersAround } from '@/mocks';
+import { TASHKENT_CENTER } from '@/mocks';
+import { useMastersAround } from '@/lib/around';
 import { LIVE, liveCancelOrder } from '@/lib/live';
 import { useHistory, useOrders, type ActiveOrder } from '@/store';
 
@@ -27,7 +28,8 @@ export function useSearchingMap(order: ActiveOrder | undefined) {
     return () => clearTimeout(t1);
   }, [order?.createdAt]);
   const location = order?.location;
-  const nearby = useMemo(() => (location ? mastersAround(location).map((m) => blur(m.location)) : []), [location]);
+  const aroundAll = useMastersAround(location ?? TASHKENT_CENTER, 10);
+  const nearby = useMemo(() => (location ? aroundAll.map((m) => blur(m.location)) : []), [location, aroundAll]);
   const quiet = !order || order.none || order.status === 'scheduled';
   const props: Partial<MapBaseProps> | null = location
     ? {
@@ -56,10 +58,8 @@ export function SearchingPanel({ order, onHeight, onRetry }: { order: ActiveOrde
   }, []);
 
   const location = order.location;
-  const candidates = useMemo(
-    () => mastersAround(location).filter((m) => m.categories.includes(order.categoryId)).length,
-    [location, order.categoryId],
-  );
+  const aroundHere = useMastersAround(location, 10);
+  const candidates = useMemo(() => aroundHere.filter((m) => m.categories.includes(order.categoryId)).length, [aroundHere, order.categoryId]);
 
   const cat = getCategory(order.categoryId);
   const none = order.none;
