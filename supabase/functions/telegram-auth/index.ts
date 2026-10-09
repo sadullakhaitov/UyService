@@ -11,6 +11,18 @@ import { uzPhone, verifyTelegramData } from '../_shared/telegram.ts';
 
 type TgUser = { id: number; first_name?: string; last_name?: string; language_code?: string };
 
+/** Raqam (998XXXXXXXXX) bo'yicha kirish hisobi — Auth admin API'da to'g'ridan-to'g'ri qidiruv yo'q, sahifalab qaraymiz */
+async function authUserByPhone(db: ReturnType<typeof adminClient>, digits: string): Promise<string | null> {
+  for (let page = 1; page <= 50; page++) {
+    const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw new Error(error.message);
+    const hit = data.users.find((u) => (u.phone ?? '').replace(/\D/g, '') === digits);
+    if (hit) return hit.id;
+    if (data.users.length < 1000) return null;
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
@@ -62,8 +74,14 @@ Deno.serve(async (req) => {
       if (prof) userId = prof.id;
       else {
         const { data, error } = await db.auth.admin.createUser({ phone: phone.slice(1), phone_confirm: true, user_metadata: { name, language: tg.language_code } });
-        if (error || !data.user) throw new Error(error?.message ?? 'create_user');
-        userId = data.user.id;
+        if (data?.user) userId = data.user.id;
+        else if (error && /already registered/i.test(error.message)) {
+          // Kirish hisobi bor, profili yo'q (masalan, profil qo'lda o'chirilgan) — hisobni topib, profilni tiklaymiz
+          userId = await authUserByPhone(db, phone.slice(1));
+          if (!userId) throw new Error(error.message);
+          const { error: pe } = await db.from('profiles').upsert({ id: userId, phone, name: name || null }, { onConflict: 'id', ignoreDuplicates: true });
+          if (pe) throw new Error(pe.message);
+        } else throw new Error(error?.message ?? 'create_user');
       }
       // Shu Telegram boshqa profilga bog'langan bo'lsa — uzib, shu raqamga bog'laymiz (raqamni Telegram tasdiqladi)
       await db.from('profiles').update({ telegram_id: null }).eq('telegram_id', tg.id);
