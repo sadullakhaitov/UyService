@@ -287,6 +287,19 @@ Front, backend va bazani "buzib ko'rish" natijasida yopilgan teshiklar (sinovlar
 
 Joylash: `update.ps1` (yoki `npx supabase db push`) — boshqa hech narsa kerak emas.
 
+## 18. Bepul davr kodlari (`…_free_passes.sql`, `functions/free-pass-send`)
+
+Ishga tushirish aksiyasi: admin panel → **Bepul davr** → ustaning raqami + 30 / 60 / 90 kun → **Yaratish va yuborish**.
+
+- Kod (`UY` + 8 belgi) darhol yuboriladi: raqam egasi @uyservice_bot'da bo'lsa (Telegram orqali kirgan yoki botga raqamini ulashgan) — **bot xabari** "Ochish" tugmasi bilan; aks holda Eskiz ulangan bo'lsa — **SMS**; ikkalasi ham bo'lmasa — admin panel xabarni nusxalaydi, o'zingiz yuborasiz.
+- Usta kodni Profil → Promokod'ga kiritadi. Shartlar: kod o'sha raqam uchun, pasport yuklangan, 30 kun ichida, har usta umrida bitta kod.
+- Bepul davrda ulush 0% (komissiya, obuna, hujjatsizlik +5% — hech biri), balans talab qilinmaydi. Hujjat rad etilsa — to'xtaydi.
+- Admin usta sahifasida **Bepul davr** tugmasi: +30 / +60 / +90 kun yoki to'xtatish (sabab bilan, jurnalga yoziladi). Kodlar ro'yxatida — bekor qilish (ishlatilgan bo'lsa, bepul davr ham to'xtaydi).
+- Tugashidan 7 va 1 kun oldin va tugaganda ustaga xabar (offer-timeout → `free_pass_reminders`).
+- SMS matni: `FREE_SMS_TEMPLATE` siri (`{code}`, `{days}`, `{date}`), standart — "UyService: {days} kunlik bepul ishlash kodi: {code}. Ilovada Profil > Promokod bo'limiga kiriting. {date} gacha." **Eskiz'da bu matn oldindan tasdiqlangan bo'lishi kerak** (kirish kodi shabloni kabi).
+
+Joylash: `update.ps1` — migratsiya va yangi funksiya birga ketadi.
+
 ## Eskiz.uz hali yo'q bo'lsa
 
 - **Mijoz va ustalar** Telegram orqali kiradi (11-bo'lim) — SMS kerak emas. Oddiy brauzerda raqam + SMS bilan kirish

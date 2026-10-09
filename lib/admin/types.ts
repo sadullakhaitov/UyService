@@ -2,6 +2,7 @@
 // Supabase (lib/admin/supabase.ts — server ulanganda) va sinov rejimi (lib/admin/demo.ts).
 import type { BillingPlan } from '@/constants/billing';
 import type { CategoryId } from '@/constants/categories';
+import type { FreeDays } from '@/lib/freePass';
 import type { LatLng } from '@/lib/geo';
 
 export type VerifyStatus = 'none' | 'pending' | 'approved' | 'rejected';
@@ -24,7 +25,10 @@ export type LogAction =
   | 'revoke_admin'
   | 'promo'
   | 'report_resolve'
-  | 'delete_account';
+  | 'delete_account'
+  | 'free_pass'
+  | 'free_pass_revoke'
+  | 'free_period';
 export type LogTarget = 'master' | 'user' | 'order' | 'review' | 'category' | 'problem' | 'support' | 'promo' | 'report';
 
 export const ACTIVE_STATUSES: OrderStatus[] = ['assigned', 'on_the_way', 'arrived', 'in_progress'];
@@ -68,6 +72,8 @@ export type AdminMaster = {
   passport: string | null;
   selfie: string | null;
   works: string[];
+  /** Bepul davr oxiri (ms) yoki null — muddat o'tgan bo'lsa ham saqlanadi */
+  freeUntil: number | null;
 };
 
 export type AdminOrder = {
@@ -182,6 +188,29 @@ export type PromoCode = {
   createdAt: number;
 };
 export type PromoInput = Pick<PromoCode, 'code' | 'priority' | 'bonus' | 'maxUses' | 'expiresAt' | 'active'>;
+
+/** Bepul davr kodi (shaxsiy, bitta raqam uchun, 30 / 60 / 90 kun) — lib/freePass.ts */
+export type FreePassStatus = 'pending' | 'redeemed' | 'expired' | 'revoked';
+export type FreePass = {
+  code: string;
+  phone: string;
+  days: FreeDays;
+  createdAt: number;
+  /** Shu sanagacha kiritish kerak */
+  redeemBy: number;
+  sentVia: 'telegram' | 'sms' | null;
+  sentAt: number | null;
+  redeemedAt: number | null;
+  masterId: string | null;
+  masterName: string | null;
+  freeUntil: number | null;
+  revokedAt: number | null;
+  revokeReason: string | null;
+  status: FreePassStatus;
+};
+/** Yuborish natijasi: no_channel — Telegram ham, SMS ham yo'q (kodni o'zingiz yuboring); demo — sinov rejimi */
+export type FreeSendResult = 'telegram' | 'sms' | 'no_channel' | 'demo';
+export type FreeStats = { activeMasters: number; waived: number; pending: number; redeemed: number };
 
 export type ChatLine = { id: string; senderId: string; mine: boolean; text: string; at: number };
 
@@ -365,6 +394,15 @@ export interface AdminApi {
   updateProblem(id: string, min: number | null, max: number | null): Promise<void>;
   promos(): Promise<PromoCode[]>;
   savePromo(p: PromoInput): Promise<void>;
+
+  /** Bepul davr kodlari: yaratish (raqam + 30/60/90 kun), yuborish (Telegram / SMS), bekor qilish */
+  freePasses(): Promise<FreePass[]>;
+  createFreePass(phone: string, days: FreeDays): Promise<string>;
+  sendFreePass(code: string): Promise<FreeSendResult>;
+  revokeFreePass(code: string, reason: string): Promise<void>;
+  /** Usta sahifasi: bepul davrni uzaytirish (30/60/90) yoki to'xtatish (0). Yangi oxiri yoki null */
+  setFree(masterId: string, days: 0 | FreeDays, reason: string): Promise<number | null>;
+  freeStats(): Promise<FreeStats>;
 
   log(q: LogQuery): Promise<Page<LogEntry>>;
   admins(): Promise<AdminUser[]>;

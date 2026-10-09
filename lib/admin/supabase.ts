@@ -33,7 +33,13 @@ function fail(e: { code?: string; message?: string } | null | undefined): never 
   const m = e?.message ?? '';
   const key = m.includes('active_orders')
     ? 'errors.activeOrders'
-    : m.includes('admin_target')
+    : m.includes('free_used')
+      ? 'errors.freeUsed'
+      : m.includes('passport_required')
+        ? 'errors.passportRequired'
+        : m.includes('admin: phone')
+          ? 'errors.phone'
+          : m.includes('admin_target')
       ? 'errors.deleteAdmin'
       : code === '42501' ? 'errors.forbidden' : code === '22023' ? 'errors.invalid' : code === 'P0002' ? 'errors.notFound' : 'errors.server';
   throw new AdminError(key, e?.message);
@@ -92,6 +98,7 @@ function toMaster(r: Row): AdminMaster {
     passport: r.passport_path,
     selfie: r.selfie_path,
     works: r.works ?? [],
+    freeUntil: ms(r.free_until),
   };
 }
 
@@ -536,6 +543,53 @@ export const supabaseAdmin: AdminApi = {
       p_expires_at: p.expiresAt ? new Date(p.expiresAt).toISOString() : null,
       p_active: p.active,
     });
+  },
+
+  async freePasses() {
+    const rows = (await rpc('admin_free_passes', {})) as Row[] | null;
+    return (rows ?? []).map((r) => ({
+      code: r.code,
+      phone: r.phone,
+      days: r.days,
+      createdAt: ms(r.created_at) ?? 0,
+      redeemBy: ms(r.redeem_by) ?? 0,
+      sentVia: r.sent_via,
+      sentAt: ms(r.sent_at),
+      redeemedAt: ms(r.redeemed_at),
+      masterId: r.master_id,
+      masterName: r.master_name,
+      freeUntil: ms(r.free_until),
+      revokedAt: ms(r.revoked_at),
+      revokeReason: r.revoke_reason,
+      status: r.status,
+    }));
+  },
+  async createFreePass(phone, days) {
+    const p = normalizePhone(phone);
+    if (!p) throw new AdminError('errors.phone');
+    return (await rpc('admin_create_free_pass', { p_phone: p, p_days: days })) as string;
+  },
+  async sendFreePass(code) {
+    // Bot tokeni va Eskiz faqat serverda — yuborishni Edge Function qiladi (admin huquqi u yerda ham tekshiriladi)
+    const { data, error } = await db().functions.invoke('free-pass-send', { body: { code } });
+    if (error) {
+      const status = (error as { context?: { status?: number } }).context?.status;
+      throw new AdminError(status === 409 ? 'free.notPending' : status === 403 ? 'errors.forbidden' : 'free.sendFailed', error.message);
+    }
+    return (data as { via: 'telegram' | 'sms' | 'no_channel' }).via;
+  },
+  async revokeFreePass(code, reason) {
+    checkReason(reason);
+    await rpc('admin_revoke_free_pass', { p_code: code, p_reason: clean(reason) });
+  },
+  async setFree(id, days, reason) {
+    checkReason(reason);
+    return ms(await rpc('admin_set_free', { p_master: id, p_days: days, p_reason: clean(reason) }));
+  },
+  async freeStats() {
+    const rows = (await rpc('admin_free_stats', {})) as Row[] | null;
+    const r = rows?.[0] ?? {};
+    return { activeMasters: r.active_masters ?? 0, waived: Number(r.waived ?? 0), pending: r.pending ?? 0, redeemed: r.redeemed ?? 0 };
   },
 
   async log(q) {

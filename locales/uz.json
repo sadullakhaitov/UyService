@@ -316,7 +316,12 @@
     "unverified": "Hujjatsiz: ulush {{pct}}% · Pasport yuklasangiz — {{base}}%",
     "activeJob": "Faol ish",
     "open": "Ochish",
-    "view": "Ko'rish"
+    "view": "Ko'rish",
+    "free": {
+      "other": "Bepul davr: {{count}} kun qoldi — ulush olinmaydi"
+    },
+    "freeTitle": "Bepul davr",
+    "freeSub": "Komissiya ham, obuna ham yo'q — butun daromad sizniki"
   },
   "money": {
     "title": "Pul",
@@ -337,7 +342,9 @@
     "plan": "Tarif",
     "commissionNote": "Har bir ishdan {{percent}}% balansdan yechiladi",
     "topUpDemo": "Sinov: +{{sum}}",
-    "renewDemo": "Sinov: 30 kunga uzaytirish"
+    "renewDemo": "Sinov: 30 kunga uzaytirish",
+    "free": "Bepul davr",
+    "freeSub": "{{date}} gacha platforma hech qanday ulush olmaydi, balans talab qilinmaydi. Tugashidan oldin xabar beramiz"
   },
   "chats": {
     "title": "Chatlar",
@@ -535,7 +542,14 @@
     "gotPriority": "+{{n}} prioritet ball",
     "gotBonus": "Balansga +{{sum}}",
     "history": "Ishlatilgan",
-    "expired": "Promokod muddati tugagan yoki chegarasi to'lgan"
+    "expired": "Promokod muddati tugagan yoki chegarasi to'lgan",
+    "gotFree": "Bepul davr yoqildi: {{days}} kun — {{date}} gacha. Shu muddat platforma ulush olmaydi",
+    "otherPhone": "Bu kod boshqa telefon raqami uchun berilgan",
+    "needPassport": "Avval pasportingizni yuklang (Profil → Hujjatlar) — bepul davr faqat pasport bilan",
+    "freeUsed": "Siz bepul davrdan allaqachon foydalangansiz",
+    "freeActive": {
+      "other": "Bepul davr: {{date}} gacha ({{count}} kun qoldi). Platforma ulush olmaydi"
+    }
   },
   "invite": {
     "title": "Do'st uchun {{sum}}",
@@ -700,7 +714,8 @@
       "log": "Amallar jurnali",
       "settings": "Sozlamalar",
       "reports": "Murojaatlar",
-      "stats": "Statistika"
+      "stats": "Statistika",
+      "free": "Bepul davr"
     },
     "navGroup": {
       "main": "Asosiy",
@@ -862,7 +877,9 @@
       "reportClosed": "Murojaat allaqachon yopilgan",
       "activeOrders": "Faol buyurtmasi bor. Avval buyurtmani tugating yoki bekor qiling",
       "deleteAdmin": "Adminni o'chirib bo'lmaydi. Avval Sozlamalar'da adminlikdan olib tashlang",
-      "deleteLocal": "Sinov rejimida shu qurilmadagi ustani o'chirib bo'lmaydi"
+      "deleteLocal": "Sinov rejimida shu qurilmadagi ustani o'chirib bo'lmaydi",
+      "freeUsed": "Bu usta bepul davrdan allaqachon foydalangan — uning sahifasida uzaytiring",
+      "passportRequired": "Ustada pasport yuklanmagan (yoki rad etilgan) — bepul davr faqat pasport bilan"
     },
     "login": {
       "title": "Admin panelga kirish",
@@ -1267,7 +1284,10 @@
         "revoke_admin": "Admin olib tashlandi",
         "promo": "Promokod saqlandi",
         "report_resolve": "Murojaatni yopdi",
-        "delete_account": "Hisob o'chirildi"
+        "delete_account": "Hisob o'chirildi",
+        "free_pass": "Bepul davr kodi",
+        "free_pass_revoke": "Bepul davr kodi bekor qilindi",
+        "free_period": "Bepul davr o'zgartirildi"
       },
       "t": {
         "master": "usta",
@@ -1404,6 +1424,81 @@
       "p1": "O'zi so'radi",
       "p2": "Soxta hisob",
       "p3": "Qoidabuzarlik"
+    },
+    "free": {
+      "subtitle": "Ishga tushirish aksiyasi: ustaga 30 / 60 / 90 kunlik shaxsiy kod — shu muddat hech qanday ulush olinmaydi",
+      "statActive": "Bepul ishlayotgan",
+      "statActiveSub": "ustalar hozir",
+      "statPending": "Kutilmoqda",
+      "statPendingSub": "yuborilgan, hali kiritilmagan",
+      "statRedeemed": "Ishlatilgan",
+      "statRedeemedSub": "kodlar jami",
+      "statWaived": "Kechilgan ulush",
+      "statWaivedSub": "",
+      "createTitle": "Yangi kod",
+      "createSub": "Raqam va muddatni tanlang — kod yaratiladi va darhol Telegram yoki SMS bilan yuboriladi. {{redeem}} kun ichida kiritilishi kerak",
+      "phone": "Ustaning telefon raqami",
+      "days": "Muddat",
+      "daysN": "{{n}} kun",
+      "create": "Yaratish va yuborish",
+      "createdFor": "{{phone}} uchun {{days}} kunlik kod",
+      "sending": "Yuborilmoqda…",
+      "sent": {
+        "telegram": "Telegram (@uyservice_bot) orqali yuborildi",
+        "sms": "SMS orqali yuborildi",
+        "no_channel": "Telegram ham, SMS ham topilmadi — xabar nusxalandi, o'zingiz yuboring",
+        "demo": "Sinov rejimi: yuborilmadi — xabar nusxalandi"
+      },
+      "copy": "Nusxalash",
+      "rules": "Qoidalar: kod faqat shu raqam egasi uchun va bir marta; usta pasportini yuklagan bo'lishi kerak (rad etilsa — bepul davr to'xtaydi); har usta umrida bitta kod ishlatadi, keyin usta sahifasidan uzaytirasiz. Shu raqamga yangi kod yaratilsa — eskisi bekor bo'ladi.",
+      "listTitle": "Kodlar",
+      "listSub": "Kim uchun, qachon yuborilgan, kim ishlatgan",
+      "status": {
+        "pending": "Kutilmoqda",
+        "redeemed": "Ishlatilgan",
+        "expired": "Muddati o'tgan",
+        "revoked": "Bekor qilingan"
+      },
+      "empty": "Hali kod yo'q",
+      "created": "yaratildi {{date}}",
+      "via": {
+        "telegram": "Telegram'da",
+        "sms": "SMS'da"
+      },
+      "notSent": "yuborilmagan",
+      "redeemedBy": "{{name}} · {{date}} da kiritdi · bepul {{until}} gacha",
+      "redeemBy": "{{date}} gacha kiritish kerak",
+      "revokedReason": "Sabab: {{reason}}",
+      "replaced": "shu raqamga yangi kod berildi",
+      "openMaster": "Usta",
+      "resend": "Yuborish",
+      "revoke": "Bekor qilish",
+      "revokeTitle": "{{code}} kodini bekor qilish",
+      "revokeText": "Kod ishlamay qoladi.",
+      "revokeRedeemedText": "Kod ishlatilgan — ustaning bepul davri ham darhol to'xtaydi, keyingi buyurtmalardan odatdagi ulush olinadi.",
+      "revoked": "Kod bekor qilindi",
+      "preset": {
+        "mistake": "Xato raqam",
+        "abuse": "Qoidabuzarlik",
+        "left": "Usta ishlamaydi"
+      },
+      "message": "UyService: sizga {{days}} kunlik bepul ishlash kodi: {{code}}\nShu muddat platforma sizdan hech qanday ulush olmaydi.\nIlovada usta sifatida kiring, pasportingizni yuklang va Profil → Promokod bo'limiga kodni kiriting. Kod faqat sizning raqamingiz uchun, {{redeem}} kun ichida kiriting.\nhttps://uyservice.uz/usta",
+      "button": "Bepul davr",
+      "period": "Bepul davr",
+      "untilShort": "{{date}} gacha",
+      "endedOn": "tugagan: {{date}}",
+      "pausedNoDocs": "hujjat tasdiqlanmagan — to'xtatilgan",
+      "dialogTitle": "Bepul davr",
+      "activeUntil": "Hozir: {{date}} gacha bepul",
+      "inactive": "Hozir bepul davr yo'q",
+      "extend": "Uzaytirish",
+      "stop": "To'xtatish",
+      "newUntil": "Yangi oxiri",
+      "extendedDone": "Bepul davr {{date}} gacha",
+      "stoppedDone": "Bepul davr to'xtatildi",
+      "stopped": "to'xtatildi",
+      "notPending": "Kod ishlatilgan, bekor qilingan yoki muddati o'tgan",
+      "sendFailed": "Yuborib bo'lmadi — keyinroq qayta urinib ko'ring"
     }
   },
   "home": {

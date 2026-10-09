@@ -22,8 +22,12 @@ export const BALANCE_LIMIT = 20_000;
 // Pasport va selfi ixtiyoriy: hujjati tasdiqlanmagan usta ham buyurtma oladi, faqat ulushi shuncha foizga ko'p
 export const UNVERIFIED_SURCHARGE_PERCENT = 5;
 
-/** Ustaning bitta ishdan beradigan ulushi, %: komissiya 10 / obuna 0, tasdiqlanmagan bo'lsa +5 (server: master_fee_percent) */
-export function feePercent(plan: BillingPlan, verified: boolean) {
+/**
+ * Ustaning bitta ishdan beradigan ulushi, %: komissiya 10 / obuna 0, tasdiqlanmagan bo'lsa +5 (server: master_fee_percent).
+ * free — bepul davr (lib/freePass.ts → freeActive): hech qanday ulush yo'q
+ */
+export function feePercent(plan: BillingPlan, verified: boolean, free = false) {
+  if (free) return 0;
   return BILLING[plan].commissionPercent + (verified ? 0 : UNVERIFIED_SURCHARGE_PERCENT);
 }
 

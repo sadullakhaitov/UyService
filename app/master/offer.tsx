@@ -11,6 +11,7 @@ import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatRange, formatSum, t } from '@/lib/i18n';
 import { useMaster, useMasterWork, useUser } from '@/store';
+import { isFreeNow } from '@/lib/freePass';
 import { LIVE, liveRespondOffer } from '@/lib/live';
 import { notice } from '@/lib/dialog';
 
@@ -50,7 +51,7 @@ export default function Offer() {
     bump(DISPATCH.activity.accepted);
     // Ulush qabul paytidagi tarif bo'yicha qotiriladi (keyin tarif almashtirilsa ham shu ish uchun o'zgarmaydi)
     const { verified } = useMaster.getState();
-    acceptOffer(feePercent(useUser.getState().billingPlan ?? 'commission', verified));
+    acceptOffer(feePercent(useUser.getState().billingPlan ?? 'commission', verified, isFreeNow()));
     router.replace('/master/job');
   };
   // Rad etish yoki 60 s o'tib ketishi — aktivlik −5, taklif keyingi ustaga o'tadi

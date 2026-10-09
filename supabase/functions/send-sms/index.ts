@@ -14,9 +14,7 @@
 import { Webhook } from 'npm:standardwebhooks@1.0.0';
 import { adminClient } from '../_shared/http.ts';
 import { deliverOtp } from '../_shared/otp.ts';
-
-const ESKIZ = Deno.env.get('ESKIZ_API') || 'https://notify.eskiz.uz/api'; // ESKIZ_API — faqat sinov uchun
-let cachedToken: string | null = null; // Eskiz tokeni 30 kun amal qiladi — funksiya "issiq" turganda qayta ishlatiladi
+import { eskizSend } from '../_shared/sms.ts';
 
 type HookPayload = { user: { id: string; phone?: string }; sms: { otp: string } };
 
@@ -25,37 +23,6 @@ function hookError(status: number, message: string) {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
-}
-
-async function eskizLogin(): Promise<string> {
-  const form = new FormData();
-  form.append('email', Deno.env.get('ESKIZ_EMAIL') ?? '');
-  form.append('password', Deno.env.get('ESKIZ_PASSWORD') ?? '');
-  const res = await fetch(`${ESKIZ}/auth/login`, { method: 'POST', body: form });
-  const body = await res.json().catch(() => ({}));
-  const token = body?.data?.token as string | undefined;
-  if (!res.ok || !token) throw new Error(`Eskiz login: ${res.status} ${body?.message ?? ''}`);
-  cachedToken = token;
-  return token;
-}
-
-async function eskizSend(phone: string, message: string, retry = true): Promise<void> {
-  const token = cachedToken ?? (await eskizLogin());
-  const form = new FormData();
-  form.append('mobile_phone', phone);
-  form.append('message', message);
-  form.append('from', Deno.env.get('ESKIZ_FROM') || '4546');
-  const res = await fetch(`${ESKIZ}/message/sms/send`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: form,
-  });
-  if (res.status === 401 && retry) {
-    cachedToken = null; // token eskirgan — qayta kiramiz
-    return eskizSend(phone, message, false);
-  }
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok || body?.status === 'error') throw new Error(`Eskiz send: ${res.status} ${JSON.stringify(body)}`);
 }
 
 Deno.serve(async (req) => {

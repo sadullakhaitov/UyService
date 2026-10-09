@@ -7,6 +7,7 @@ import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { adminApi, type AdminMaster, type BalanceKind } from '@/lib/admin';
 import { adminErrorText, toast, invalidateAdmin } from '@/lib/admin/hooks';
 import { RULES } from '@/lib/admin/rules';
+import { FREE_DAYS, type FreeDays } from '@/lib/freePass';
 import { t } from '@/lib/i18n';
 import { Dialog, ErrorText } from './Dialog';
 import { fmtDateOnly, fmtSum } from './format';
@@ -232,3 +233,59 @@ const styles = themed(() => ({
   stepper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   stepValue: { minWidth: 70, textAlign: 'center', fontFamily: fonts.heavy, fontSize: 28, lineHeight: 34, color: colors.ink, fontVariant: ['tabular-nums'] },
 }));
+
+/** Bepul davr: uzaytirish (30 / 60 / 90 kun) yoki to'xtatish — sabab bilan, jurnalga yoziladi */
+export function FreeDialog({ master, visible, onClose }: { master: AdminMaster; visible: boolean; onClose: () => void }) {
+  useScheme();
+  const [days, setDays] = useState<0 | FreeDays>(30);
+  const [reason, setReason] = useState('');
+  const a = useAction();
+  useEffect(() => {
+    if (visible) {
+      setDays(30);
+      setReason('');
+      a.setError(null);
+    }
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+  const active = !!master.freeUntil && master.freeUntil > Date.now();
+  const until = days === 0 ? null : Math.max(Date.now(), master.freeUntil ?? 0) + days * 86_400_000;
+  const noPassport = !master.passport || (master.verifyStatus !== 'pending' && master.verifyStatus !== 'approved');
+  return (
+    <Dialog
+      visible={visible}
+      onClose={onClose}
+      title={t('admin.free.dialogTitle')}
+      text={active ? t('admin.free.activeUntil', { date: fmtDateOnly(master.freeUntil) }) : t('admin.free.inactive')}
+      footer={
+        <>
+          <AButton title={t('common.cancel')} kind="ghost" onPress={onClose} />
+          <AButton
+            title={days === 0 ? t('admin.free.stop') : t('admin.free.extend')}
+            kind={days === 0 ? 'dangerSolid' : 'primary'}
+            loading={a.busy}
+            disabled={reason.trim().length < 3 || (days > 0 && noPassport) || (days === 0 && !active)}
+            onPress={() =>
+              a.run(() => adminApi.setFree(master.id, days, reason.trim()), days === 0 ? t('admin.free.stoppedDone') : t('admin.free.extendedDone', { date: fmtDateOnly(until) }), onClose)
+            }
+          />
+        </>
+      }
+    >
+      <View style={styles.row}>
+        {FREE_DAYS.map((d) => (
+          <Pill key={d} label={`+${t('admin.free.daysN', { n: d })}`} active={days === d} onPress={() => setDays(d)} />
+        ))}
+        {active ? <Pill label={t('admin.free.stop')} active={days === 0} onPress={() => setDays(0)} /> : null}
+      </View>
+      {days > 0 && noPassport ? <ErrorText text={t('admin.errors.passportRequired')} /> : null}
+      {days > 0 ? (
+        <View style={styles.preview}>
+          <Text variant="small">{t('admin.free.newUntil')}</Text>
+          <Text style={styles.previewValue}>{fmtDateOnly(until)}</Text>
+        </View>
+      ) : null}
+      <Field label={t('admin.common.reason')} value={reason} onChangeText={setReason} placeholder={t('admin.common.reasonPlaceholder')} multiline maxLength={RULES.reasonMax} />
+      {a.error ? <ErrorText text={a.error} /> : null}
+    </Dialog>
+  );
+}

@@ -13,6 +13,7 @@ import { BILLING, feePercent } from '@/constants/billing';
 import { categories } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
+import { freeDaysLeft, useFreeUntil } from '@/lib/freePass';
 import { formatSum, t } from '@/lib/i18n';
 import { useBlocked } from '@/lib/masterFeed';
 import { askNotifications } from '@/lib/notify';
@@ -64,7 +65,9 @@ export default function MasterOrders() {
 
   // Nega buyurtmalar yopiq (Yandex Pro'dagi qizil banner kabi)
   const blocked = useBlocked();
-  const notice = !blocked && !verified;
+  // Bepul davr (admin bergan kod): ulush yo'q — "hujjatsiz +5%" eslatmasi o'rniga yashil banner
+  const freeUntil = useFreeUntil();
+  const notice = !blocked && !verified && !freeUntil;
 
   useEffect(() => {
     if (blocked && online) setOnline(false);
@@ -81,7 +84,7 @@ export default function MasterOrders() {
   };
 
   const daysLeft = Math.max(0, Math.ceil((subscriptionUntil - Date.now()) / DAY));
-  const topH = insets.top + (blocked || notice ? 56 : 12);
+  const topH = insets.top + (blocked || notice || freeUntil ? 56 : 12);
 
   return (
     <View style={styles.root}>
@@ -121,6 +124,17 @@ export default function MasterOrders() {
           </Text>
           <View style={styles.bannerGo}>
             <ChevronRight size={18} color={colors.accentInk} strokeWidth={3} />
+          </View>
+        </Pressable>
+      ) : freeUntil ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.navigate('/master/money')}
+          style={[styles.banner, styles.free, { paddingTop: insets.top + 8 }]}
+        >
+          <Text style={[styles.bannerText, { color: colors.primary }]}>{t('mOrders.free', { count: freeDaysLeft(freeUntil) })}</Text>
+          <View style={styles.bannerGo}>
+            <ChevronRight size={18} color={colors.primary} strokeWidth={3} />
           </View>
         </Pressable>
       ) : null}
@@ -191,14 +205,18 @@ export default function MasterOrders() {
 
         <Squish accessibilityRole="button" onPress={() => router.push('/master/plan')} style={styles.promo}>
           <View style={styles.flex}>
-            <Text style={styles.promoTitle}>{plan === 'commission' ? t('mOrders.promoCommission') : t('mOrders.promoSubscription')}</Text>
+            <Text style={styles.promoTitle}>{freeUntil ? t('mOrders.freeTitle') : plan === 'commission' ? t('mOrders.promoCommission') : t('mOrders.promoSubscription')}</Text>
             <Text variant="caption" style={styles.promoSub}>
-              {plan === 'commission'
-                ? t('mOrders.promoCommissionSub', { percent: feePercent(plan, verified) })
-                : t('mOrders.promoSubscriptionSub', { days: daysLeft })}
+              {freeUntil
+                ? t('mOrders.freeSub')
+                : plan === 'commission'
+                  ? t('mOrders.promoCommissionSub', { percent: feePercent(plan, verified) })
+                  : t('mOrders.promoSubscriptionSub', { days: daysLeft })}
             </Text>
           </View>
-          <Text style={styles.promoPrice}>{plan === 'commission' ? formatSum(BILLING.subscription.monthlyFee) : t('mOrders.days', { days: daysLeft })}</Text>
+          <Text style={styles.promoPrice}>
+            {freeUntil ? t('mOrders.days', { days: freeDaysLeft(freeUntil) }) : plan === 'commission' ? formatSum(BILLING.subscription.monthlyFee) : t('mOrders.days', { days: daysLeft })}
+          </Text>
         </Squish>
 
         {online ? (
@@ -285,6 +303,7 @@ const styles = themed(() => ({
   },
   bannerText: { flex: 1, fontFamily: fonts.bold, fontSize: 15, color: colors.onPrimary, textAlign: 'center' },
   notice: { backgroundColor: colors.accentSoft },
+  free: { backgroundColor: colors.primarySoft },
   bannerGo: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   topRow: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   statePill: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 22, paddingHorizontal: 16 },

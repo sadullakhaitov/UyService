@@ -1,7 +1,7 @@
 // Admin amallari jurnali: kim, qachon, nima qildi (tushunarli matn bilan), obyektga havola
 import { router, type Href } from 'expo-router';
 import type { LucideIcon } from 'lucide-react-native';
-import { Ban, BadgeCheck, CalendarPlus, CircleCheck, Gauge, ShieldPlus, Tag, Ticket, Trash2, Unlock, UserX, Wallet, XCircle } from 'lucide-react-native';
+import { Ban, BadgeCheck, CalendarPlus, CircleCheck, Gauge, Gift, ShieldPlus, Tag, Ticket, TicketX, Trash2, Unlock, UserX, Wallet, XCircle } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -28,6 +28,9 @@ const ICON: Record<LogAction, LucideIcon> = {
   promo: Ticket,
   report_resolve: CircleCheck,
   delete_account: UserX,
+  free_pass: Gift,
+  free_pass_revoke: TicketX,
+  free_period: Gift,
 };
 
 const str = (v: unknown) => (v == null || v === '' ? null : String(v));
@@ -78,6 +81,12 @@ function logDetails(e: LogEntry): string {
         .join(' · ');
     case 'delete_account':
       return [str(d.name), str(d.phone), str(d.reason)].filter(Boolean).join(' · ');
+    case 'free_pass':
+      return [t('admin.free.daysN', { n: num(d.days) }), `…${str(d.phone) ?? ''}`].join(' · ');
+    case 'free_pass_revoke':
+      return str(d.reason) ?? '';
+    case 'free_period':
+      return [num(d.days) ? `+${t('admin.free.daysN', { n: num(d.days) })}` : t('admin.free.stopped'), str(d.reason)].filter(Boolean).join(' · ');
     case 'report_resolve':
       return [t(`report.kinds.${str(d.kind) ?? 'other'}`), str(d.note)].filter(Boolean).join(' · ');
     default:
@@ -90,6 +99,7 @@ function targetHref(e: LogEntry): string | null {
   if (e.targetType === 'master') return `/admin/masters/${e.targetId}`;
   if (e.targetType === 'user') return `/admin/users/${e.targetId}`;
   if (e.targetType === 'order') return `/admin/orders/${e.targetId}`;
+  if (e.action === 'free_pass' || e.action === 'free_pass_revoke') return '/admin/free';
   if (e.targetType === 'category' || e.targetType === 'problem' || e.targetType === 'promo') return '/admin/catalog';
   if (e.targetType === 'report') return '/admin/reports';
   return null;
@@ -107,7 +117,7 @@ function LogRow({ e, showTarget = true }: { e: LogEntry; showTarget?: boolean })
   const { hovered, bind } = useHover();
   const Icon = ICON[e.action] ?? Tag;
   const href = targetHref(e);
-  const danger = e.action === 'block' || e.action === 'cancel' || e.action === 'delete_review' || (e.action === 'verify' && e.details.to === 'rejected');
+  const danger = e.action === 'block' || e.action === 'cancel' || e.action === 'delete_review' || e.action === 'free_pass_revoke' || (e.action === 'verify' && e.details.to === 'rejected');
   const body = (
     <>
       <View style={[styles.icon, { backgroundColor: danger ? colors.dangerSoft : colors.primarySoft }]}>

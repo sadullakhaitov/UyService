@@ -13,6 +13,7 @@ import { distanceKm, type LatLng } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { notify } from '@/lib/notify';
 import { notice } from '@/lib/dialog';
+import { isFreeNow } from '@/lib/freePass';
 import { fallbackRoute, fetchRoute, resample } from '@/lib/routes';
 import { useChats, useHistory, useMaster, useMasterWork, useOrders, useUser, type ActiveOrder, type AddressDetails, type ChatMessage, type MasterOrder, type OrderMaster } from '@/store';
 import { getSupabase, isSupabaseConfigured } from './supabase';
@@ -439,6 +440,7 @@ type MasterRow = {
   priority_points: number;
   subscription_until: string | null;
   billing_plan: 'subscription' | 'commission' | null;
+  free_until?: string | null;
 };
 
 /** Ustaning serverdagi holati (balans, reyting, hujjat) → useMaster */
@@ -447,7 +449,7 @@ export async function syncMaster() {
   if (!uid) return;
   const { data } = await db()
     .from('masters')
-    .select('verify_status, balance, rating, jobs_count, activity, priority_points, subscription_until, billing_plan')
+    .select('verify_status, balance, rating, jobs_count, activity, priority_points, subscription_until, billing_plan, free_until')
     .eq('id', uid)
     .maybeSingle();
   const m = data as MasterRow | null;
@@ -463,6 +465,7 @@ export async function syncMaster() {
     activity: m.activity,
     priorityPoints: m.priority_points,
     subscriptionUntil: m.subscription_until ? Date.parse(m.subscription_until) : 0,
+    freeUntil: m.free_until ? Date.parse(m.free_until) : null,
   });
   if (m.billing_plan && useUser.getState().billingPlan !== m.billing_plan) useUser.setState({ billingPlan: m.billing_plan });
 }
@@ -497,15 +500,25 @@ export async function liveSubmitMaster() {
   await db().from('profiles').update({ role: 'master', name: `${profile.firstName} ${profile.lastName}`.trim() }).eq('id', uid);
 }
 
-/** Promokod (Profil → Promokod). Xato: Error('invalid' | 'used' | 'expired') */
-export async function liveRedeemPromo(code: string): Promise<{ priority: number; bonus: number }> {
+/**
+ * Promokod (Profil → Promokod): oddiy promokod ({ priority, bonus }) yoki bepul davr kodi ({ freeDays, freeUntil }).
+ * Xato: Error('invalid' | 'used' | 'expired' | 'phone' | 'passport' | 'freeUsed')
+ */
+export async function liveRedeemPromo(code: string): Promise<{ priority: number; bonus: number } | { freeDays: number; freeUntil: number }> {
   const { data, error } = await db().rpc('redeem_promo', { p_code: code });
   if (error) {
     const c = (error as { code?: string }).code;
-    throw new Error(c === '23505' ? 'used' : c === '22023' ? 'expired' : 'invalid');
+    const m = (error as { message?: string }).message ?? '';
+    throw new Error(
+      m.includes('other_phone') ? 'phone'
+        : m.includes('passport_required') ? 'passport'
+          : m.includes('free_used') ? 'freeUsed'
+            : c === '23505' ? 'used' : c === '22023' ? 'expired' : 'invalid',
+    );
   }
   void syncMaster();
-  const r = data as { priority: number; bonus: number };
+  const r = data as { priority?: number; bonus?: number; free_days?: number; free_until?: string };
+  if (r.free_days) return { freeDays: r.free_days, freeUntil: Date.parse(r.free_until ?? '') };
   return { priority: r.priority ?? 0, bonus: r.bonus ?? 0 };
 }
 
@@ -678,7 +691,7 @@ export async function liveRespondOffer(accept: boolean): Promise<boolean> {
     ? { entrance: extra.entrance ?? '', floor: extra.floor ?? '', apartment: extra.apartment ?? '', intercom: extra.intercom ?? '', landmark: extra.landmark ?? '' }
     : undefined;
   useMasterWork.getState().setOffer({ ...offer, address: o?.address ?? offer.address, location: o ? { latitude: o.lat, longitude: o.lng } : offer.location, details, clientName: client?.name ?? '', clientPhone: client?.phone ?? '' });
-  const pct = o?.fee_percent ?? feePercent(useUser.getState().billingPlan ?? 'commission', useMaster.getState().verified);
+  const pct = o?.fee_percent ?? feePercent(useUser.getState().billingPlan ?? 'commission', useMaster.getState().verified, isFreeNow());
   useMasterWork.getState().acceptOffer(pct);
   return true;
 }

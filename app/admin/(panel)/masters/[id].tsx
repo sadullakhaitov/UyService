@@ -1,7 +1,7 @@
 // Usta kartochkasi: hujjatlar (tasdiqlash / rad etish), tarif va balans, obuna, prioritet, bloklash;
 // buyurtmalari, sharhlari, balans tarixi va shu usta bo'yicha admin amallari jurnali.
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { Ban, BadgeCheck, CalendarPlus, Gauge, RotateCcw, ShieldX, Trash2, Unlock, Wallet } from 'lucide-react-native';
+import { Ban, BadgeCheck, CalendarPlus, Gauge, Gift, RotateCcw, ShieldX, Trash2, Unlock, Wallet } from 'lucide-react-native';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { CategoryIcon } from '@/components/admin/CategoryIcon';
@@ -9,7 +9,7 @@ import { ConfirmDialog, ReasonDialog } from '@/components/admin/Dialog';
 import { dec, fmtAgo, fmtDateOnly, fmtDateTime, fmtNum, fmtSum, initials } from '@/components/admin/format';
 import { AButton, Badge, Empty, ErrorBox, KV, Panel, Skeleton } from '@/components/admin/kit';
 import { LogList } from '@/components/admin/LogList';
-import { BalanceDialog, PriorityDialog, SubscriptionDialog } from '@/components/admin/masterDialogs';
+import { BalanceDialog, FreeDialog, PriorityDialog, SubscriptionDialog } from '@/components/admin/masterDialogs';
 import { PhoneActions, PresenceBadge } from '@/components/admin/people';
 import { PhotoThumb } from '@/components/admin/Photos';
 import { ReviewItem } from '@/components/admin/ReviewItem';
@@ -24,7 +24,7 @@ import { adminApi } from '@/lib/admin';
 import { useAdminAction, useAdminQuery } from '@/lib/admin/hooks';
 import { t } from '@/lib/i18n';
 
-type DialogKey = null | 'approve' | 'reject' | 'recheck' | 'balance' | 'sub' | 'priority' | 'block' | 'unblock' | 'delete';
+type DialogKey = null | 'approve' | 'reject' | 'recheck' | 'balance' | 'sub' | 'priority' | 'free' | 'block' | 'unblock' | 'delete';
 
 export default function MasterDetail() {
   useScheme();
@@ -106,6 +106,7 @@ export default function MasterDetail() {
               <AButton title={t('admin.balance.button')} icon={Wallet} onPress={() => setDialog('balance')} />
               {m.plan === 'subscription' ? <AButton title={t('admin.sub.button')} icon={CalendarPlus} onPress={() => setDialog('sub')} /> : null}
               <AButton title={t('admin.priority.button')} icon={Gauge} onPress={() => setDialog('priority')} />
+              <AButton title={t('admin.free.button')} icon={Gift} onPress={() => setDialog('free')} />
               {m.blockedAt ? (
                 <AButton title={t('admin.block.unblock')} icon={Unlock} onPress={() => setDialog('unblock')} />
               ) : (
@@ -194,7 +195,7 @@ export default function MasterDetail() {
               </Panel>
               <Panel title={t('admin.masters.money')}>
                 <KV label={t('admin.col.plan')} value={m.plan ? t(`admin.plan.${m.plan}`) : t('admin.masters.noPlan')} />
-                <KV label={t('admin.col.fee')} value={`${m.feePercent}%${m.verifyStatus !== 'approved' ? ` · ${t('admin.masters.unverifiedFee')}` : ''}`} />
+                <KV label={t('admin.col.fee')} value={`${m.feePercent}%${m.freeUntil && m.freeUntil > Date.now() && m.feePercent === 0 ? ` · ${t('admin.free.period')}` : m.verifyStatus !== 'approved' ? ` · ${t('admin.masters.unverifiedFee')}` : ''}`} />
                 <KV label={t('admin.col.balance')}>
                   <Text style={[styles.kvBig, m.balance < BALANCE_LIMIT && m.feePercent > 0 && { color: colors.danger }]}>{fmtSum(m.balance)}</Text>
                   {m.feePercent > 0 ? <Text variant="caption">{t('admin.masters.limit', { sum: fmtSum(BALANCE_LIMIT) })}</Text> : null}
@@ -205,6 +206,16 @@ export default function MasterDetail() {
                     {!subActive ? <Text variant="caption">{t('admin.sub.expired')}</Text> : null}
                   </KV>
                 ) : null}
+                <KV label={t('admin.free.period')}>
+                  {m.freeUntil && m.freeUntil > Date.now() ? (
+                    <>
+                      <Badge label={t('admin.free.untilShort', { date: fmtDateOnly(m.freeUntil) })} tone="success" />
+                      {m.verifyStatus !== 'pending' && m.verifyStatus !== 'approved' ? <Text variant="caption">{t('admin.free.pausedNoDocs')}</Text> : null}
+                    </>
+                  ) : (
+                    <Text>{m.freeUntil ? t('admin.free.endedOn', { date: fmtDateOnly(m.freeUntil) }) : '—'}</Text>
+                  )}
+                </KV>
                 <KV label={t('admin.masters.canTake')}>
                   {m.canTake ? <Badge label={t('admin.common.yes')} tone="success" /> : <Badge label={m.plan === 'subscription' && !subActive ? t('admin.masters.reasonSub') : t('admin.masters.reasonBalance')} tone="danger" />}
                 </KV>
@@ -318,6 +329,7 @@ export default function MasterDetail() {
           <BalanceDialog master={m} visible={dialog === 'balance'} onClose={close} />
           <SubscriptionDialog master={m} visible={dialog === 'sub'} onClose={close} />
           <PriorityDialog master={m} visible={dialog === 'priority'} onClose={close} />
+          <FreeDialog master={m} visible={dialog === 'free'} onClose={close} />
         </>
       )}
     </AdminPage>

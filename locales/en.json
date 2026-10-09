@@ -328,7 +328,13 @@
     "unverified": "No documents: fee {{pct}}% · With passport — {{base}}%",
     "activeJob": "Active job",
     "open": "Open",
-    "view": "View"
+    "view": "View",
+    "free": {
+      "one": "Free period: {{count}} day left — no commission",
+      "other": "Free period: {{count}} days left — no commission"
+    },
+    "freeTitle": "Free period",
+    "freeSub": "No commission, no subscription — all income is yours"
   },
   "money": {
     "title": "Money",
@@ -352,7 +358,9 @@
     "plan": "Plan",
     "commissionNote": "{{percent}}% of each job is deducted from the balance",
     "topUpDemo": "Test: +{{sum}}",
-    "renewDemo": "Test: renew for 30 days"
+    "renewDemo": "Test: renew for 30 days",
+    "free": "Free period",
+    "freeSub": "Until {{date}} the platform takes no share and no balance is required. We'll remind you before it ends"
   },
   "chats": {
     "title": "Chats",
@@ -553,7 +561,15 @@
     "gotPriority": "+{{n}} priority points",
     "gotBonus": "+{{sum}} to balance",
     "history": "Used",
-    "expired": "This promo code has expired or reached its limit"
+    "expired": "This promo code has expired or reached its limit",
+    "gotFree": "Free period activated: {{days}} days — until {{date}}. The platform takes no share during this time",
+    "otherPhone": "This code was issued for a different phone number",
+    "needPassport": "Upload your passport first (Profile → Documents) — the free period requires a passport",
+    "freeUsed": "You have already used a free period",
+    "freeActive": {
+      "one": "Free period: until {{date}} ({{count}} day left). The platform takes no share",
+      "other": "Free period: until {{date}} ({{count}} days left). The platform takes no share"
+    }
   },
   "invite": {
     "title": "{{sum}} per friend",
@@ -721,7 +737,8 @@
       "log": "Audit log",
       "settings": "Settings",
       "reports": "Reports",
-      "stats": "Analytics"
+      "stats": "Analytics",
+      "free": "Free period"
     },
     "navGroup": {
       "main": "Main",
@@ -883,7 +900,9 @@
       "reportClosed": "The report is already closed",
       "activeOrders": "Has an active order. Finish or cancel it first",
       "deleteAdmin": "An admin can't be deleted. Remove admin rights in Settings first",
-      "deleteLocal": "In test mode the master on this device can't be deleted"
+      "deleteLocal": "In test mode the master on this device can't be deleted",
+      "freeUsed": "This master has already used a free period — extend it on their page",
+      "passportRequired": "The master has no passport uploaded (or it was rejected) — the free period requires a passport"
     },
     "login": {
       "title": "Admin sign-in",
@@ -1294,7 +1313,10 @@
         "revoke_admin": "Admin removed",
         "promo": "Promo code saved",
         "report_resolve": "Closed a report",
-        "delete_account": "Account deleted"
+        "delete_account": "Account deleted",
+        "free_pass": "Free period code",
+        "free_pass_revoke": "Free period code revoked",
+        "free_period": "Free period changed"
       },
       "t": {
         "master": "master",
@@ -1431,6 +1453,81 @@
       "p1": "User asked",
       "p2": "Fake account",
       "p3": "Rule violation"
+    },
+    "free": {
+      "subtitle": "Launch promotion: a personal 30 / 60 / 90-day code for a master — no share is taken during that time",
+      "statActive": "Working for free",
+      "statActiveSub": "masters right now",
+      "statPending": "Pending",
+      "statPendingSub": "sent, not entered yet",
+      "statRedeemed": "Redeemed",
+      "statRedeemedSub": "codes in total",
+      "statWaived": "Share waived",
+      "statWaivedSub": "",
+      "createTitle": "New code",
+      "createSub": "Enter the number and period — the code is created and sent right away via Telegram or SMS. It must be entered within {{redeem}} days",
+      "phone": "Master's phone number",
+      "days": "Period",
+      "daysN": "{{n}} days",
+      "create": "Create and send",
+      "createdFor": "{{days}}-day code for {{phone}}",
+      "sending": "Sending…",
+      "sent": {
+        "telegram": "Sent via Telegram (@uyservice_bot)",
+        "sms": "Sent via SMS",
+        "no_channel": "No Telegram or SMS found — the message was copied, send it yourself",
+        "demo": "Test mode: not sent — the message was copied"
+      },
+      "copy": "Copy",
+      "rules": "Rules: the code is only for the owner of this number and works once; the master must have a passport uploaded (if rejected, the period pauses); each master uses one code, then extend it on their page. A new code for the same number revokes the old one.",
+      "listTitle": "Codes",
+      "listSub": "For whom, when sent, who redeemed",
+      "status": {
+        "pending": "Pending",
+        "redeemed": "Redeemed",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "empty": "No codes yet",
+      "created": "created {{date}}",
+      "via": {
+        "telegram": "via Telegram",
+        "sms": "via SMS"
+      },
+      "notSent": "not sent",
+      "redeemedBy": "{{name}} · entered on {{date}} · free until {{until}}",
+      "redeemBy": "enter before {{date}}",
+      "revokedReason": "Reason: {{reason}}",
+      "replaced": "a new code was issued for this number",
+      "openMaster": "Master",
+      "resend": "Send",
+      "revoke": "Revoke",
+      "revokeTitle": "Revoke code {{code}}",
+      "revokeText": "The code will stop working.",
+      "revokeRedeemedText": "The code was redeemed — the master's free period ends immediately too; the usual share applies to new orders.",
+      "revoked": "Code revoked",
+      "preset": {
+        "mistake": "Wrong number",
+        "abuse": "Rule violation",
+        "left": "Master no longer works"
+      },
+      "message": "UyService: your code for {{days}} days of free work: {{code}}\nDuring this period the platform takes no share from you.\nSign in as a master, upload your passport and enter the code in Profile → Promo code. The code is for your number only; enter it within {{redeem}} days.\nhttps://uyservice.uz/usta",
+      "button": "Free period",
+      "period": "Free period",
+      "untilShort": "until {{date}}",
+      "endedOn": "ended {{date}}",
+      "pausedNoDocs": "document not approved — paused",
+      "dialogTitle": "Free period",
+      "activeUntil": "Now: free until {{date}}",
+      "inactive": "No free period right now",
+      "extend": "Extend",
+      "stop": "Stop",
+      "newUntil": "New end date",
+      "extendedDone": "Free period until {{date}}",
+      "stoppedDone": "Free period stopped",
+      "stopped": "stopped",
+      "notPending": "The code is redeemed, revoked or expired",
+      "sendFailed": "Could not send — try again later"
     }
   },
   "home": {

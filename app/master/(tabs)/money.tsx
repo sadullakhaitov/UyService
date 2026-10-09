@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
-import { ChevronRight, Headset, Lock, LockOpen, CalendarDays } from 'lucide-react-native';
+import { ChevronRight, Gift, Headset, Lock, LockOpen, CalendarDays } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Squish, Text } from '@/components/ui';
 import { BALANCE_LIMIT, BILLING, feePercent, planLabel } from '@/constants/billing';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
+import { freeDaysLeft, useFreeUntil } from '@/lib/freePass';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { DEMO } from '@/lib/demo';
 import { notice } from '@/lib/dialog';
@@ -19,7 +20,8 @@ export default function Money() {
   useScheme();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const { balance, subscriptionUntil, verified, earnings, topUp, paySubscription } = useMaster();
-  const fee = feePercent(plan, verified);
+  const freeUntil = useFreeUntil();
+  const fee = feePercent(plan, verified, !!freeUntil);
   const [sel, setSel] = useState(6);
   // So'nggi 7 kun — haqiqiy yakunlangan ishlardan (yangi ustada hammasi 0)
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -75,6 +77,23 @@ export default function Money() {
         </View>
 
         <View style={styles.section}>
+          {freeUntil ? (
+            // Bepul davr: komissiya ham, obuna ham olinmaydi; tugashidan 7 va 1 kun oldin xabar keladi
+            <View style={[styles.limit, { backgroundColor: colors.primarySoft }]}>
+              <View style={[styles.lockIcon, { backgroundColor: colors.surface }]}>
+                <Gift size={20} color={colors.primary} strokeWidth={2.4} />
+              </View>
+              <View style={styles.flex}>
+                <View style={styles.rowBetween}>
+                  <Text variant="bodyBold">{t('money.free')}</Text>
+                  <Text variant="bodyBold" style={{ color: colors.primary }}>
+                    {t('mOrders.days', { days: freeDaysLeft(freeUntil) })}
+                  </Text>
+                </View>
+                <Text variant="small">{t('money.freeSub', { date: formatDate(new Date(freeUntil)) })}</Text>
+              </View>
+            </View>
+          ) : null}
           {fee > 0 ? (
             <>
               <View style={[styles.limit, { backgroundColor: ok ? colors.successSoft : colors.dangerSoft }]}>
@@ -102,7 +121,7 @@ export default function Money() {
               </View>
             </>
           ) : null}
-          {plan === 'subscription' ? (
+          {plan === 'subscription' && !freeUntil ? (
             <View style={styles.balance}>
               <View style={styles.rowBetween}>
                 <Text variant="h3">{t('money.subscription')}</Text>
@@ -119,7 +138,7 @@ export default function Money() {
             <View style={styles.flex}>
               <Text variant="caption">{t('money.plan')}</Text>
               <Text variant="bodyBold">
-                {planLabel(plan, verified)}
+                {freeUntil ? `${t('money.free')} · 0%` : planLabel(plan, verified)}
               </Text>
             </View>
             <Text style={styles.change}>{t('earnings.changePlan')}</Text>

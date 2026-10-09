@@ -18,7 +18,7 @@ fresh() {
 
 echo "== SQL sinovlar"
 "${P[@]}" -d postgres -c "drop database if exists $DB" -c "create database $DB" >/dev/null
-for f in tests/supabase_stub.sql migrations/*.sql seed.sql tests/rls_test.sql tests/admin_test.sql tests/price_test.sql tests/push_test.sql tests/telegram_test.sql tests/master_cancel_test.sql tests/promo_test.sql tests/client_care_test.sql tests/admin_delete_test.sql tests/security_test.sql; do
+for f in tests/supabase_stub.sql migrations/*.sql seed.sql tests/rls_test.sql tests/admin_test.sql tests/price_test.sql tests/push_test.sql tests/telegram_test.sql tests/master_cancel_test.sql tests/promo_test.sql tests/client_care_test.sql tests/admin_delete_test.sql tests/security_test.sql tests/free_pass_test.sql; do
   "${P[@]}" -d "$DB" -f "$f" 2>&1 | sed -n 's/.*NOTICE:  \(PASS.*\)/  \1/p; /ERROR\|FAIL/p'
   test "${PIPESTATUS[0]}" -eq 0 || { echo "XATO: $f"; exit 1; }
 done
@@ -36,7 +36,7 @@ export PGRST_DB_SCHEMAS=public PGRST_DB_ANON_ROLE=anon PGRST_SERVER_PORT=54330
 # Usta qidirish sinovlari taxminiy vaqt bilan (tashqi yo'l xizmatisiz — natija har safar bir xil)
 export DISPATCH_ROUTING=off
 export PGRST_JWT_SECRET=${PGRST_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
-for t in engine push otp; do
+for t in engine push otp freepass; do
   echo "== E2E: $t"
   fresh tests/e2e/fixture.sql
   "$PGRST_BIN" > /tmp/uyservice-postgrest.log 2>&1 &

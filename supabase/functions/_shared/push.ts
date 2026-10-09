@@ -37,6 +37,8 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     cancelled: () => ({ title: 'Buyurtma bekor qilindi', body: "Mijoz buyurtmani bekor qildi. Yangi buyurtmalarni kutishingiz mumkin" }),
     priceApproved: () => ({ title: 'Mijoz narxga rozi', body: 'Ishni boshlashingiz mumkin' }),
     inviteBonus: (p, l) => ({ title: "Do'stingiz uchun bonus", body: `${p.name || "Do'stingiz"} 5 ta ishni bajardi — balansingizga ${sum(p.sum, l)}` }),
+    freeEnding: (p) => ({ title: 'Bepul davr tugayapti', body: `${p.days} kun qoldi. Keyin tanlagan tarifingiz bo'yicha ishlaysiz — "Pul" bo'limida tekshiring` }),
+    freeEnded: () => ({ title: 'Bepul davr tugadi', body: 'Endi tanlagan tarifingiz amal qiladi. "Pul" bo\'limida balans va tarifni tekshiring' }),
     priceDeclined: (p, l) => ({ title: "Mijoz narxga rozi bo'lmadi", body: `Faqat chaqiruv to'lanadi: ${sum(p.fee, l)}` }),
   },
   ru: {
@@ -56,6 +58,8 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     cancelled: () => ({ title: 'Заказ отменён', body: 'Клиент отменил заказ. Можно ждать новые заказы' }),
     priceApproved: () => ({ title: 'Клиент согласен с ценой', body: 'Можно начинать работу' }),
     inviteBonus: (p, l) => ({ title: 'Бонус за друга', body: `${p.name || 'Ваш друг'} выполнил 5 заказов — на баланс ${sum(p.sum, l)}` }),
+    freeEnding: (p) => ({ title: 'Бесплатный период заканчивается', body: `Осталось дней: ${p.days}. Затем действует выбранный тариф — проверьте раздел «Деньги»` }),
+    freeEnded: () => ({ title: 'Бесплатный период закончился', body: 'Теперь действует выбранный тариф. Проверьте баланс и тариф в разделе «Деньги»' }),
     priceDeclined: (p, l) => ({ title: 'Клиент не согласился с ценой', body: `Оплачивается только вызов: ${sum(p.fee, l)}` }),
   },
   en: {
@@ -75,6 +79,8 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     cancelled: () => ({ title: 'Order cancelled', body: 'The client cancelled the order. New orders will keep coming' }),
     priceApproved: () => ({ title: 'The client agreed to the price', body: 'You can start the job' }),
     inviteBonus: (p, l) => ({ title: 'Bonus for your friend', body: `${p.name || 'Your friend'} completed 5 jobs — ${sum(p.sum, l)} added to your balance` }),
+    freeEnding: (p) => ({ title: 'Your free period is ending', body: `${p.days} day(s) left. Then your chosen plan applies — check the Money tab` }),
+    freeEnded: () => ({ title: 'Your free period has ended', body: 'Your chosen plan now applies. Check your balance and plan in the Money tab' }),
     priceDeclined: (p, l) => ({ title: 'The client declined the price', body: `Only the call-out fee is paid: ${sum(p.fee, l)}` }),
   },
 };

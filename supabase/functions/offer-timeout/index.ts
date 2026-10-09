@@ -3,7 +3,8 @@
 // 2) qidiruvdagi har bir buyurtma uchun bitta qadam: 60 s javobsiz taklif yopiladi (aktivlik −5),
 //    keyingi usta / radius kengaytirish / 3 daqiqadan keyin "bo'sh usta yo'q"
 // 3) yetim qolgan eski takliflar yopiladi
-// 4) push-bildirishnomalar navbati (zaxira yo'l — odatda push-send darhol yuboradi)
+// 4) bepul davr eslatmalari (7 kun, 1 kun qoldi, tugadi)
+// 5) push-bildirishnomalar navbati (zaxira yo'l — odatda push-send darhol yuboradi)
 // Ruxsat: `x-cron-secret: <CRON_SECRET>` yoki `Authorization: Bearer <service_role key>`.
 import { activeSearches, dispatchStep, startDueScheduled } from '../_shared/engine.ts';
 import { adminClient, corsHeaders, isCronRequest, json } from '../_shared/http.ts';
@@ -35,6 +36,9 @@ Deno.serve(async (req) => {
       .update({ status: 'expired', responded_at: new Date().toISOString() })
       .eq('status', 'sent')
       .lt('expires_at', new Date(Date.now() - 30_000).toISOString());
+    // Bepul davr tugashi haqida eslatmalar (har bosqich bir marta; xabar navbatga yoziladi va shu yerning o'zida ketadi)
+    const { error: remindErr } = await db.rpc('free_pass_reminders');
+    if (remindErr) console.error('free_pass_reminders', remindErr.message);
     try {
       result.pushed = (await flushPush(db)).sent;
     } catch (e) {

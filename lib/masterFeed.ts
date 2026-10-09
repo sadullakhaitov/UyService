@@ -15,6 +15,7 @@ import { useWatchLocation } from '@/lib/useWatchLocation';
 import { DISPATCH } from '@/constants/dispatch';
 import { mockMasterSelf } from '@/mocks';
 import { makeDoorCode, useMaster, useMasterWork, useUser, type MasterOrder } from '@/store';
+import { useFreeUntil } from './freePass';
 import { LIVE } from './live';
 
 export type Blocked = null | 'balance' | 'subscription';
@@ -23,6 +24,8 @@ export type Blocked = null | 'balance' | 'subscription';
 export function useBlocked(): Blocked {
   const { verified, balance, subscriptionUntil } = useMaster();
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
+  // Bepul davrda — hech narsa talab qilinmaydi (ulush yo'q, obuna shart emas)
+  if (useFreeUntil()) return null;
   // Pasportsiz ham ishlaydi (ulushi +5%). Ulush bo'lsa — balans limitdan past bo'lmasin
   if (feePercent(plan, verified) > 0 && balance < BALANCE_LIMIT) return 'balance';
   if (plan === 'subscription' && subscriptionUntil < Date.now()) return 'subscription';

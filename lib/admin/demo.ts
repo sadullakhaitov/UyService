@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { feePercent, BALANCE_LIMIT, BILLING } from '@/constants/billing';
 import { CALL_FEE, categories as CATEGORIES, problems as PROBLEMS, type CategoryId } from '@/constants/categories';
 import { COMPANY } from '@/constants/company';
+import { freeActive, loadDemoPasses, newFreeCode, passStatus, saveDemoPasses, FREE_REDEEM_DAYS } from '@/lib/freePass';
 import type { LatLng } from '@/lib/geo';
 import { useMaster, useUser } from '@/store';
 import {
@@ -73,6 +74,7 @@ type DMaster = {
   hasDocs: boolean;
   hasSelfie: boolean;
   works: number;
+  freeUntil?: number | null;
 };
 type DReport = { id: string; orderId: string; kind: ReportKind; text: string | null; status: 'open' | 'resolved'; resolution: string | null; resolvedAt: number | null; createdAt: number; byMaster: boolean };
 type DOrder = {
@@ -604,9 +606,10 @@ function localMaster(db: DB): { m: AdminMaster; u: AdminUser } | null {
   if (!p.firstName && !p.submittedAt) return null;
   const plan = user.billingPlan ?? 'commission';
   const verified = p.status === 'approved';
-  const pct = feePercent(plan, verified);
+  const free = freeActive(mp.freeUntil, p.status);
+  const pct = feePercent(plan, verified, free);
   const phone = normalizePhone(user.phone ?? '') ?? '';
-  const canTake = !(pct > 0 && mp.balance < BALANCE_LIMIT) && !(plan === 'subscription' && mp.subscriptionUntil < Date.now());
+  const canTake = free || (!(pct > 0 && mp.balance < BALANCE_LIMIT) && !(plan === 'subscription' && mp.subscriptionUntil < Date.now()));
   const loc = user.lastLocation ?? null;
   const m: AdminMaster = {
     id: LOCAL_MASTER_ID,
@@ -640,6 +643,7 @@ function localMaster(db: DB): { m: AdminMaster; u: AdminUser } | null {
     passport: p.passportPhoto,
     selfie: p.selfie,
     works: p.works,
+    freeUntil: mp.freeUntil,
   };
   const u: AdminUser = {
     id: LOCAL_MASTER_ID,
@@ -667,7 +671,8 @@ function masterView(db: DB, m: DMaster): AdminMaster {
   const rs = db.reviews.filter((r) => r.masterId === m.id);
   const verified = m.verifyStatus === 'approved';
   const plan = m.plan ?? 'commission';
-  const pct = feePercent(plan, verified);
+  const free = freeActive(m.freeUntil, m.verifyStatus);
+  const pct = feePercent(plan, verified, free);
   return {
     id: m.id,
     firstName: m.firstName,
@@ -688,7 +693,7 @@ function masterView(db: DB, m: DMaster): AdminMaster {
     subscriptionUntil: m.subscriptionUntil,
     plan: m.plan,
     feePercent: pct,
-    canTake: !(pct > 0 && m.balance < BALANCE_LIMIT) && !(plan === 'subscription' && (m.subscriptionUntil ?? 0) < Date.now()),
+    canTake: free || (!(pct > 0 && m.balance < BALANCE_LIMIT) && !(plan === 'subscription' && (m.subscriptionUntil ?? 0) < Date.now())),
     online: m.online,
     busy: m.busy,
     blockedAt: u.blockedAt,
@@ -700,6 +705,7 @@ function masterView(db: DB, m: DMaster): AdminMaster {
     passport: m.hasDocs ? docSvg('passport', `${m.firstName} ${m.lastName}`) : null,
     selfie: m.hasSelfie ? docSvg('selfie', `${m.firstName} ${m.lastName}`) : null,
     works: Array.from({ length: m.works }, (_, i) => docSvg('work', String(i + 1), m.categories[0])),
+    freeUntil: m.freeUntil ?? null,
   };
 }
 
@@ -1256,6 +1262,110 @@ export const demoAdmin: AdminApi = {
     log(db, 'promo', 'promo', p.code, { new: !old, priority: p.priority, bonus: p.bonus, max_uses: p.maxUses, active: p.active });
     save();
     await wait();
+  },
+
+  async freePasses() {
+    const db = await load();
+    const list = await loadDemoPasses();
+    const all = allMasters(db);
+    await wait();
+    return list
+      .map((p) => {
+        const m = p.redeemedAt ? all.find((x) => x.phone === p.phone) : undefined;
+        return {
+          ...p,
+          sentAt: p.sentVia ? p.createdAt : null,
+          masterId: m?.id ?? null,
+          masterName: m ? `${m.firstName} ${m.lastName}`.trim() : null,
+          freeUntil: m?.freeUntil ?? null,
+          status: passStatus(p),
+        };
+      })
+      .sort((a, b) => b.createdAt - a.createdAt);
+  },
+
+  async createFreePass(phone, days) {
+    const db = await load();
+    const ph = normalizePhone(phone);
+    if (!ph) throw new AdminError('errors.phone');
+    if (![30, 60, 90].includes(days)) throw new AdminError('errors.invalid');
+    const list = await loadDemoPasses();
+    if (list.some((p) => p.phone === ph && p.redeemedAt)) throw new AdminError('errors.freeUsed');
+    const now = Date.now();
+    for (const p of list) if (p.phone === ph && !p.redeemedAt && !p.revokedAt) Object.assign(p, { revokedAt: now, revokeReason: 'replaced' });
+    let code = newFreeCode();
+    while (list.some((p) => p.code === code)) code = newFreeCode();
+    list.push({ code, phone: ph, days, createdAt: now, redeemBy: now + FREE_REDEEM_DAYS * DAY, sentVia: null, redeemedAt: null, revokedAt: null, revokeReason: null });
+    await saveDemoPasses(list);
+    log(db, 'free_pass', 'promo', code, { phone: ph.slice(-4), days });
+    save();
+    await wait();
+    return code;
+  },
+
+  async sendFreePass() {
+    // Sinov rejimida bot ham, SMS ham yo'q — kodni nusxalab o'zingiz yuborasiz
+    await wait();
+    return 'demo';
+  },
+
+  async revokeFreePass(code, reason) {
+    const db = await load();
+    checkReason(reason);
+    const list = await loadDemoPasses();
+    const p = list.find((x) => x.code === code);
+    if (!p) throw new AdminError('errors.notFound');
+    if (p.revokedAt) throw new AdminError('errors.invalid');
+    Object.assign(p, { revokedAt: Date.now(), revokeReason: clean(reason) });
+    await saveDemoPasses(list);
+    if (p.redeemedAt) {
+      const local = localMaster(db);
+      if (local && local.m.phone === p.phone) useMaster.setState({ freeUntil: null });
+      const dm = db.masters.find((m) => db.users.find((u) => u.id === m.id)?.phone === p.phone);
+      if (dm) dm.freeUntil = null;
+    }
+    log(db, 'free_pass_revoke', 'promo', code, { reason: clean(reason), redeemed: !!p.redeemedAt });
+    save();
+    await wait();
+  },
+
+  async setFree(id, days, reason) {
+    const db = await load();
+    checkReason(reason);
+    const now = Date.now();
+    const next = (from: number | null | undefined) => (days === 0 ? null : Math.max(now, from ?? now) + days * DAY);
+    let until: number | null;
+    let from: number | null;
+    if (id === LOCAL_MASTER_ID) {
+      const mp = useMaster.getState();
+      if (days > 0 && (!mp.profile.passportPhoto || !['pending', 'approved'].includes(mp.profile.status))) throw new AdminError('errors.passportRequired');
+      from = mp.freeUntil;
+      until = next(from);
+      useMaster.setState({ freeUntil: until });
+    } else {
+      const m = findMaster(db, id);
+      if (days > 0 && (!m.hasDocs || !['pending', 'approved'].includes(m.verifyStatus))) throw new AdminError('errors.passportRequired');
+      from = m.freeUntil ?? null;
+      until = next(from);
+      m.freeUntil = until;
+    }
+    log(db, 'free_period', 'master', id, { days, from, to: until, reason: clean(reason) });
+    save();
+    await wait();
+    return until;
+  },
+
+  async freeStats() {
+    const db = await load();
+    const list = await loadDemoPasses();
+    const all = allMasters(db);
+    await wait();
+    return {
+      activeMasters: all.filter((m) => freeActive(m.freeUntil, m.verifyStatus)).length,
+      waived: 0,
+      pending: list.filter((p) => passStatus(p) === 'pending').length,
+      redeemed: list.filter((p) => p.redeemedAt).length,
+    };
   },
 
   async log(q) {

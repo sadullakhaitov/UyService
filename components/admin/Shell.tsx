@@ -2,31 +2,7 @@
 // telefonda — chapdan chiqadigan menyu), sahifa sarlavhasi, xabarlar (toast).
 import { router, usePathname, type Href } from 'expo-router';
 import type { LucideIcon } from 'lucide-react-native';
-import {
-  ArrowLeft,
-  ChartNoAxesColumn,
-  CheckCircle2,
-  ClipboardList,
-  Flag,
-  History,
-  Info,
-  LayoutDashboard,
-  LogOut,
-  Map as MapIcon,
-  Menu,
-  MessagesSquare,
-  Moon,
-  RefreshCw,
-  Settings,
-  ShieldCheck,
-  Star,
-  Sun,
-  Tags,
-  Users,
-  Wallet,
-  Wrench,
-  XCircle,
-} from 'lucide-react-native';
+import { ArrowLeft, ChartNoAxesColumn, CheckCircle2, ClipboardList, Flag, Gift, History, Info, LayoutDashboard, LogOut, Map as MapIcon, Menu, MessagesSquare, Moon, RefreshCw, Settings, ShieldCheck, Star, Sun, Tags, Users, Wallet, Wrench, XCircle } from 'lucide-react-native';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Modal, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -66,6 +42,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
     title: 'system',
     items: [
       { key: 'finance', href: '/admin/finance', icon: Wallet },
+      { key: 'free', href: '/admin/free', icon: Gift },
       { key: 'stats', href: '/admin/stats', icon: ChartNoAxesColumn },
       { key: 'catalog', href: '/admin/catalog', icon: Tags },
       { key: 'log', href: '/admin/log', icon: History },

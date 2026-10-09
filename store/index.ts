@@ -193,6 +193,10 @@ type MasterState = {
   balance: number;
   /** Obuna tarifida: obuna tugash sanasi (ms) */
   subscriptionUntil: number;
+  /** Bepul davr oxiri (ms) — admin bergan kod bilan (lib/freePass.ts); null — yo'q */
+  freeUntil: number | null;
+  /** Bepul davr kodi ishlatilganmi (har usta bir marta) */
+  usedFree: boolean;
   /** Buyurtma filtri: qaysi kategoriyalar va qancha uzoqlikdan */
   categories: CategoryId[];
   radiusKm: number;
@@ -238,6 +242,8 @@ const masterDefaults = () => ({
   usedPromos: [] as string[],
   balance: DEMO ? 50_000 : 0,
   subscriptionUntil: 0,
+  freeUntil: null as number | null,
+  usedFree: false,
   categories: [] as CategoryId[],
   radiusKm: 6,
   earnings: [] as DayEarning[],
