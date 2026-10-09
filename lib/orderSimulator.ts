@@ -12,7 +12,8 @@ import { notify } from '@/lib/notify';
 import { estimateEtaMin, fallbackRoute, fetchRoute, resample, ROUTE_WAIT_MS } from '@/lib/routes';
 import { mastersAround, mockMasters } from '@/mocks';
 import { useOrders, type ActiveOrder } from '@/store';
-import { LIVE, liveRespondPrice, liveRestartSearch } from './live';
+import { holdOrder, LIVE, liveRespondPrice, liveRestartSearch, refreshOrdersNow } from './live';
+import { notice } from './dialog';
 
 const TICK_MS = 500;
 /** Usta belgisi har qadamda shuncha vaqt silliq siljiydi (tracking ekrani ham shuni ishlatadi) */
@@ -83,17 +84,36 @@ function proposePrice(problemId: string) {
   return { work, parts };
 }
 
-/** Mijoz narxga rozi bo'ldi — ish boshlanadi */
-export function approvePrice(id: string) {
-  if (LIVE) return void liveRespondPrice(id, true).catch(() => {});
-  useOrders.getState().update(id, { priceStatus: 'approved', status: 'in_progress', phaseAt: Date.now() });
+/**
+ * Narxga javob: ekran darhol o'zgaradi (server javobini kutmasdan); server rejimida RPC xato bersa — eski holatga qaytadi.
+ */
+function respond(id: string, approve: boolean) {
+  const prev = useOrders.getState().orders.find((o) => o.id === id);
+  if (!prev) return;
+  useOrders.getState().update(
+    id,
+    approve
+      ? { priceStatus: 'approved', status: 'in_progress', phaseAt: Date.now() }
+      : { priceStatus: 'declined', status: 'completed', finalPrice: CALL_FEE, phaseAt: Date.now() },
+  );
+  if (!LIVE) return;
+  holdOrder(id, true);
+  liveRespondPrice(id, approve)
+    .catch(() => {
+      useOrders.getState().update(id, { priceStatus: prev.priceStatus, status: prev.status, finalPrice: prev.finalPrice, phaseAt: prev.phaseAt });
+      notice(t('job.serverErrorTitle'), t('job.serverErrorText'));
+    })
+    .finally(() => {
+      holdOrder(id, false);
+      refreshOrdersNow();
+    });
 }
 
+/** Mijoz narxga rozi bo'ldi — ish boshlanadi */
+export const approvePrice = (id: string) => respond(id, true);
+
 /** Mijoz narxni rad etdi — faqat chaqiruv (ko'rik) to'lanadi, buyurtma yakunlanadi */
-export function declinePrice(id: string) {
-  if (LIVE) return void liveRespondPrice(id, false).catch(() => {});
-  useOrders.getState().update(id, { priceStatus: 'declined', status: 'completed', finalPrice: CALL_FEE, phaseAt: Date.now() });
-}
+export const declinePrice = (id: string) => respond(id, false);
 
 /** Ish tugadi: yakuniy summa — kelishilgan ish narxi + ehtiyot qismlar */
 export function completeOrder(id: string) {

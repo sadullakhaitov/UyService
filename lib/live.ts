@@ -22,6 +22,7 @@ export const LIVE = isSupabaseConfigured;
 
 /** Mijoz ekranida yangilanish oralig'i (Realtime bo'lmasa ham) */
 const CLIENT_POLL_MS = 4000;
+const HOT_POLL_MS = 2000;
 const MASTER_POLL_MS = 3000;
 /** Usta yo'ldan shuncha uzoqlashsa — yo'l qayta hisoblanadi */
 const REROUTE_M = 150;
@@ -326,6 +327,18 @@ function nearestIndex(path: LatLng[], p: LatLng) {
   return { index, dist };
 }
 
+// Mijoz o'zi biror amal qilganda (narxga javob, bekor qilish) — keyingi so'rovni kutmasdan darhol yangilash
+const refreshers = new Set<() => void>();
+export function refreshOrdersNow() {
+  refreshers.forEach((f) => f());
+}
+// Mijoz amali serverga ketayotganda shu buyurtmaning eski server holati ekranga qaytib "sakramasin"
+const held = new Set<string>();
+export function holdOrder(id: string, on: boolean) {
+  if (on) held.add(id);
+  else held.delete(id);
+}
+
 /** Mijozning faol buyurtmalari serverdan (client/_layout'da bir marta) */
 export function useLiveOrders() {
   const ids = useOrders((s) => s.orders.map((o) => o.id).join(','));
@@ -340,7 +353,7 @@ export function useLiveOrders() {
         const { data } = await db().from('orders').select(ORDER_COLS).in('id', list);
         for (const row of (data ?? []) as OrderRow[]) {
           const cur = useOrders.getState().orders.find((o) => o.id === row.id);
-          if (!cur) continue;
+          if (!cur || held.has(row.id)) continue;
           // Serverda yopildi (admin bekor qildi yoki usta kelib eshik ochilmadi) — faol buyurtmalardan tarixga
           if (row.status === 'cancelled' && row.cancelled_by !== 'client') {
             const absent = row.cancel_reason === 'client_absent';
@@ -392,13 +405,24 @@ export function useLiveOrders() {
       }
     };
     void refresh();
-    const timer = setInterval(refresh, CLIENT_POLL_MS);
+    refreshers.add(refresh);
+    // Usta yetib kelgan / narx kutilayotgan paytda tezroq (Realtime ishlamasa ham kechikish sezilmasin)
+    let timer: ReturnType<typeof setTimeout>;
+    let stopped = false;
+    const loop = () => {
+      if (stopped) return;
+      const hot = useOrders.getState().orders.some((o) => o.status === 'arrived' || o.status === 'in_progress' || o.status === 'on_the_way');
+      timer = setTimeout(() => void refresh().finally(loop), hot ? HOT_POLL_MS : CLIENT_POLL_MS);
+    };
+    loop();
     const ch = db()
       .channel(`orders-${ids}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=in.(${list.join(',')})` }, () => void refresh())
       .subscribe();
     return () => {
-      clearInterval(timer);
+      stopped = true;
+      clearTimeout(timer);
+      refreshers.delete(refresh);
       void db().removeChannel(ch);
     };
   }, [ids]);
@@ -615,7 +639,7 @@ export function useLiveMasterFeed() {
       }
     };
     void check();
-    const t = setInterval(check, MASTER_POLL_MS);
+    const t = setInterval(check, HOT_POLL_MS); // faol ish — mijoz javobi tez ko'rinsin
     const ch = db()
       .channel(`job-${jobId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${jobId}` }, () => void check())
