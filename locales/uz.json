@@ -261,7 +261,9 @@
     "clientAbsent": "Mijoz eshikni ochmadi",
     "clientAbsentTitle": "Mijoz eshikni ochmadimi?",
     "clientAbsentText": "Kamida 10 daqiqa kutib, qo'ng'iroq qilib ko'rdingizmi? Buyurtma to'lovsiz yopiladi, aktivligingiz kamaymaydi. Admin tekshiradi.",
-    "clientAbsentConfirm": "Ha, buyurtmani yopish"
+    "clientAbsentConfirm": "Ha, buyurtmani yopish",
+    "absentEarlyTitle": "Biroz kuting",
+    "absentEarlyText": "Yetib kelganingizdan keyin kamida 10 daqiqa kuting va mijozga qo'ng'iroq qilib ko'ring — keyin buyurtmani yopish mumkin."
   },
   "earnings": {
     "changePlan": "Tarifni o'zgartirish"

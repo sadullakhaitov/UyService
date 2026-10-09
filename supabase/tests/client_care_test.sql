@@ -78,12 +78,24 @@ do $$ begin
   raise notice 'PASS: begona odam "eshikni ochmadi" deya olmaydi';
 end $$;
 set request.jwt.claim.sub = '00000000-0000-4000-ca00-000000000001';
+do $$ begin
+  begin
+    perform public.master_client_absent('00000000-0000-4000-cb00-000000000001');
+    raise exception 'FAIL: yetib kelishi bilan "eshikni ochmadi" bosildi';
+  exception when invalid_parameter_value then null;
+  end;
+  raise notice 'PASS: "eshikni ochmadi" — yetib kelgandan 10 daqiqa keyin';
+end $$;
+reset role;
+update public.orders set arrived_at = now() - interval '11 minutes' where id = '00000000-0000-4000-cb00-000000000001';
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-ca00-000000000001';
 select public.master_client_absent('00000000-0000-4000-cb00-000000000001', 'Qo''ng''iroqqa javob bermadi');
 reset role;
 
 do $$ declare o public.orders; begin
   select * into o from public.orders where id = '00000000-0000-4000-cb00-000000000001';
-  if o.status <> 'cancelled' or o.cancel_reason <> 'client_absent' or o.cancelled_by <> 'master' then
+  if o.status <> 'cancelled' or o.cancel_reason <> 'client_absent' or o.cancelled_by <> 'system' then
     raise exception 'FAIL: buyurtma yopilmadi: %', row_to_json(o);
   end if;
   if not exists (select 1 from public.order_reports where order_id = o.id and kind = 'client_absent') then

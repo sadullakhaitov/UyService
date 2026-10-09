@@ -13,7 +13,7 @@ import { distanceKm, type LatLng } from '@/lib/geo';
 import { t } from '@/lib/i18n';
 import { notify } from '@/lib/notify';
 import { notice } from '@/lib/dialog';
-import { fetchRoute, resample } from '@/lib/routes';
+import { fallbackRoute, fetchRoute, resample } from '@/lib/routes';
 import { useChats, useHistory, useMaster, useMasterWork, useOrders, useUser, type ActiveOrder, type AddressDetails, type ChatMessage, type MasterOrder, type OrderMaster } from '@/store';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import type { HistoryItem } from '@/mocks';
@@ -309,8 +309,8 @@ async function followMaster(o: ActiveOrder, here: LatLng) {
   }
   // Yo'l kelguncha usta belgisi joyida turadi
   if (!o.path.length || distanceKm(o.path[o.step] ?? here, here) * 1000 > 30) update(o.id, { path: [here], step: 0, routeReady: false });
-  const r = await fetchRoute(here, o.location);
-  if (!r) return;
+  // Yo'l xizmati javob bermasa — taxminiy yo'l (usta 150 m chetlashsa yana haqiqiysi so'raladi)
+  const r = (await fetchRoute(here, o.location)) ?? fallbackRoute(here, o.location);
   update(o.id, { path: resample(r.path, STEP_M), step: 0, routeReady: true, speed: r.distanceM / Math.max(60, r.durationS), phaseAt: Date.now() });
 }
 
@@ -534,7 +534,7 @@ async function liveSetOnline(online: boolean) {
 }
 
 type OfferRow = { order_id: string; sent_at: string; expires_at: string; eta_min: number | null; distance_km: number | null };
-type OfferOrderRow = { id: string; category_id: CategoryId; problem_id: string | null; description: string | null; address: string | null; lat: number; lng: number };
+type OfferOrderRow = { id: string; category_id: CategoryId; problem_id: string | null; description: string | null; lat: number; lng: number };
 
 /** Taklif (offers + orders) → useMasterWork.offer. Mijoz ismi va telefoni qabul qilgandan keyin ochiladi */
 function offerToMasterOrder(f: OfferRow, o: OfferOrderRow): MasterOrder {
@@ -547,7 +547,7 @@ function offerToMasterOrder(f: OfferRow, o: OfferOrderRow): MasterOrder {
     categoryId: o.category_id,
     problemId: o.problem_id ?? 'other',
     description: o.description ?? '',
-    address: o.address ?? '',
+    address: '',
     location: { latitude: o.lat, longitude: o.lng },
     clientName: '',
     clientPhone: '',
@@ -595,7 +595,8 @@ export function useLiveMasterFeed() {
         .limit(1);
       const f = (data as OfferRow[] | null)?.[0];
       if (!f || stop) return;
-      const o = (await db().from('orders').select('id, category_id, problem_id, description, address, lat, lng').eq('id', f.order_id).maybeSingle()).data as OfferOrderRow | null;
+      // Qabul qilguncha — faqat qisqa ma'lumot va taxminiy joy (aniq manzil server tomonda yopiq)
+      const o = ((await db().rpc('offer_preview', { p_order: f.order_id })).data as OfferOrderRow[] | null)?.[0] ?? null;
       if (!o || stop || useMasterWork.getState().offer || useMasterWork.getState().job) return;
       useMasterWork.getState().setOffer(offerToMasterOrder(f, o));
       router.push('/master/offer');
@@ -661,9 +662,11 @@ export async function liveRespondOffer(accept: boolean): Promise<boolean> {
     void syncMaster();
     return false;
   }
-  const o = (await db().from('orders').select('client_id, address, fee_percent').eq('id', offer.id).maybeSingle()).data as {
+  const o = (await db().from('orders').select('client_id, address, lat, lng, fee_percent').eq('id', offer.id).maybeSingle()).data as {
     client_id: string;
     address: string | null;
+    lat: number;
+    lng: number;
     fee_percent: number | null;
   } | null;
   const client = o ? ((await db().from('profiles').select('name, phone').eq('id', o.client_id).maybeSingle()).data as { name: string | null; phone: string | null } | null) : null;
@@ -674,7 +677,7 @@ export async function liveRespondOffer(accept: boolean): Promise<boolean> {
   const details = extra
     ? { entrance: extra.entrance ?? '', floor: extra.floor ?? '', apartment: extra.apartment ?? '', intercom: extra.intercom ?? '', landmark: extra.landmark ?? '' }
     : undefined;
-  useMasterWork.getState().setOffer({ ...offer, address: o?.address ?? offer.address, details, clientName: client?.name ?? '', clientPhone: client?.phone ?? '' });
+  useMasterWork.getState().setOffer({ ...offer, address: o?.address ?? offer.address, location: o ? { latitude: o.lat, longitude: o.lng } : offer.location, details, clientName: client?.name ?? '', clientPhone: client?.phone ?? '' });
   const pct = o?.fee_percent ?? feePercent(useUser.getState().billingPlan ?? 'commission', useMaster.getState().verified);
   useMasterWork.getState().acceptOffer(pct);
   return true;

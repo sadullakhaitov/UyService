@@ -141,7 +141,16 @@ function JobView({ job }: { job: MasterJob }) {
   // Yetib keldi, mijoz eshikni ochmadi / javob bermadi: buyurtma to'lovsiz yopiladi, aktivlik kamaymaydi (adminga murojaat)
   const clientAbsent = async () => {
     if (!(await confirm(t('job.clientAbsentTitle'), t('job.clientAbsentText'), t('job.clientAbsentConfirm'), true))) return;
-    if (LIVE && !(await serverStep(() => liveJob.clientAbsent(job.id)))) return;
+    if (LIVE) {
+      try {
+        await liveJob.clientAbsent(job.id);
+      } catch (e) {
+        // Server: yetib kelgandan 10 daqiqa o'tmagan bo'lsa yopib bo'lmaydi (mijozni himoya qilish)
+        const early = /too_early/.test(String((e as { message?: string })?.message ?? e));
+        notice(t(early ? 'job.absentEarlyTitle' : 'job.serverErrorTitle'), t(early ? 'job.absentEarlyText' : 'job.serverErrorText'));
+        return;
+      }
+    }
     finishJob();
   };
 

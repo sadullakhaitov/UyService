@@ -1,6 +1,6 @@
 // Zaxira soxta xarita: xarita kutubxonasi yuklanmasa (masalan, demo sahifa ichida) brauzerda shu ko'rinadi.
 // Faqat dizaynni ko'rish uchun — haqiqiy xarita MapBase.tsx / MapBase.web.tsx (OpenStreetMap).
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, memo, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { colors, themed, useScheme } from '@/constants/theme';
@@ -99,8 +99,9 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
     const lats = fitTo.map((p) => p.latitude);
     const lngs = fitTo.map((p) => p.longitude);
     const [minLat, maxLat, minLng, maxLng] = [Math.min(...lats), Math.max(...lats), Math.min(...lngs), Math.max(...lngs)];
-    const availW = size.w - (insets.left ?? 0) - 120;
-    const availH = size.h - insets.top - insets.bottom - 140;
+    // Panel ekranning ko'p qismini egallasa ham bo'sh joy musbat qoladi (aks holda zoom NaN — xarita yo'qoladi)
+    const availW = Math.max(80, size.w - (insets.left ?? 0) - 120);
+    const availH = Math.max(80, size.h - insets.top - insets.bottom - 140);
     const zx = Math.log2((availW / Math.max(maxLng - minLng, 1e-4)) * (360 / 256));
     const zy = Math.log2(((availH * COS) / Math.max(maxLat - minLat, 1e-4)) * (360 / 256));
     return animateTo({ lat: (minLat + maxLat) / 2, lng: (minLng + maxLng) / 2, zoom: Math.min(17, zx, zy) }, 900);
@@ -142,41 +143,7 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
   const blink = useBlink(Boolean(blinkNearby), nearby?.length ?? 0);
   const moving = useMovingPoint(master, moveDuration);
 
-
   const toPath = (pts: LatLng[]) => pts.map((p, i) => `${i ? 'L' : 'M'}${project(p).x.toFixed(1)} ${project(p).y.toFixed(1)}`).join(' ');
-  const scale = Math.max(0.35, Math.min(1.4, 2 ** (cam.zoom - 16)));
-
-  // Bloklar (ko'chalar orasidagi binolar)
-  const blocks: { x: number; y: number; w: number; h: number; park: boolean }[] = [];
-  for (let i = 0; i < V.length - 1; i++) {
-    for (let j = 0; j < H.length - 1; j++) {
-      const a = project({ latitude: H[j + 1], longitude: V[i] });
-      const b = project({ latitude: H[j], longitude: V[i + 1] });
-      const pad = 9 * scale;
-      const park = (i * 7 + j * 3) % 11 === 4;
-      // Har bir kvartalni 2 ta binoga bo'lamiz
-      const w = b.x - a.x - pad * 2;
-      const h = b.y - a.y - pad * 2;
-      if (park || (i + j) % 3 === 0) blocks.push({ x: a.x + pad, y: a.y + pad, w, h, park });
-      else {
-        blocks.push({ x: a.x + pad, y: a.y + pad, w: w * 0.55, h, park: false });
-        blocks.push({ x: a.x + pad + w * 0.6, y: a.y + pad, w: w * 0.4, h: h * 0.6, park: false });
-      }
-    }
-  }
-  const canal = toPath([
-    { latitude: 41.312, longitude: 69.1965 },
-    { latitude: 41.3, longitude: 69.1972 },
-    { latitude: 41.289, longitude: 69.1965 },
-    { latitude: 41.279, longitude: 69.1975 },
-    { latitude: 41.268, longitude: 69.1968 },
-  ]);
-  const avenue = toPath([
-    { latitude: 41.268, longitude: 69.178 },
-    { latitude: 41.284, longitude: 69.2 },
-    { latitude: 41.296, longitude: 69.222 },
-    { latitude: 41.312, longitude: 69.235 },
-  ]);
 
   return (
     <View
@@ -184,19 +151,8 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
       onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
       {...pan.panHandlers}
     >
+      <City cam={cam} w={size.w} h={size.h} fx={fx} fy={fy} />
       <Svg width={size.w} height={size.h} style={StyleSheet.absoluteFill}>
-        <Rect x={0} y={0} width={size.w} height={size.h} fill={colors.map} />
-        {blocks.map((b, i) => (
-          <Rect key={i} x={b.x} y={b.y} width={Math.max(0, b.w)} height={Math.max(0, b.h)} rx={6 * scale} fill={b.park ? colors.mapPark : colors.mapBlock} />
-        ))}
-        <Path d={canal} stroke="#CFE3E6" strokeWidth={10 * scale} fill="none" strokeLinecap="round" />
-        {V.map((lng) => (
-          <Path key={`v${lng}`} d={toPath([{ latitude: 41.24, longitude: lng }, { latitude: 41.35, longitude: lng }])} stroke={colors.mapRoad} strokeWidth={(MAJOR_V.has(lng) ? 13 : 8) * scale} />
-        ))}
-        {H.map((lat) => (
-          <Path key={`h${lat}`} d={toPath([{ latitude: lat, longitude: 69.14 }, { latitude: lat, longitude: 69.28 }])} stroke={colors.mapRoad} strokeWidth={(MAJOR_H.has(lat) ? 13 : 8) * scale} />
-        ))}
-        <Path d={avenue} stroke={colors.mapRoad} strokeWidth={16 * scale} fill="none" strokeLinecap="round" />
         {route?.length ? (
           <>
             <Path d={toPath(route)} stroke={accent} strokeOpacity={0.25} strokeWidth={10} fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -271,6 +227,86 @@ export const FakeMap = forwardRef<MapHandle, MapBaseProps>(function FakeMap({
         </View>
       ) : null}
     </View>
+  );
+});
+
+// Shahar (bloklar, ko'chalar) — alohida va memo: to'lqin, miltillash, usta harakati uni qayta chizmaydi.
+// Faqat ekranda ko'rinadigan bloklar chiziladi (to'liq to'r ~2 800 ta to'rtburchak — har kadrda chizilsa sahifa qotadi)
+const City = memo(function City({ cam, w, h, fx, fy }: { cam: Cam; w: number; h: number; fx: number; fy: number }) {
+  useScheme();
+  const k = pxPerDeg(cam.zoom);
+  const project = (p: LatLng) => ({ x: fx + (p.longitude - cam.lng) * k, y: fy - ((p.latitude - cam.lat) * k) / COS });
+  const toPath = (pts: LatLng[]) =>
+    pts
+      .map((p, i) => {
+        const q = project(p);
+        return `${i ? 'L' : 'M'}${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
+      })
+      .join(' ');
+  const scale = Math.max(0.35, Math.min(1.4, 2 ** (cam.zoom - 16)));
+  const M = 40; // ekran chetidan tashqari zaxira, px
+  const seen = (x0: number, y0: number, x1: number, y1: number) => x1 >= -M && x0 <= w + M && y1 >= -M && y0 <= h + M;
+
+  // Bloklar (ko'chalar orasidagi binolar)
+  const blocks: { x: number; y: number; w: number; h: number; park: boolean }[] = [];
+  for (let i = 0; i < V.length - 1; i++) {
+    for (let j = 0; j < H.length - 1; j++) {
+      const a = project({ latitude: H[j + 1], longitude: V[i] });
+      const b = project({ latitude: H[j], longitude: V[i + 1] });
+      if (!seen(a.x, a.y, b.x, b.y)) continue;
+      const pad = 9 * scale;
+      const park = (i * 7 + j * 3) % 11 === 4;
+      // Har bir kvartalni 2 ta binoga bo'lamiz
+      const bw = b.x - a.x - pad * 2;
+      const bh = b.y - a.y - pad * 2;
+      if (park || (i + j) % 3 === 0) blocks.push({ x: a.x + pad, y: a.y + pad, w: bw, h: bh, park });
+      else {
+        blocks.push({ x: a.x + pad, y: a.y + pad, w: bw * 0.55, h: bh, park: false });
+        blocks.push({ x: a.x + pad + bw * 0.6, y: a.y + pad, w: bw * 0.4, h: bh * 0.6, park: false });
+      }
+    }
+  }
+  const top = project({ latitude: 41.35, longitude: 69.14 });
+  const bottom = project({ latitude: 41.24, longitude: 69.28 });
+  const vs = V.filter((lng) => {
+    const x = project({ latitude: cam.lat, longitude: lng }).x;
+    return x >= -M && x <= w + M;
+  });
+  const hs = H.filter((lat) => {
+    const y = project({ latitude: lat, longitude: cam.lng }).y;
+    return y >= -M && y <= h + M;
+  });
+  const canal = toPath([
+    { latitude: 41.312, longitude: 69.1965 },
+    { latitude: 41.3, longitude: 69.1972 },
+    { latitude: 41.289, longitude: 69.1965 },
+    { latitude: 41.279, longitude: 69.1975 },
+    { latitude: 41.268, longitude: 69.1968 },
+  ]);
+  const avenue = toPath([
+    { latitude: 41.268, longitude: 69.178 },
+    { latitude: 41.284, longitude: 69.2 },
+    { latitude: 41.296, longitude: 69.222 },
+    { latitude: 41.312, longitude: 69.235 },
+  ]);
+
+  return (
+    <Svg width={w} height={h} style={StyleSheet.absoluteFill}>
+      <Rect x={0} y={0} width={w} height={h} fill={colors.map} />
+      {blocks.map((b, i) => (
+        <Rect key={i} x={b.x} y={b.y} width={Math.max(0, b.w)} height={Math.max(0, b.h)} rx={6 * scale} fill={b.park ? colors.mapPark : colors.mapBlock} />
+      ))}
+      <Path d={canal} stroke="#CFE3E6" strokeWidth={10 * scale} fill="none" strokeLinecap="round" />
+      {vs.map((lng) => {
+        const x = project({ latitude: cam.lat, longitude: lng }).x.toFixed(1);
+        return <Path key={`v${lng}`} d={`M${x} ${top.y.toFixed(1)} L${x} ${bottom.y.toFixed(1)}`} stroke={colors.mapRoad} strokeWidth={(MAJOR_V.has(lng) ? 13 : 8) * scale} />;
+      })}
+      {hs.map((lat) => {
+        const y = project({ latitude: lat, longitude: cam.lng }).y.toFixed(1);
+        return <Path key={`h${lat}`} d={`M${top.x.toFixed(1)} ${y} L${bottom.x.toFixed(1)} ${y}`} stroke={colors.mapRoad} strokeWidth={(MAJOR_H.has(lat) ? 13 : 8) * scale} />;
+      })}
+      <Path d={avenue} stroke={colors.mapRoad} strokeWidth={16 * scale} fill="none" strokeLinecap="round" />
+    </Svg>
   );
 });
 

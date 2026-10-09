@@ -224,13 +224,22 @@ end $$;
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-4000-b000-000000000001';
 do $$ begin
-  if (select count(*) from public.orders) <> 1 or (select count(*) from public.offers) <> 1 then
+  if (select count(*) from public.offers) <> 1
+     or (select count(*) from public.offer_preview('00000000-0000-4000-c000-000000000001')) <> 1 then
     raise exception 'FAIL: usta taklif qilingan buyurtmani ko''rmadi';
+  end if;
+  -- Qabul qilguncha aniq manzil va uy tafsiloti yopiq: buyurtma qatori ko'rinmaydi, faqat qisqa ma'lumot (~150 m)
+  if (select count(*) from public.orders) <> 0 then
+    raise exception 'FAIL: usta qabul qilmasdan buyurtmaning hamma ustunini (aniq manzil) ko''rdi';
+  end if;
+  if exists (select 1 from public.offer_preview('00000000-0000-4000-c000-000000000001') v
+             join (select lat, lng from public.orders) o on true) then
+    raise exception 'FAIL: preview orqali orders ochildi';
   end if;
   if (select count(*) from public.profiles where id = '00000000-0000-4000-b000-00000000000a') <> 0 then
     raise exception 'FAIL: usta tayinlanmasdan mijoz telefonini ko''rdi';
   end if;
-  raise notice 'PASS: usta taklif qilingan buyurtmani ko''radi (mijoz telefoni hali yopiq)';
+  raise notice 'PASS: usta taklifni qisqa ko''radi (aniq manzil va mijoz telefoni hali yopiq)';
 end $$;
 set request.jwt.claim.sub = '00000000-0000-4000-b000-000000000002';
 do $$ begin
@@ -488,9 +497,15 @@ do $$ begin
   if (select count(*) from public.categories) <> 6 or (select count(*) from public.problems) <> 22 then
     raise exception 'FAIL: katalog mehmonga ko''rinmadi';
   end if;
-  if exists (select 1 from public.orders) or exists (select 1 from public.profiles) or exists (select 1 from public.master_locations) then
+  if exists (select 1 from public.orders) or exists (select 1 from public.master_locations) then
     raise exception 'FAIL: mehmon yopiq ma''lumotni ko''rdi';
   end if;
+  -- profiles mehmonga umuman yopiq (jadval huquqi yo'q)
+  begin
+    perform 1 from public.profiles limit 1;
+    raise exception 'FAIL: mehmon profiles jadvalini o''qidi';
+  exception when insufficient_privilege then null;
+  end;
   if (select count(*) from public.masters_around(41.2750, 69.2050, 3)) <> 2 then
     raise exception 'FAIL: masters_around: %', (select count(*) from public.masters_around(41.2750, 69.2050, 3));
   end if;

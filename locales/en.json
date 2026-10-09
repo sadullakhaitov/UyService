@@ -270,7 +270,9 @@
     "clientAbsent": "Client didn't open the door",
     "clientAbsentTitle": "The client didn't open the door?",
     "clientAbsentText": "Did you wait at least 10 minutes and call? The order closes without payment and your activity won't drop. An admin will review it.",
-    "clientAbsentConfirm": "Yes, close the order"
+    "clientAbsentConfirm": "Yes, close the order",
+    "absentEarlyTitle": "Please wait a bit",
+    "absentEarlyText": "After arriving, wait at least 10 minutes and try calling the client — then you can close the order."
   },
   "earnings": {
     "changePlan": "Change plan"

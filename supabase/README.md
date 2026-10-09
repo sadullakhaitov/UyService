@@ -270,6 +270,23 @@ Cloudflare'ga ham bir marta yozish kerak, aks holda sayt sinov rejimida qolavera
   ≤ 20 xato. Admin → "Statistika" (`admin_funnel`, `admin_errors`): voronka va xatolar.
 - Sinov: `tests/client_care_test.sql`.
 
+## 17. Xavfsizlik tekshiruvi (`…_security_hardening.sql`)
+
+Front, backend va bazani "buzib ko'rish" natijasida yopilgan teshiklar (sinovlar — `tests/security_test.sql`):
+
+| Teshik | Endi |
+|---|---|
+| Usta taklif kelgach tarifni obunaga (faol obunasiz) almashtirib, ulushsiz (0%) qabul qilardi | Tayinlash paytida server ustaning buyurtma olishi mumkinligini (balans/obuna, blok) qayta tekshiradi |
+| "Mijoz eshikni ochmadi" istalgan paytda bosilardi (mijozni 3 marta — buyurtma yopiladi) | Faqat kod kiritilmagan, narx yuborilmagan va yetib kelganiga ≥ 10 daqiqa bo'lsa; ustaning aktivligi kamaymaydi |
+| Mijoz/usta `cancel_reason`ni istalgan paytda yozardi (`client_absent` belgisini qo'yish/o'chirish) | Sabab faqat bekor qilish bilan birga; `client_absent` — faqat server |
+| `profiles.deleted_at`ni foydalanuvchi o'zi yozib, admin ro'yxatidan yashirinardi | Faqat server |
+| Qarshi tomon profilning `push_token`, `telegram_id`sini o'qiy olardi | Ustun huquqlari: faqat id, telefon, ism, rol, til va h.k.; mehmonga `profiles` umuman yopiq |
+| Taklif olgan usta qabul qilmasdan aniq manzil, xonadon, domofonni o'qiy olardi | Buyurtma qatori yopiq, faqat `offer_preview()` (taxminiy joy ~150 m) |
+| Buyurtmaga boshqa odamning rasm yo'lini yozib, ustaga ko'rsatish | Faqat mijozning o'z papkasidagi rasmlar |
+| Juda uzun tavsif, o'chirilgan kategoriyaga buyurtma | Tavsif ≤ 2000 belgi, faqat faol kategoriya |
+
+Joylash: `update.ps1` (yoki `npx supabase db push`) — boshqa hech narsa kerak emas.
+
 ## Eskiz.uz hali yo'q bo'lsa
 
 - **Mijoz va ustalar** Telegram orqali kiradi (11-bo'lim) — SMS kerak emas. Oddiy brauzerda raqam + SMS bilan kirish
