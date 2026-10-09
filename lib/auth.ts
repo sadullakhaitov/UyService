@@ -6,7 +6,8 @@ import { getSupabase } from './supabase';
 
 export type AuthResult = { ok: boolean; error?: string };
 /** Kod yuborilmadi: raqamning Telegram'i noma'lum va SMS hali ulanmagan (send-sms → "no_channel") */
-export const noChannel = (r: AuthResult) => !r.ok && Boolean(r.error?.includes('no_channel'));
+// Supabase hook xabarini o'zgartirib yuborishi mumkin ("Unexpected status code returned from hook: 422") — 422 ham shu
+export const noChannel = (r: AuthResult) => !r.ok && /no_channel|hook: 422/.test(r.error ?? '');
 
 /** "+998 90 123 45 67" → "+998901234567" (E.164) */
 export function toE164(phone: string) {
