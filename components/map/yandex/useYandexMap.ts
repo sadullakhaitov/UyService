@@ -1,18 +1,19 @@
 import { useMemo, useRef } from 'react';
 import { colors, isDark } from '@/constants/theme';
 import { getLanguage } from '@/lib/i18n';
-import { YANDEX_KEY as API_KEY } from '@/lib/yandex';
+import { MAP_KEY as API_KEY, MAP_PROVIDER } from '@/lib/mapProvider';
 import { DEFAULT_ZOOM, MOVE_INTERVAL_MS, type MapBaseProps } from '../types';
+import { buildTwoGisHtml } from '../twogis/html';
 import { buildMapHtml, type MapEvent, type MapState } from './html';
 
-/** MapBase props → Yandex sahifasi (bir marta) + joriy holat (har o'zgarishda yuboriladi) */
+/** MapBase props → xarita sahifasi (Yandex yoki 2GIS — lib/mapProvider.ts) (bir marta) + joriy holat (har o'zgarishda yuboriladi) */
 export function useYandexMap(p: MapBaseProps) {
   const zoom = p.zoom ?? DEFAULT_ZOOM;
   const insets = p.insets ?? { top: 0, bottom: 0 };
 
   // Sahifa bir marta quriladi — boshlang'ich kamera shu yerda
   const html = useMemo(
-    () => buildMapHtml({ apiKey: API_KEY, lang: getLanguage(), init: { center: p.center, zoom, flyFrom: p.flyFrom, insets, dark: isDark(), minZoom: p.minZoom }, colors: { ...colors } }),
+    () => (MAP_PROVIDER === '2gis' ? buildTwoGisHtml : buildMapHtml)({ apiKey: API_KEY, lang: getLanguage(), init: { center: p.center, zoom, flyFrom: p.flyFrom, insets, dark: isDark(), minZoom: p.minZoom }, colors: { ...colors } }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );

@@ -22,6 +22,8 @@ const BUBBLES = [
   { x: 196, y: 214, s: 80 },
 ];
 
+let savedStep: 'lang' | 'role' = 'lang';
+
 export default function Welcome() {
   useScheme();
   const setLang = useUser((s) => s.setLanguage);
@@ -34,7 +36,12 @@ export default function Welcome() {
 
   // 1-qadam — til, 2-qadam (faqat yangi foydalanuvchiga) — kim sifatida: mijoz (darhol bosh sahifa) yoki usta (raqam → anketa).
   // Ro'yxatdan o'tgan odam so'ralmaydi — o'z rolida qoladi; usta bo'lish keyin Profil → "Usta bo'lib ishlash"
-  const [step, setStep] = useState<'lang' | 'role'>('lang');
+  // Qadam modulda ham saqlanadi: til almashganda ekranlar qayta quriladi (_layout → Stack key={lang}) va holat yo'qolardi
+  const [step, setStepState] = useState<'lang' | 'role'>(savedStep);
+  const setStep = (s: 'lang' | 'role') => {
+    savedStep = s;
+    setStepState(s);
+  };
   const choose = (lang: Lang) => {
     setLanguage(lang);
     setLang(lang);
@@ -44,6 +51,7 @@ export default function Welcome() {
     else router.replace('/client');
   };
   const asClient = () => {
+    savedStep = 'lang';
     useUser.getState().setRole('client');
     // Ro'yxatdan o'tish shart emas — mijoz darhol xizmatni tanlaydi
     router.replace('/client');

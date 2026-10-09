@@ -34,7 +34,7 @@ Hammasi TypeScript'da, o'z serverimiz yo'q.
 |---|---|
 | Mobil ilova | Expo SDK 57 (React Native) + TypeScript |
 | Ekranlar orasida o'tish | Expo Router (fayl nomi = ekran) |
-| Xarita | **Yandex Maps** JS API 2.1 — hamma joyda bir xil: telefonda `react-native-webview` ichida (Expo Go'da ham ishlaydi), brauzer/Telegram'da iframe ichida. Kalit: `EXPO_PUBLIC_YANDEX_MAPS_KEY` |
+| Xarita | **Yandex Maps** JS API 2.1 — hamma joyda bir xil: telefonda `react-native-webview` ichida (Expo Go'da ham ishlaydi), brauzer/Telegram'da iframe ichida. Kalit: `EXPO_PUBLIC_YANDEX_MAPS_KEY`. **Sinov: 2GIS MapGL** — `EXPO_PUBLIC_MAP_PROVIDER=2gis` + `EXPO_PUBLIC_2GIS_KEY` (`lib/mapProvider.ts`; kalit bo'lmasa — Yandex) |
 | Yo'nalish va vaqt | Hozircha bepul OSRM (OpenStreetMap) — haqiqiy ko'chalar bo'ylab yo'l va vaqt (`lib/routes.ts`); 7-bosqichda Google Routes API |
 | Manzil qidirish | Google Places API (keyinroq) |
 | Animatsiyalar | react-native-reanimated 4 |
@@ -54,7 +54,7 @@ Yangi paket: `npx expo install <paket>`. Tekshirish: `npm run typecheck`; server
 app/                      ← ekranlar (Expo Router)
   _layout.tsx             ← shriftlar, gesture, safe-area
   index.tsx               ← rolga qarab yo'naltirish
-  welcome.tsx             ← birinchi ochilish: til (O'zbek / Русский / English) → kim sifatida: "Usta chaqiraman" (/client) yoki "Usta bo'lib ishlayman" (/phone?next=master) — faqat yangi foydalanuvchiga; ro'yxatdan o'tgan odam o'z rolida qoladi
+  welcome.tsx             ← birinchi ochilish (qadam modulda saqlanadi — til almashganda Stack qayta quriladi): til (O'zbek / Русский / English) → kim sifatida: "Usta chaqiraman" (/client) yoki "Usta bo'lib ishlayman" (/phone?next=master) — faqat yangi foydalanuvchiga; ro'yxatdan o'tgan odam o'z rolida qoladi
   (auth)/phone.tsx        ← telefon raqam (/phone?next=order|master)
   (auth)/code.tsx         ← SMS kod
   client/(tabs)/          ← mijoz ilovasi, pastki menyu 4 bo'lim (kompyuterda — chap menyu; components/ui/TabChrome.tsx usta bilan umumiy)
@@ -96,7 +96,8 @@ components/
     MapBase.tsx           ← Yandex xaritasi WebView ichida (Android/iOS)
     MapBase.web.tsx       ← Yandex xaritasi iframe ichida (brauzer); 8 s ichida chiqmasa — vaqtincha FakeMap.tsx, Yandex yuklangach o'zi almashadi
     yandex/html.ts        ← xarita sahifasi: belgilar, to'lqinlar, yo'l, silliq siljish (60 fps sahifaning o'zida)
-    yandex/useYandexMap.ts ← props → holat; React ↔ sahifa xabarlari (state / flyTo / zoomBy ↔ moveStart / moveEnd)
+    yandex/useYandexMap.ts ← props → holat; React ↔ sahifa xabarlari (state / flyTo / zoomBy ↔ moveStart / moveEnd); sahifani lib/mapProvider.ts tanlaydi
+    twogis/html.ts        ← xuddi shu xabarlar bilan 2GIS MapGL sahifasi (zoom Yandex masshtabiga o'zi moslanadi, belgilar — HtmlMarker)
     FakeMap.tsx           ← zaxira soxta xarita (faqat dizayn/demo)
     ClientDot.tsx, CenterPin.tsx, MasterIcon.tsx, usePulse.ts, useBlink.ts
   ui/                     ← Button, Card, Chip, Rating, Logo, ...
@@ -280,4 +281,4 @@ Xarita (Yandex, WebView) Expo Go'da ham ishlaydi; telefonda internet bo'lishi ke
 
 ## 11. Kalitlar
 
-Yandex va Supabase kalitlari `.env` faylida, git'ga yuklanmaydi. Eskiz.uz login/paroli ilovaga emas, Supabase secrets'ga yoziladi (`supabase/README.md`). Yandex kaliti: developer.tech.yandex.ru → "JavaScript API и HTTP Геокодер"; HTTP Referer cheklovi `uyservice.uz` (telefonda xarita sahifasi shu manzil nomidan ochiladi, `MAP_BASE_URL`). Kalit bo'lmasa xarita cheklangan rejimda ishlaydi yoki umuman ochilmasligi mumkin — kalit qo'yish shart.
+Yandex va Supabase kalitlari `.env` faylida, git'ga yuklanmaydi. Eskiz.uz login/paroli ilovaga emas, Supabase secrets'ga yoziladi (`supabase/README.md`). Yandex kaliti: developer.tech.yandex.ru → "JavaScript API и HTTP Геокодер"; HTTP Referer cheklovi `uyservice.uz` (telefonda xarita sahifasi shu manzil nomidan ochiladi, `MAP_BASE_URL`). Kalit bo'lmasa xarita cheklangan rejimda ishlaydi yoki umuman ochilmasligi mumkin — kalit qo'yish shart. 2GIS (sinov): platform.2gis.ru → MapGL kaliti, ruxsat etilgan domen `uyservice.uz`; `.env` va Cloudflare build o'zgaruvchilariga `EXPO_PUBLIC_MAP_PROVIDER=2gis`, `EXPO_PUBLIC_2GIS_KEY=...` (qaytarish — `EXPO_PUBLIC_MAP_PROVIDER`ni o'chirish).
