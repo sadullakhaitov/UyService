@@ -6,12 +6,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Divider, Row, ScreenHeader, Squish, Text } from '@/components/ui';
 import { CALL_FEE, getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
-import { formatDay, formatRange, formatSchedule, formatSum, formatTime, t } from '@/lib/i18n';
+import { formatRange, formatSchedule, formatSum, t } from '@/lib/i18n';
 import { notice } from '@/lib/dialog';
 import { askNotifications } from '@/lib/notify';
 import { isOnline } from '@/lib/useOnline';
 import { DEMO } from '@/lib/demo';
-import { DAYS_AHEAD, dayOffsetOf, firstSlot, slotStillValid, slotsFor } from '@/lib/schedule';
+import { firstSlot, slotStillValid } from '@/lib/schedule';
+import { SchedulePicker } from '@/components/order/SchedulePicker';
 import { emptyDetails, useOrder, useOrders, useUser, type AddressDetails } from '@/store';
 import { GlassBg } from '@/components/ui/Glass';
 import { pickImages } from '@/lib/photos';
@@ -238,7 +239,9 @@ function AddressSection({ address, details, onChange }: { address: string; detai
   const set = (k: keyof AddressDetails) => (v: string) => onChange({ ...details, [k]: v });
   const field = (k: keyof AddressDetails, numeric?: boolean) => (
     <View style={styles.detailCell}>
-      <Text variant="caption">{t(`address.${k}`)}</Text>
+      <Text variant="caption" numberOfLines={1} style={styles.detailLabel}>
+        {t(`address.${k}`)}
+      </Text>
       <TextInput
         value={details[k]}
         onChangeText={set(k)}
@@ -265,66 +268,33 @@ function AddressSection({ address, details, onChange }: { address: string; detai
         {field('apartment')}
         {field('intercom')}
       </View>
-      <TextInput
-        value={details.landmark}
-        onChangeText={set('landmark')}
-        maxLength={120}
-        placeholder={t('address.landmarkPlaceholder')}
-        placeholderTextColor={colors.muted}
-        accessibilityLabel={t('address.landmark')}
-        style={styles.detailInput}
-      />
+      <View style={styles.detailWide}>
+        <Text variant="caption" numberOfLines={1} style={styles.detailLabel}>
+          {t('address.landmark')}
+        </Text>
+        <TextInput
+          value={details.landmark}
+          onChangeText={set('landmark')}
+          maxLength={120}
+          placeholder={t('address.landmarkPlaceholder')}
+          placeholderTextColor={colors.muted}
+          accessibilityLabel={t('address.landmark')}
+          style={styles.detailInput}
+        />
+      </View>
       <Text variant="caption">{t('address.detailsHint')}</Text>
     </View>
   );
 }
 
-// Kun va soat tanlash (usta shu vaqtda keladi)
-/** "Bugun" / "Ertaga" / "Ju, 17-oktabr" — uzoq kunlarda hafta kuni ham */
-function dayLabel(ms: number) {
-  const day = formatDay(ms);
-  return dayOffsetOf(ms) < 2 ? day : `${t(`weekday.${new Date(ms).getDay()}`)}, ${day}`;
-}
-
-function SchedulePicker({ value, onChange, color, onColor }: { value: number; onChange: (v: number) => void; color: string; onColor: string }) {
-  useScheme();
-  const day = Math.max(0, dayOffsetOf(value));
-  const days = Array.from({ length: DAYS_AHEAD }, (_, d) => d).filter((d) => slotsFor(d).length);
-  const slots = slotsFor(day);
-  const pickDay = (d: number) => {
-    const s = slotsFor(d);
-    // Shu soat yangi kunda ham bo'lsa — saqlaymiz
-    const same = s.find((x) => new Date(x).getHours() === new Date(value).getHours());
-    onChange(same ?? s[0]);
-  };
-  return (
-    <View style={styles.section}>
-      <View style={styles.whenHead}>
-        <CalendarClock size={20} color={color} strokeWidth={2.2} />
-        <Text variant="h3">{t('schedule.when')}</Text>
-      </View>
-      {/* Istalgan kun (30 kungacha) — surib tanlanadi */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slots}>
-        {days.map((d) => (
-          <Chip key={d} label={dayLabel(slotsFor(d)[0])} selected={d === day} onPress={() => pickDay(d)} color={color} onColor={onColor} />
-        ))}
-      </ScrollView>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slots}>
-        {slots.map((s) => (
-          <Chip key={s} label={formatTime(s)} selected={s === value} onPress={() => onChange(s)} color={color} onColor={onColor} />
-        ))}
-      </ScrollView>
-      <Text variant="caption">{t('schedule.hint')}</Text>
-    </View>
-  );
-}
-
 const styles = themed(() => ({
-  whenHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   addrRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.line },
   addrChange: { fontFamily: fonts.bold, fontSize: 13, color: colors.primary },
-  detailGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  detailCell: { flexGrow: 1, flexBasis: '22%', minWidth: 72, gap: 4 },
+  // 2 × 2: har ustun teng, yorliqlar bir qatorda (uzun yorliq — qisqartiriladi), maydonlar bir chiziqda
+  detailGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 10, rowGap: 12 },
+  detailCell: { width: '47%', flexGrow: 1, gap: 6 },
+  detailWide: { gap: 6 },
+  detailLabel: { paddingLeft: 2 },
   detailInput: {
     height: 46,
     borderWidth: 1.5,
@@ -336,7 +306,6 @@ const styles = themed(() => ({
     color: colors.ink,
     backgroundColor: colors.surface,
   },
-  slots: { gap: 8 },
   root: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   catBadge: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },

@@ -65,7 +65,7 @@ app/                      ← ekranlar (Expo Router)
     orders.tsx            ← Buyurtmalar: hozirgi buyurtmalar + tarix (components/order/HistoryList.tsx)
     account.tsx           ← Profil (/client/account): mehmon/kirgan, "Usta bo'lib ishlash", "Yordam" (qo'llab-quvvatlash chati), til, ko'rinish, "Hisobni o'chirish"
   client/address.tsx      ← manzilni yozib qidirish (lib/geocode.ts)
-  client/order.tsx        ← muammo, tavsif, rasm, uy tafsiloti (podyezd, qavat, xonadon, domofon, mo'ljal), narx; rejalashtirishda kun va soat
+  client/order.tsx        ← muammo, tavsif, rasm, uy tafsiloti (2 × 2: podyezd, qavat, xonadon, domofon; mo'ljal), narx; rejalashtirishda kalendar + soat g'ildiragi
   client/searching.tsx    ← usta qidirilmoqda (to'lqinlar, radius, takliflar) yoki rejalashtirilgan buyurtma ┐ ikkalasi bitta ekran —
   client/chat.tsx         ← mijoz ↔ usta chati (buyurtma bo'yicha)
   client/tracking.tsx     ← usta yo'lda (bekor qilish — sabab bilan, components/sheets/CancelSheet.tsx) ┘ components/order/LiveOrder.tsx:
@@ -184,7 +184,7 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 - Sinov rejimida shu qurilmada ro'yxatdan o'tgan usta ham ro'yxatda (`LOCAL_MASTER_ID`) — admin tasdiqlasa/balans qo'shsa, ilovadagi `useMaster` ham o'zgaradi. Sozlamalar → "Sinov ma'lumotlarini tiklash".
 - Xavfsizlik: `/admin*` — `noindex`, `X-Frame-Options: DENY` (`public/_headers`); 5 marta noto'g'ri kod — 60 s kutish; 8 soat harakatsizlik — chiqish.
 
-**Rejalashtirish ("Vaqtni tanlash"):** istalgan kun — bugundan 30 kungacha (`DAYS_AHEAD`, kunlar surib tanlanadi), 08:00–21:00 har soat, eng erta — hozirdan 1,5 soat keyin. Buyurtma `scheduled` holatida turadi, usta qidirish belgilangan vaqtdan 30 daqiqa oldin avtomatik boshlanadi (`SCHEDULE_LEAD_MS`).
+**Rejalashtirish ("Vaqtni tanlash"):** istalgan kun — bugundan 30 kungacha (`DAYS_AHEAD`; oylik kalendar, bo'sh vaqti yo'q kunlar xira), soat — iPhone'dagidek aylanma g'ildirak (`components/order/SchedulePicker.tsx`), 08:00–21:00 har soat, eng erta — hozirdan 1,5 soat keyin. Buyurtma `scheduled` holatida turadi, usta qidirish belgilangan vaqtdan 30 daqiqa oldin avtomatik boshlanadi (`SCHEDULE_LEAD_MS`).
 
 **Bildirishnomalar:** bosilganda tegishli ekran ochiladi (`data.url`, `useNotificationTaps`); mijozga "Usta topildi", "Usta yetib keldi", "Usta narx taklif qildi", "Ish tugadi", "Bo'sh usta yo'q"; ustaga "Yangi buyurtma" (Sozlamalarda o'chirish mumkin). Ilova ekranda ochiq bo'lsa chiqmaydi. Server ulanganda xuddi shu xabarlar serverdan push bo'lib keladi (ilova yopiq bo'lsa ham): triggerlar → `push_outbox` → `push-send` (Expo Push API), foydalanuvchi tilida; ustaga qo'shimcha "Mijoz narxga rozi / rozi emas", "Mijoz bekor qildi". Sozlash — `supabase/README.md` 10-bo'lim (EAS projectId + FCM kerak).
 
