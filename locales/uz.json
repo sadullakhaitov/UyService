@@ -857,7 +857,10 @@
       "network": "Internet bilan aloqa yo'q. Qayta urinib ko'ring",
       "promoCode": "Kod — 3–20 ta lotin harfi yoki raqam",
       "promoValue": "Prioritet (0–50) yoki bonus (1 mln gacha) kerak; chegara 1–100 000",
-      "reportClosed": "Murojaat allaqachon yopilgan"
+      "reportClosed": "Murojaat allaqachon yopilgan",
+      "activeOrders": "Faol buyurtmasi bor. Avval buyurtmani tugating yoki bekor qiling",
+      "deleteAdmin": "Adminni o'chirib bo'lmaydi. Avval Sozlamalar'da adminlikdan olib tashlang",
+      "deleteLocal": "Sinov rejimida shu qurilmadagi ustani o'chirib bo'lmaydi"
     },
     "login": {
       "title": "Admin panelga kirish",
@@ -1261,7 +1264,8 @@
         "grant_admin": "Admin qo'shildi",
         "revoke_admin": "Admin olib tashlandi",
         "promo": "Promokod saqlandi",
-        "report_resolve": "Murojaatni yopdi"
+        "report_resolve": "Murojaatni yopdi",
+        "delete_account": "Hisob o'chirildi"
       },
       "t": {
         "master": "usta",
@@ -1387,6 +1391,17 @@
         "account_deleted": "Hisobni o'chirdi"
       },
       "signin": "Ro'yxatdan o'tish"
+    },
+    "del": {
+      "button": "O'chirish",
+      "title": "{{name}} hisobini o'chirish",
+      "confirm": "Butunlay o'chirish",
+      "text": "Ism, raqam, yozishmalar va fayllari o'chadi, ilovaga kira olmaydi. Buyurtmalar tarixi anonim qoladi. Qaytarib bo'lmaydi.",
+      "textMaster": "Ism, raqam, pasport, selfi, ish namunalari va yozishmalari o'chadi, ilovaga kira olmaydi. Buyurtmalar tarixi va balans tarixi anonim qoladi. Qaytarib bo'lmaydi.",
+      "done": "{{name}} o'chirildi",
+      "p1": "O'zi so'radi",
+      "p2": "Soxta hisob",
+      "p3": "Qoidabuzarlik"
     }
   },
   "home": {

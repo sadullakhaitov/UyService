@@ -30,7 +30,12 @@ const SIGNED_SEC = 3600;
 
 function fail(e: { code?: string; message?: string } | null | undefined): never {
   const code = e?.code;
-  const key = code === '42501' ? 'errors.forbidden' : code === '22023' ? 'errors.invalid' : code === 'P0002' ? 'errors.notFound' : 'errors.server';
+  const m = e?.message ?? '';
+  const key = m.includes('active_orders')
+    ? 'errors.activeOrders'
+    : m.includes('admin_target')
+      ? 'errors.deleteAdmin'
+      : code === '42501' ? 'errors.forbidden' : code === '22023' ? 'errors.invalid' : code === 'P0002' ? 'errors.notFound' : 'errors.server';
   throw new AdminError(key, e?.message);
 }
 
@@ -350,6 +355,20 @@ export const supabaseAdmin: AdminApi = {
   async setBlocked(id, blocked, reason) {
     if (blocked) checkReason(reason);
     await rpc('admin_set_blocked', { p_profile: id, p_blocked: blocked, p_reason: clean(reason) || null });
+  },
+  async deleteAccount(id, reason) {
+    checkReason(reason);
+    await rpc('admin_delete_account', { p_profile: id, p_reason: clean(reason) });
+    // Fayllari (pasport, selfi, surat, ish namunalari, buyurtma rasmlari) — o'z papkasidan; qolsa ham bazada yo'li yo'q
+    for (const b of ['documents', 'works', 'order-photos']) {
+      try {
+        const { data } = await db().storage.from(b).list(id, { limit: 1000 });
+        const paths = (data ?? []).map((f) => `${id}/${f.name}`);
+        if (paths.length) await db().storage.from(b).remove(paths);
+      } catch {
+        // keyingi papka
+      }
+    }
   },
 
   async orders(q) {

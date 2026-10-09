@@ -50,7 +50,7 @@ const VERSION = 1;
 const DAY = 86_400_000;
 
 // ---------- Saqlanadigan tuzilma ----------
-type DUser = { id: string; phone: string; name: string | null; role: UserRole; language: string; createdAt: number; blockedAt: number | null; blockedReason: string | null };
+type DUser = { id: string; phone: string; name: string | null; role: UserRole; language: string; createdAt: number; blockedAt: number | null; blockedReason: string | null; deletedAt?: number | null };
 type DMaster = {
   id: string;
   firstName: string;
@@ -704,7 +704,8 @@ function masterView(db: DB, m: DMaster): AdminMaster {
 }
 
 function allMasters(db: DB): AdminMaster[] {
-  const list = db.masters.map((m) => masterView(db, m));
+  const gone = new Set(db.users.filter((u) => u.deletedAt).map((u) => u.id));
+  const list = db.masters.filter((m) => !gone.has(m.id)).map((m) => masterView(db, m));
   const local = localMaster(db);
   return local ? [local.m, ...list] : list;
 }
@@ -1028,6 +1029,26 @@ export const demoAdmin: AdminApi = {
     await wait();
   },
 
+  async deleteAccount(id, reason) {
+    const db = await load();
+    checkReason(reason);
+    if (id === LOCAL_MASTER_ID) throw new AdminError('errors.deleteLocal');
+    const u = findUser(db, id);
+    if (u.deletedAt) throw new AdminError('errors.notFound');
+    if (u.role === 'admin') throw new AdminError('errors.deleteAdmin');
+    if (db.orders.some((o) => (o.clientId === id || o.masterId === id) && o.status !== 'completed' && o.status !== 'cancelled')) {
+      throw new AdminError('errors.activeOrders');
+    }
+    const m = db.masters.find((x) => x.id === id);
+    log(db, 'delete_account', m ? 'master' : 'user', id, { reason: clean(reason), name: m ? `${m.firstName} ${m.lastName}` : u.name, phone: `…${u.phone.slice(-4)}` });
+    // Buyurtmalar tarixi qoladi (anonim): ism, raqam, hujjatlar va yozishmalar o'chadi, ro'yxatlarda ko'rinmaydi
+    Object.assign(u, { deletedAt: Date.now(), name: null, phone: '', blockedAt: Date.now(), blockedReason: 'deleted' });
+    if (m) Object.assign(m, { firstName: '', lastName: '', online: false });
+    db.support = db.support.filter((x) => x.userId !== id);
+    save();
+    await wait();
+  },
+
   async setBlocked(id, blocked, reason) {
     const db = await load();
     if (blocked) checkReason(reason);
@@ -1104,7 +1125,7 @@ export const demoAdmin: AdminApi = {
   async users(q) {
     const db = await load();
     await wait();
-    let rows = db.users.map((u) => userView(db, u));
+    let rows = db.users.filter((u) => !u.deletedAt).map((u) => userView(db, u));
     const local = localMaster(db);
     if (local) rows.unshift(local.u);
     if (q.filter === 'clients') rows = rows.filter((u) => !u.isMaster && u.role !== 'admin');
@@ -1120,7 +1141,7 @@ export const demoAdmin: AdminApi = {
     const db = await load();
     await wait();
     if (id === LOCAL_MASTER_ID) return localMaster(db)?.u ?? null;
-    const u = db.users.find((x) => x.id === id);
+    const u = db.users.find((x) => x.id === id && !x.deletedAt);
     return u ? userView(db, u) : null;
   },
 

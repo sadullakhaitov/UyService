@@ -213,6 +213,7 @@ Manzil: **uyservice.uz/admin** (telefondagi ilovada ham `/admin`). Kirish — ad
 | Narxlar va katalog | chaqiruv narxi, kategoriyani yoqish/o'chirish, muammolar narx oralig'i |
 | Amallar jurnali | kim, qachon, nima qildi (o'zgartirib/o'chirib bo'lmaydi) |
 | Sozlamalar | adminlarni raqam bo'yicha qo'shish / olib tashlash (`admin_set_role`), ko'rinish, til |
+| Foydalanuvchi / usta sahifasi | **O'chirish** — sabab bilan (`admin_delete_account`): shaxsiy ma'lumot, hujjatlar, fayllar o'chadi, kirish yopiladi, buyurtmalar tarixi anonim qoladi. Admin (avval adminlikdan olib tashlang) va faol buyurtmasi borlar o'chirilmaydi |
 
 Huquqlar serverda tekshiriladi: ro'yxatlar `admin_*` ko'rinishlari (faqat admin uchun to'la, boshqalarga bo'sh),
 amallar `admin_*` funksiyalari (ichida `assert_admin()`, qiymat chegaralari, jurnal). Sinov: `tests/admin_test.sql`.

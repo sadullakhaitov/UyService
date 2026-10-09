@@ -1,7 +1,7 @@
 // Usta kartochkasi: hujjatlar (tasdiqlash / rad etish), tarif va balans, obuna, prioritet, bloklash;
 // buyurtmalari, sharhlari, balans tarixi va shu usta bo'yicha admin amallari jurnali.
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { Ban, BadgeCheck, CalendarPlus, Gauge, RotateCcw, ShieldX, Unlock, Wallet } from 'lucide-react-native';
+import { Ban, BadgeCheck, CalendarPlus, Gauge, RotateCcw, ShieldX, Trash2, Unlock, Wallet } from 'lucide-react-native';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { CategoryIcon } from '@/components/admin/CategoryIcon';
@@ -24,7 +24,7 @@ import { adminApi } from '@/lib/admin';
 import { useAdminAction, useAdminQuery } from '@/lib/admin/hooks';
 import { t } from '@/lib/i18n';
 
-type DialogKey = null | 'approve' | 'reject' | 'recheck' | 'balance' | 'sub' | 'priority' | 'block' | 'unblock';
+type DialogKey = null | 'approve' | 'reject' | 'recheck' | 'balance' | 'sub' | 'priority' | 'block' | 'unblock' | 'delete';
 
 export default function MasterDetail() {
   useScheme();
@@ -111,6 +111,7 @@ export default function MasterDetail() {
               ) : (
                 <AButton title={t('admin.block.block')} icon={Ban} kind="danger" onPress={() => setDialog('block')} />
               )}
+              <AButton title={t('admin.del.button')} icon={Trash2} kind="danger" onPress={() => setDialog('delete')} />
             </View>
             {m.verifyStatus === 'none' ? <Text variant="caption">{t('admin.verifyAct.noDocs')}</Text> : null}
           </Panel>
@@ -287,6 +288,20 @@ export default function MasterDetail() {
             presets={[t('admin.block.p1'), t('admin.block.p2'), t('admin.block.p3')]}
             onSubmit={async (reason) => {
               const r = await run(() => adminApi.setBlocked(m.id, true, reason), t('admin.block.done', { name }));
+              return r.ok ? null : r.error;
+            }}
+          />
+          <ReasonDialog
+            visible={dialog === 'delete'}
+            onClose={close}
+            title={t('admin.del.title', { name })}
+            text={t('admin.del.textMaster')}
+            confirmLabel={t('admin.del.confirm')}
+            danger
+            presets={[t('admin.del.p1'), t('admin.del.p2'), t('admin.del.p3')]}
+            onSubmit={async (reason) => {
+              const r = await run(() => adminApi.deleteAccount(m.id, reason), t('admin.del.done', { name }));
+              if (r.ok) router.replace('/admin/masters' as Href);
               return r.ok ? null : r.error;
             }}
           />

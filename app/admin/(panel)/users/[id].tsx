@@ -1,6 +1,6 @@
-// Foydalanuvchi kartochkasi: buyurtmalari, yozgan sharhlari, bloklash, qo'llab-quvvatlash chati, usta profili
+// Foydalanuvchi kartochkasi: buyurtmalari, yozgan sharhlari, bloklash, o'chirish, qo'llab-quvvatlash chati, usta profili
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { Ban, MessagesSquare, Unlock, Wrench } from 'lucide-react-native';
+import { Ban, MessagesSquare, Trash2, Unlock, Wrench } from 'lucide-react-native';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { ConfirmDialog, ReasonDialog } from '@/components/admin/Dialog';
@@ -26,7 +26,7 @@ export default function UserPage() {
   const q = useAdminQuery(`user-${id}`, () => adminApi.user(id));
   const orders = useAdminQuery(`user-orders-${id}`, () => adminApi.orders({ filter: 'all', q: '', category: null, days: null, clientId: id, page: 0, pageSize: 10 }));
   const reviews = useAdminQuery(`user-reviews-${id}`, () => adminApi.reviews({ stars: null, q: '', clientId: id, page: 0, pageSize: 5 }));
-  const [dialog, setDialog] = useState<null | 'block' | 'unblock'>(null);
+  const [dialog, setDialog] = useState<null | 'block' | 'unblock' | 'delete'>(null);
   const { run } = useAdminAction();
   const u = q.data;
   const wide = mode !== 'mobile';
@@ -77,6 +77,7 @@ export default function UserPage() {
                   <AButton title={t('admin.block.block')} icon={Ban} kind="danger" onPress={() => setDialog('block')} />
                 )
               ) : null}
+              {u.role !== 'admin' ? <AButton title={t('admin.del.button')} icon={Trash2} kind="danger" onPress={() => setDialog('delete')} /> : null}
             </View>
           </Panel>
 
@@ -145,6 +146,20 @@ export default function UserPage() {
             presets={[t('admin.block.p1'), t('admin.block.p2'), t('admin.block.p3')]}
             onSubmit={async (reason) => {
               const r = await run(() => adminApi.setBlocked(u.id, true, reason), t('admin.block.done', { name }));
+              return r.ok ? null : r.error;
+            }}
+          />
+          <ReasonDialog
+            visible={dialog === 'delete'}
+            onClose={() => setDialog(null)}
+            title={t('admin.del.title', { name })}
+            text={t(u.isMaster ? 'admin.del.textMaster' : 'admin.del.text')}
+            confirmLabel={t('admin.del.confirm')}
+            danger
+            presets={[t('admin.del.p1'), t('admin.del.p2'), t('admin.del.p3')]}
+            onSubmit={async (reason) => {
+              const r = await run(() => adminApi.deleteAccount(u.id, reason), t('admin.del.done', { name }));
+              if (r.ok) router.replace('/admin/users' as Href);
               return r.ok ? null : r.error;
             }}
           />

@@ -878,7 +878,10 @@
       "network": "No internet connection. Try again",
       "promoCode": "Code must be 3–20 Latin letters or digits",
       "promoValue": "Set priority (0–50) or a bonus (up to 1M); limit 1–100,000",
-      "reportClosed": "The report is already closed"
+      "reportClosed": "The report is already closed",
+      "activeOrders": "Has an active order. Finish or cancel it first",
+      "deleteAdmin": "An admin can't be deleted. Remove admin rights in Settings first",
+      "deleteLocal": "In test mode the master on this device can't be deleted"
     },
     "login": {
       "title": "Admin sign-in",
@@ -1288,7 +1291,8 @@
         "grant_admin": "Admin added",
         "revoke_admin": "Admin removed",
         "promo": "Promo code saved",
-        "report_resolve": "Closed a report"
+        "report_resolve": "Closed a report",
+        "delete_account": "Account deleted"
       },
       "t": {
         "master": "master",
@@ -1414,6 +1418,17 @@
         "account_deleted": "Deleted account"
       },
       "signin": "Sign-up"
+    },
+    "del": {
+      "button": "Delete",
+      "title": "Delete {{name}}'s account",
+      "confirm": "Delete permanently",
+      "text": "Name, phone, messages and files are removed and sign-in is closed. Order history stays anonymous. This cannot be undone.",
+      "textMaster": "Name, phone, passport, selfie, work samples and messages are removed and sign-in is closed. Order and balance history stay anonymous. This cannot be undone.",
+      "done": "{{name}} deleted",
+      "p1": "User asked",
+      "p2": "Fake account",
+      "p3": "Rule violation"
     }
   },
   "home": {

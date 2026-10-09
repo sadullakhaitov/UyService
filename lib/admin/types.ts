@@ -23,7 +23,8 @@ export type LogAction =
   | 'grant_admin'
   | 'revoke_admin'
   | 'promo'
-  | 'report_resolve';
+  | 'report_resolve'
+  | 'delete_account';
 export type LogTarget = 'master' | 'user' | 'order' | 'review' | 'category' | 'problem' | 'support' | 'promo' | 'report';
 
 export const ACTIVE_STATUSES: OrderStatus[] = ['assigned', 'on_the_way', 'arrived', 'in_progress'];
@@ -340,6 +341,8 @@ export interface AdminApi {
   addSubscription(id: string, days: number, amount: number): Promise<number>;
   setPriority(id: string, points: number): Promise<void>;
   setBlocked(profileId: string, blocked: boolean, reason?: string): Promise<void>;
+  /** Hisobni o'chirish (mijoz yoki usta): shaxsiy ma'lumot va fayllar o'chadi, tarix anonim qoladi. Admin va faol buyurtmali — yo'q */
+  deleteAccount(profileId: string, reason: string): Promise<void>;
 
   orders(q: OrderQuery): Promise<Page<AdminOrder>>;
   order(id: string): Promise<OrderDetail | null>;

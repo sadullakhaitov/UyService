@@ -1,7 +1,7 @@
 // Admin amallari jurnali: kim, qachon, nima qildi (tushunarli matn bilan), obyektga havola
 import { router, type Href } from 'expo-router';
 import type { LucideIcon } from 'lucide-react-native';
-import { Ban, BadgeCheck, CalendarPlus, CircleCheck, Gauge, ShieldPlus, Tag, Ticket, Trash2, Unlock, Wallet, XCircle } from 'lucide-react-native';
+import { Ban, BadgeCheck, CalendarPlus, CircleCheck, Gauge, ShieldPlus, Tag, Ticket, Trash2, Unlock, UserX, Wallet, XCircle } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -27,6 +27,7 @@ const ICON: Record<LogAction, LucideIcon> = {
   revoke_admin: ShieldPlus,
   promo: Ticket,
   report_resolve: CircleCheck,
+  delete_account: UserX,
 };
 
 const str = (v: unknown) => (v == null || v === '' ? null : String(v));
@@ -75,6 +76,8 @@ export function logDetails(e: LogEntry): string {
       ]
         .filter(Boolean)
         .join(' · ');
+    case 'delete_account':
+      return [str(d.name), str(d.phone), str(d.reason)].filter(Boolean).join(' · ');
     case 'report_resolve':
       return [t(`report.kinds.${str(d.kind) ?? 'other'}`), str(d.note)].filter(Boolean).join(' · ');
     default:
