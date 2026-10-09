@@ -11,7 +11,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { colors, setScheme, useScheme } from '@/constants/theme';
+import { colors, isDark, setScheme, useScheme } from '@/constants/theme';
 import { setLanguage } from '@/lib/i18n';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
 import { DemoBadge, DemoBar } from '@/components/ui/DemoBanner';
@@ -47,16 +47,33 @@ if (WEB) {
   style.textContent =
     'input,textarea{outline:none}' +
     `${auto('input')},${auto('textarea')}{${fill('var(--uys-surface)')}}` +
-    `${auto('input[data-autofill="field"]')}{${fill('var(--uys-field)')}}`;
+    `${auto('input[data-autofill="field"]')}{${fill('var(--uys-field)')}}` +
+    // Aylantirish chizig'i (scroll): brauzernikining o'rniga ingichka, yumaloq, fonsiz — joriy rejim rangida.
+    // Bosilganda/ustiga kelganda biroz to'qroq; strelka tugmalari yo'q. Firefox — scrollbar-width/color
+    // (faqat ::-webkit-scrollbar bo'lmagan brauzerda: Chrome 121+ da ular webkit uslubini bekor qilib, strelkalarni qaytaradi)
+    '@supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin;scrollbar-color:var(--uys-thumb) transparent}}' +
+    '::-webkit-scrollbar{width:10px;height:10px;background:transparent}' +
+    '::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}' +
+    '::-webkit-scrollbar-thumb{background:var(--uys-thumb);border-radius:10px;border:3px solid transparent;background-clip:padding-box;min-height:40px}' +
+    '::-webkit-scrollbar-thumb:hover{background:var(--uys-thumb-hover);background-clip:padding-box;border-width:2px}' +
+    '::-webkit-scrollbar-thumb:active{background:var(--uys-thumb-hover);background-clip:padding-box;border-width:2px}' +
+    '::-webkit-scrollbar-button{display:none;width:0;height:0}' +
+    // Matn belgilanganda — brend yashilining och tusi (brauzerning ko'k rangi o'rniga)
+    '::selection{background:var(--uys-selection);color:inherit}';
   document.head.appendChild(style);
 }
-// Autofill ranglari joriy rejimdan (kunduzgi / tungi)
+// Autofill, aylantirish chizig'i va belgilash ranglari joriy rejimdan (kunduzgi / tungi)
 function applyWebColors() {
   if (!WEB) return;
   const root = document.documentElement.style;
   root.setProperty('--uys-ink', colors.ink);
   root.setProperty('--uys-surface', colors.surface);
   root.setProperty('--uys-field', colors.field);
+  root.setProperty('--uys-thumb', colors.handle);
+  root.setProperty('--uys-thumb-hover', colors.muted);
+  root.setProperty('--uys-selection', `${colors.primary}40`);
+  // Brauzerning o'z elementlari (aylantirish chizig'i, sana va h.k.) ham shu rejimda
+  root.setProperty('color-scheme', isDark() ? 'dark' : 'light');
 }
 
 export default function RootLayout() {
