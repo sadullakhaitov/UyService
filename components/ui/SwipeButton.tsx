@@ -8,6 +8,8 @@ import { Text } from './Text';
 
 const KNOB = 64;
 const PAD = 6;
+const SNAP = { damping: 20, stiffness: 300, overshootClamping: true };
+const BACK = { damping: 18, stiffness: 200, overshootClamping: true };
 
 // Yandex Pro'dagidek "surib tasdiqlash" tugmasi: tasodifan bosilib ketmaydi
 export function SwipeButton({
@@ -36,15 +38,17 @@ export function SwipeButton({
       x.value = Math.min(max, Math.max(0, e.translationX));
     })
     .onEnd(() => {
+      // overshootClamping — prujina chegaradan o'tib ketmaydi (aks holda tez surilsa tugma chiziqdan chiqib turardi)
       if (x.value > max * 0.75) {
         runOnJS(onComplete)();
-        x.value = withSequence(withSpring(max, { damping: 20, stiffness: 300 }), withSpring(0, { damping: 18, stiffness: 160 }));
+        x.value = withSequence(withSpring(max, SNAP), withSpring(0, BACK));
       } else {
-        x.value = withSpring(0, { damping: 16, stiffness: 220 });
+        x.value = withSpring(0, BACK);
       }
     });
 
-  const knob = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
+  // Har holda ham tugma chiziq ichida: 0 … max
+  const knob = useAnimatedStyle(() => ({ transform: [{ translateX: Math.min(max, Math.max(0, x.value)) }] }));
   const label = useAnimatedStyle(() => ({ opacity: max ? interpolate(x.value, [0, max * 0.6], [1, 0]) : 1 }));
 
   const primary = tone === 'primary' && !disabled;
@@ -73,7 +77,7 @@ export function SwipeButton({
 }
 
 const styles = themed(() => ({
-  track: { height: KNOB + PAD * 2, borderRadius: (KNOB + PAD * 2) / 2, padding: PAD, justifyContent: 'center' },
+  track: { height: KNOB + PAD * 2, borderRadius: (KNOB + PAD * 2) / 2, padding: PAD, justifyContent: 'center', overflow: 'hidden' },
   labels: { position: 'absolute', left: KNOB + PAD * 2, right: 16, alignItems: 'center' },
   title: { fontFamily: fonts.heavy, fontSize: 18, textAlign: 'center' },
   hint: { fontFamily: fonts.medium, fontSize: 13, marginTop: 2, textAlign: 'center' },
