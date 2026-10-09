@@ -17,7 +17,7 @@ import { DEMO_ADMIN_PHONE } from '@/lib/admin/demo';
 import { normalizePhone } from '@/lib/admin/rules';
 import { useAdminSession } from '@/lib/admin/session';
 import { adminErrorText } from '@/lib/admin/hooks';
-import { sendCode, signOut, verifyCode } from '@/lib/auth';
+import { noChannel, sendCode, signOut, verifyCode } from '@/lib/auth';
 import { DEMO } from '@/lib/demo';
 import { t } from '@/lib/i18n';
 
@@ -52,7 +52,7 @@ export default function AdminLogin() {
     setError(null);
     const r = await sendCode(fmtPhone(e164));
     setBusy(false);
-    if (!r.ok) return setError(t('auth.sendFailed'));
+    if (!r.ok) return setError(t(noChannel(r) ? 'auth.noChannel' : 'auth.sendFailed'));
     setStep('code');
     setTimeout(() => codeRef.current?.focus(), 50);
   };

@@ -1,6 +1,7 @@
 // POST /functions/v1/telegram-bot — bot webhook'i (Telegram chaqiradi).
-//   /start            → salom va "Ilovani ochish" tugmasi (Mini App: uyservice.uz)
-//   kontakt ulashildi → raqam telegram_contacts'ga yoziladi (faqat o'zining kontakti), telegram-auth shu bilan kiritadi
+//   /start            → salom va "Ilovani ochish" tugmasi (Mini App: uyservice.uz) + "Raqamni ulashish" (kirish kodi shu yerga keladi)
+//   kontakt ulashildi → raqam telegram_contacts'ga yoziladi (faqat o'zining kontakti): telegram-auth shu bilan kiritadi,
+//                       send-sms kirish kodini SMS o'rniga shu chatga yuboradi
 // Sirlar: TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET (setWebhook'dagi secret_token bilan bir xil), APP_URL (ixtiyoriy).
 import { adminClient, json } from '../_shared/http.ts';
 
@@ -8,19 +9,25 @@ const TEXT = {
   uz: {
     hello: "Assalomu alaykum! UyService — uyga usta chaqirish: santexnik, elektrik, konditsioner va boshqalar.\n\nPastdagi tugma bilan ilovani oching.",
     open: 'Ilovani ochish',
-    thanks: "Rahmat! Raqamingiz tasdiqlandi — ilovaga qayting.",
+    thanks: "Rahmat! Raqamingiz tasdiqlandi — endi kirish kodi shu yerga keladi. Ilovaga qayting.",
+    share: "Kirish kodini SMS o'rniga shu yerda olish uchun raqamingizni ulashing 👇",
+    shareBtn: '📱 Raqamni ulashish',
     notOwn: "Iltimos, o'zingizning raqamingizni ulashing.",
   },
   ru: {
     hello: 'Здравствуйте! UyService — вызов мастера на дом: сантехник, электрик, кондиционеры и другое.\n\nОткройте приложение кнопкой ниже.',
     open: 'Открыть приложение',
-    thanks: 'Спасибо! Номер подтверждён — вернитесь в приложение.',
+    thanks: 'Спасибо! Номер подтверждён — теперь код входа будет приходить сюда. Вернитесь в приложение.',
+    share: 'Чтобы получать код входа здесь вместо SMS, поделитесь номером 👇',
+    shareBtn: '📱 Поделиться номером',
     notOwn: 'Пожалуйста, поделитесь своим номером.',
   },
   en: {
     hello: 'Hello! UyService — call a handyman home: plumber, electrician, air conditioning and more.\n\nOpen the app with the button below.',
     open: 'Open the app',
-    thanks: 'Thanks! Your number is confirmed — go back to the app.',
+    thanks: 'Thanks! Your number is confirmed — sign-in codes will now arrive here. Go back to the app.',
+    share: 'To get your sign-in code here instead of SMS, share your number 👇',
+    shareBtn: '📱 Share my number',
     notOwn: 'Please share your own number.',
   },
 };
@@ -58,11 +65,15 @@ Deno.serve(async (req) => {
       .from('telegram_contacts')
       .upsert({ telegram_id: msg.from.id, phone: msg.contact.phone_number, created_at: new Date().toISOString() });
     if (error) console.error('telegram_contacts', error.message);
-    await send(bot, msg.chat.id, T.thanks, { reply_markup: { inline_keyboard: [[{ text: T.open, web_app: { url: appUrl } }]] } });
+    await send(bot, msg.chat.id, T.thanks, { reply_markup: { remove_keyboard: true } });
+    await send(bot, msg.chat.id, T.open, { reply_markup: { inline_keyboard: [[{ text: T.open, web_app: { url: appUrl } }]] } });
     return json({ ok: true });
   }
   if (msg.text?.startsWith('/start')) {
     await send(bot, msg.chat.id, T.hello, { reply_markup: { inline_keyboard: [[{ text: T.open, web_app: { url: appUrl } }]] } });
+    await send(bot, msg.chat.id, T.share, {
+      reply_markup: { keyboard: [[{ text: T.shareBtn, request_contact: true }]], resize_keyboard: true, one_time_keyboard: true },
+    });
   }
   return json({ ok: true });
 });

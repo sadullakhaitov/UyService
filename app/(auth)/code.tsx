@@ -5,7 +5,7 @@ import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
-import { sendCode, verifyCode } from '@/lib/auth';
+import { noChannel, sendCode, verifyCode } from '@/lib/auth';
 import { afterSignIn } from '@/lib/afterSignIn';
 import { t } from '@/lib/i18n';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -18,7 +18,7 @@ export default function CodeScreen() {
   const [code, setCode] = useState('');
   const [left, setLeft] = useState(59);
   const [checking, setChecking] = useState(false);
-  const [error, setError] = useState<'auth.codeWrong' | 'auth.sendFailed' | null>(null);
+  const [error, setError] = useState<'auth.codeWrong' | 'auth.sendFailed' | 'auth.noChannel' | null>(null);
   const input = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function CodeScreen() {
     setLeft(59);
     setError(null);
     const res = await sendCode(phone);
-    if (!res.ok) setError('auth.sendFailed');
+    if (!res.ok) setError(noChannel(res) ? 'auth.noChannel' : 'auth.sendFailed');
   };
 
   return (

@@ -36,7 +36,7 @@ export PGRST_DB_SCHEMAS=public PGRST_DB_ANON_ROLE=anon PGRST_SERVER_PORT=54330
 # Usta qidirish sinovlari taxminiy vaqt bilan (tashqi yo'l xizmatisiz — natija har safar bir xil)
 export DISPATCH_ROUTING=off
 export PGRST_JWT_SECRET=${PGRST_JWT_SECRET:-super-secret-jwt-token-with-at-least-32-characters-long}
-for t in engine push; do
+for t in engine push otp; do
   echo "== E2E: $t"
   fresh tests/e2e/fixture.sql
   "$PGRST_BIN" > /tmp/uyservice-postgrest.log 2>&1 &

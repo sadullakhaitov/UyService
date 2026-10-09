@@ -6,9 +6,9 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
-import { sendCode } from '@/lib/auth';
+import { noChannel, sendCode } from '@/lib/auth';
 import { afterSignIn } from '@/lib/afterSignIn';
-import { inTelegram, requestTelegramContact, telegramSignIn } from '@/lib/telegram';
+import { inTelegram, openBot, requestTelegramContact, telegramSignIn } from '@/lib/telegram';
 import { t } from '@/lib/i18n';
 
 // Brauzer: avtomatik to'ldirilganda maydon foni (colors.field) saqlanadi — app/_layout.tsx'dagi CSS
@@ -27,7 +27,7 @@ export default function PhoneScreen() {
   const [focused, setFocused] = useState(false);
   const { next } = useLocalSearchParams<{ next?: string }>();
   const [sending, setSending] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<false | 'auth.sendFailed' | 'auth.noChannel'>(false);
   useEffect(() => track('phone_open', { next: next ?? '' }), []); // eslint-disable-line react-hooks/exhaustive-deps
   // Ikki raqam yozilgach operator kodi tekshiriladi — noto'g'ri raqamga SMS yuborilmaydi
   const badCode = digits.length >= 2 && !OPERATORS.includes(digits.slice(0, 2));
@@ -67,7 +67,7 @@ export default function PhoneScreen() {
     const res = await sendCode(phone);
     setSending(false);
     if (!res.ok) {
-      setFailed(true);
+      setFailed(noChannel(res) ? 'auth.noChannel' : 'auth.sendFailed');
       return;
     }
     router.push({ pathname: '/code', params: { phone, next: next ?? '' } });
@@ -141,7 +141,13 @@ export default function PhoneScreen() {
       ) : null}
       {failed ? (
         <Text variant="small" style={styles.error}>
-          {t('auth.sendFailed')}
+          {t(failed)}
+          {failed === 'auth.noChannel' ? (
+            <Text variant="small" style={styles.link} onPress={openBot}>
+              {' '}
+              {t('auth.openBot')} →
+            </Text>
+          ) : null}
         </Text>
       ) : null}
     </AuthShell>

@@ -95,6 +95,10 @@ Bu 7 ta funksiyani yuklaydi: `dispatch` (usta qidirish), `offer-respond` (usta j
    - Type: **HTTPS**
    - URL: `https://PROJECT_REF.supabase.co/functions/v1/send-sms`
    - **Generate secret** → chiqqan `v1,whsec_...` qiymatni nusxalang → **Create**.
+   - Sirni yozing: `npx supabase secrets set "SEND_SMS_HOOK_SECRET=v1,whsec_..."` (keyin `supabase\update.ps1`).
+   - **Kod qayerga ketadi** (`functions/_shared/otp.ts`): raqam egasining Telegram'i ma'lum bo'lsa — **@uyservice_bot**
+     xabari (bepul; odam Telegram orqali kirgan yoki botda «Raqamni ulashish»ni bosgan), aks holda Eskiz SMS.
+     Eskiz hali ulanmagan bo'lsa (`ESKIZ_EMAIL` yo'q) — faqat Telegram: ilova "botga kirib raqamingizni ulashing" deydi.
 3. (Ixtiyoriy, sinov uchun) **Phone** sozlamalarida **Test Phone Numbers** — masalan `998901234567=123456`:
    shu raqamga SMS ketmaydi, kod har doim `123456`.
 

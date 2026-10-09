@@ -1,11 +1,19 @@
-// Supabase Auth → "Send SMS hook": tasdiqlash kodini Eskiz.uz orqali yuboradi.
+// Supabase Auth → "Send SMS hook": tasdiqlash kodini yuboradi.
+// 1) Raqam egasining Telegram'i ma'lum bo'lsa — @uyservice_bot xabari (bepul, darhol). Telegram ma'lum:
+//    - profil Telegram orqali kirgan (profiles.telegram_id — telegram-auth bog'lagan), yoki
+//    - odam botga o'z raqamini ulashgan (telegram_contacts — faqat o'zining kontakti, telegram-bot tekshiradi).
+// 2) Aks holda (yoki Telegram yubora olmasa) — Eskiz.uz SMS. Ikkalasi ham bo'lmasa — xato "no_channel"
+//    (ilova: "Botga kirib raqamingizni ulashing").
 // Dashboard → Authentication → Hooks → Send SMS hook → HTTPS → https://<PROJECT_REF>.supabase.co/functions/v1/send-sms
 // Sirlar (npx supabase secrets set ...):
 //   SEND_SMS_HOOK_SECRET — hook yaratilganda Dashboard beradigan "v1,whsec_..." qiymat
-//   ESKIZ_EMAIL, ESKIZ_PASSWORD — my.eskiz.uz kabinetidagi login
+//   TELEGRAM_BOT_TOKEN — bot (Telegram orqali kod uchun; allaqachon sozlangan)
+//   ESKIZ_EMAIL, ESKIZ_PASSWORD — my.eskiz.uz kabinetidagi login (ixtiyoriy — bo'lmasa faqat Telegram)
 //   ESKIZ_FROM — jo'natuvchi nomi (ixtiyoriy, standart '4546')
 //   SMS_TEMPLATE — matn (ixtiyoriy, standart "UyService kodi: {code}"). Eskiz'da oldindan tasdiqlangan bo'lishi shart!
 import { Webhook } from 'npm:standardwebhooks@1.0.0';
+import { adminClient } from '../_shared/http.ts';
+import { deliverOtp } from '../_shared/otp.ts';
 
 const ESKIZ = Deno.env.get('ESKIZ_API') || 'https://notify.eskiz.uz/api'; // ESKIZ_API — faqat sinov uchun
 let cachedToken: string | null = null; // Eskiz tokeni 30 kun amal qiladi — funksiya "issiq" turganda qayta ishlatiladi
@@ -69,9 +77,12 @@ Deno.serve(async (req) => {
   const otp = data.sms?.otp;
   if (!/^998\d{9}$/.test(phone) || !otp) return hookError(400, 'Faqat O\'zbekiston raqamlari (+998)');
 
-  const message = (Deno.env.get('SMS_TEMPLATE') || 'UyService kodi: {code}').replace('{code}', otp);
+  const sms = Deno.env.get('ESKIZ_EMAIL')
+    ? (to: string, code: string) => eskizSend(to, (Deno.env.get('SMS_TEMPLATE') || 'UyService kodi: {code}').replace('{code}', code))
+    : null; // Eskiz hali ulanmagan — faqat Telegram
   try {
-    await eskizSend(phone, message);
+    const via = await deliverOtp(adminClient(), { userId: data.user?.id ?? '', digits: phone, otp, botToken: Deno.env.get('TELEGRAM_BOT_TOKEN'), sms });
+    if (via === 'no_channel') return hookError(422, 'no_channel'); // ilova: "Botga kirib raqamingizni ulashing"
   } catch (e) {
     console.error(e);
     return hookError(502, 'SMS yuborilmadi');

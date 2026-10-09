@@ -19,12 +19,12 @@
   },
   "auth": {
     "phoneTitle": "Telefon raqamingiz",
-    "phoneHint": "Raqamingizga 6 xonali SMS kod yuboramiz",
+    "phoneHint": "Raqamingizga 6 xonali kod yuboramiz — Telegram'da (@uyservice_bot) yoki SMS bilan",
     "phoneLabel": "Telefon raqam",
     "getCode": "Kod olish",
-    "codeTitle": "SMS kodni kiriting",
-    "codeHint": "{{phone}} raqamiga kod yuborildi",
-    "codeLabel": "SMS kod",
+    "codeTitle": "Kodni kiriting",
+    "codeHint": "Kod {{phone}} raqamiga yuborildi — Telegram'dagi @uyservice_bot xabarlarini yoki SMS'ni tekshiring",
+    "codeLabel": "Kod",
     "resendIn": "Qayta yuborish: {{sec}} s",
     "resend": "Kodni qayta yuborish",
     "codeDemo": "Demo rejim: istalgan 6 ta raqam",
@@ -41,7 +41,9 @@
     "tgDenied": "Raqam ulashilmadi. Qayta urinib ko'ring yoki SMS kod bilan kiring.",
     "tgNotUz": "Telegram'dagi raqam O'zbekiston raqami emas. Raqamni yozib SMS kod bilan kiring.",
     "tgFailed": "Telegram orqali kirib bo'lmadi. Qayta urinib ko'ring yoki SMS kod bilan kiring.",
-    "loginToSupport": "Yozishma raqamingizga bog'lanadi — javob shu yerga keladi"
+    "loginToSupport": "Yozishma raqamingizga bog'lanadi — javob shu yerga keladi",
+    "noChannel": "Kodni Telegram orqali olish uchun @uyservice_bot'ga kirib, «Raqamni ulashish» tugmasini bosing, keyin qayta urinib ko'ring.",
+    "openBot": "Botni ochish"
   },
   "categories": {
     "plumber": "Santexnik",

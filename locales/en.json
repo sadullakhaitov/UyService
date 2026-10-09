@@ -19,12 +19,12 @@
   },
   "auth": {
     "phoneTitle": "Your phone number",
-    "phoneHint": "We'll send a 6-digit SMS code to your number",
+    "phoneHint": "We'll send a 6-digit code — in Telegram (@uyservice_bot) or by SMS",
     "phoneLabel": "Phone number",
     "getCode": "Get code",
-    "codeTitle": "Enter the SMS code",
-    "codeHint": "Code sent to {{phone}}",
-    "codeLabel": "SMS code",
+    "codeTitle": "Enter the code",
+    "codeHint": "Code sent to {{phone}} — check messages from @uyservice_bot in Telegram or your SMS",
+    "codeLabel": "Code",
     "resendIn": "Resend in {{sec}} s",
     "resend": "Resend code",
     "codeDemo": "Demo mode: any 6 digits",
@@ -41,7 +41,9 @@
     "tgDenied": "The number wasn't shared. Try again or sign in with an SMS code.",
     "tgNotUz": "Your Telegram number isn't an Uzbek number. Type your number and sign in with an SMS code.",
     "tgFailed": "Couldn't sign in with Telegram. Try again or sign in with an SMS code.",
-    "loginToSupport": "The chat is linked to your number — replies will arrive here"
+    "loginToSupport": "The chat is linked to your number — replies will arrive here",
+    "noChannel": "To get the code in Telegram, open @uyservice_bot, tap “Share my number” and try again.",
+    "openBot": "Open the bot"
   },
   "categories": {
     "plumber": "Plumber",

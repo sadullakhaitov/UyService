@@ -5,6 +5,8 @@ import { unregisterPush } from './push';
 import { getSupabase } from './supabase';
 
 export type AuthResult = { ok: boolean; error?: string };
+/** Kod yuborilmadi: raqamning Telegram'i noma'lum va SMS hali ulanmagan (send-sms → "no_channel") */
+export const noChannel = (r: AuthResult) => !r.ok && Boolean(r.error?.includes('no_channel'));
 
 /** "+998 90 123 45 67" → "+998901234567" (E.164) */
 export function toE164(phone: string) {

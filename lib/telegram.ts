@@ -5,7 +5,8 @@
 // - sinov rejimida (server yo'q) — raqam Telegram'dan olinadi, kirish soxta (SMS kodi kabi)
 // Oddiy brauzer va telefon ilovasida bu fayl hech narsa qilmaydi.
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
+import { COMPANY } from '@/constants/company';
 import { colors, useScheme } from '@/constants/theme';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 
@@ -23,6 +24,7 @@ type TgWebApp = {
   requestContact?: (cb: (shared: boolean, res?: ContactResult) => void) => void;
   requestWriteAccess?: (cb?: (allowed: boolean) => void) => void;
   isVersionAtLeast?: (v: string) => boolean;
+  openTelegramLink?: (url: string) => void;
 };
 
 /** Telegram ichida ochilgan bo'lsa — WebApp obyekti, aks holda null */
@@ -32,6 +34,14 @@ export function telegram(): TgWebApp | null {
   return w && w.initData ? w : null;
 }
 export const inTelegram = () => telegram() !== null;
+
+/** @uyservice_bot ni ochish (kirish kodini Telegram'da olish uchun raqam ulashiladi) */
+export function openBot() {
+  const url = `https://t.me/${COMPANY.telegram}?start=code`;
+  const tg = telegram();
+  if (tg?.openTelegramLink) tg.openTelegramLink(url);
+  else Linking.openURL(url).catch(() => {});
+}
 
 /** "+998 90 123 45 67" (ilovadagi ko'rinish) yoki null — faqat O'zbekiston raqami */
 export function displayPhone(phone: string | null | undefined): string | null {
