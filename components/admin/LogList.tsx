@@ -34,7 +34,7 @@ const str = (v: unknown) => (v == null || v === '' ? null : String(v));
 const num = (v: unknown) => (typeof v === 'number' ? v : Number(v));
 
 /** Jurnal yozuvining tafsiloti (tilda) */
-export function logDetails(e: LogEntry): string {
+function logDetails(e: LogEntry): string {
   const d = e.details;
   switch (e.action) {
     case 'verify':
@@ -102,7 +102,7 @@ function targetLabel(e: LogEntry) {
   return t(`admin.log.t.${e.targetType}`);
 }
 
-export function LogRow({ e, showTarget = true }: { e: LogEntry; showTarget?: boolean }) {
+function LogRow({ e, showTarget = true }: { e: LogEntry; showTarget?: boolean }) {
   useScheme();
   const { hovered, bind } = useHover();
   const Icon = ICON[e.action] ?? Tag;

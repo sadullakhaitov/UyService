@@ -10,7 +10,7 @@ import { CategoryIcon } from './CategoryIcon';
 import { fmtDateTime, fmtPhone, shortId } from './format';
 import { AButton, Badge } from './kit';
 
-export function Stars({ n }: { n: number }) {
+function Stars({ n }: { n: number }) {
   useScheme();
   return (
     <View style={styles.stars} accessible accessibilityLabel={t('admin.reviews.starsLabel', { n })}>

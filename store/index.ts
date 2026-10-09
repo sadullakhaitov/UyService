@@ -224,7 +224,7 @@ type MasterState = {
 
 export type DayEarning = { day: string; income: number; jobs: number };
 /** Mahalliy sana kaliti YYYY-MM-DD */
-export const dayKey = (d: Date = new Date()) =>
+const dayKey = (d: Date = new Date()) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 export const earningOn = (earnings: DayEarning[], d: Date = new Date()) => earnings.find((e) => e.day === dayKey(d)) ?? { day: dayKey(d), income: 0, jobs: 0 };
 

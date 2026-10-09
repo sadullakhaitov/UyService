@@ -10,7 +10,7 @@ export type AuthResult = { ok: boolean; error?: string };
 export const noChannel = (r: AuthResult) => !r.ok && /no_channel|hook: 422/.test(r.error ?? '');
 
 /** "+998 90 123 45 67" → "+998901234567" (E.164) */
-export function toE164(phone: string) {
+function toE164(phone: string) {
   const digits = phone.replace(/\D/g, '');
   return `+${digits.startsWith('998') ? digits : `998${digits}`}`;
 }

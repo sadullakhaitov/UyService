@@ -8,7 +8,7 @@ import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
 
-export const ORDER_TONE: Record<OrderStatus, Tone> = {
+const ORDER_TONE: Record<OrderStatus, Tone> = {
   scheduled: 'neutral',
   searching: 'info',
   assigned: 'primary',
@@ -18,7 +18,7 @@ export const ORDER_TONE: Record<OrderStatus, Tone> = {
   completed: 'success',
   cancelled: 'danger',
 };
-export const VERIFY_TONE: Record<VerifyStatus, Tone> = { none: 'neutral', pending: 'warning', approved: 'success', rejected: 'danger' };
+const VERIFY_TONE: Record<VerifyStatus, Tone> = { none: 'neutral', pending: 'warning', approved: 'success', rejected: 'danger' };
 export const KIND_TONE: Record<BalanceKind, Tone> = { topup: 'success', bonus: 'primary', refund: 'info', adjust: 'warning', fee: 'neutral' };
 
 export const OrderBadge = ({ status }: { status: OrderStatus }) => <Badge label={t(`admin.status.${status}`)} tone={ORDER_TONE[status]} dot />;

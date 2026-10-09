@@ -3,7 +3,7 @@ import { bearing, distanceKm, lerp, type LatLng } from '@/lib/geo';
 import { MOVE_INTERVAL_MS } from './types';
 
 // Har 5 s kelgan koordinata orasida silliq interpolatsiya + yo'nalish (heading).
-// Belgi sakramaydi — Yandex effekti shundan.
+// Belgi sakramaydi, silliq siljiydi.
 export function useMovingPoint(target: LatLng | undefined, duration = MOVE_INTERVAL_MS) {
   const [pos, setPos] = useState<LatLng | undefined>(target);
   const [heading, setHeading] = useState(0);

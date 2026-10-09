@@ -47,7 +47,7 @@ function must<T>(r: { data: T; error: unknown }): T {
 // ---------- Fayllar ----------
 
 /** Telefon/brauzerdagi rasmni Storage'ga yuklaydi, "<uid>/<fayl>" yo'lini qaytaradi (xato bo'lsa — null) */
-export async function uploadPhoto(bucket: 'documents' | 'works' | 'order-photos', uri: string, name: string): Promise<string | null> {
+async function uploadPhoto(bucket: 'documents' | 'works' | 'order-photos', uri: string, name: string): Promise<string | null> {
   try {
     const uid = await myId();
     if (!uid) return null;
@@ -81,7 +81,7 @@ type OrderRow = {
 const ORDER_COLS = 'id, status, master_id, dispatch, call_fee, price_status, price_work, price_parts, scheduled_at, lat, lng, cancel_reason, cancelled_by';
 
 /** Server qatori → mijoz store'idagi buyurtma (yo'l, usta kartasi alohida) */
-export function orderPatch(row: OrderRow, cur?: ActiveOrder): Partial<ActiveOrder> {
+function orderPatch(row: OrderRow, cur?: ActiveOrder): Partial<ActiveOrder> {
   const work = row.price_work ?? 0;
   const parts = row.price_parts ?? 0;
   // 'assigned' — usta tayinlandi, hali yo'lga chiqmadi: mijoz uchun "yo'lda" bilan bir xil
@@ -239,7 +239,7 @@ export async function liveRate(orderId: string, masterId: string, stars: number,
 }
 
 /** Usta kartasi: ism, reyting, ishlar (master_cards) + telefon (faol buyurtmada profiles ochiq) */
-export async function fetchMasterCard(masterId: string): Promise<OrderMaster | null> {
+async function fetchMasterCard(masterId: string): Promise<OrderMaster | null> {
   const [card, prof] = await Promise.all([
     db().from('master_cards').select('id, first_name, last_name, experience_years, rating, jobs_count, verified').eq('id', masterId).maybeSingle(),
     db().from('profiles').select('phone').eq('id', masterId).maybeSingle(),
@@ -528,7 +528,7 @@ export async function liveSetPlan(plan: 'subscription' | 'commission') {
   if (uid) await db().from('masters').update({ billing_plan: plan }).eq('id', uid);
 }
 
-export async function liveSetOnline(online: boolean) {
+async function liveSetOnline(online: boolean) {
   const uid = await myId();
   if (uid) await db().from('masters').update({ online }).eq('id', uid);
 }

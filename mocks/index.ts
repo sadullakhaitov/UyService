@@ -4,7 +4,7 @@ import type { LatLng } from '@/lib/geo';
 
 export const TASHKENT_CENTER: LatLng = { latitude: 41.3111, longitude: 69.2797 };
 
-export const mockClient = {
+const mockClient = {
   name: 'Dilnoza',
   phone: '+998 90 123 45 67',
   location: { latitude: 41.2856, longitude: 69.2036 } as LatLng,

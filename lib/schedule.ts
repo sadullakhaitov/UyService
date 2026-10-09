@@ -1,9 +1,9 @@
 // "Vaqtni tanlash": usta kelishi mumkin bo'lgan vaqtlar — bugundan 30 kun oldinga; 08:00–21:00, har soatda.
 // Bugungi kun uchun eng erta vaqt — hozirdan kamida 1,5 soat keyin (usta topishga ulgurish uchun).
 export const DAYS_AHEAD = 30;
-export const FIRST_HOUR = 8;
-export const LAST_HOUR = 21;
-export const MIN_LEAD_MS = 90 * 60_000;
+const FIRST_HOUR = 8;
+const LAST_HOUR = 21;
+const MIN_LEAD_MS = 90 * 60_000;
 
 /** Tanlangan vaqt hali ham mumkinmi (vaqt o'tib, eng erta muddatdan o'tib ketmaganmi) */
 export const slotStillValid = (at: number, now = Date.now()) => at - now >= MIN_LEAD_MS;

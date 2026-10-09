@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
 
 /** Odatiy eng katta tomon (px): muammo rasmi, ish namunasi. Hujjat uchun kattaroq — DOC_MAX */
-export const PHOTO_MAX = 800;
+const PHOTO_MAX = 800;
 export const DOC_MAX = 1280;
 /** Profil surati */
 export const AVATAR_MAX = 320;
@@ -45,7 +45,7 @@ export async function takePhoto({ front = false, max = PHOTO_MAX }: { front?: bo
  * kichraytirib (eng katta tomoni ≤ max px) data: URL'ga aylantiramiz (localStorage'ga sig'ishi uchun JPEG).
  * Telefonda fayl manzili o'zi saqlanadi. Server rejimida Supabase Storage'ga yuklanadi.
  */
-export async function keepablePhoto(uri: string, max = PHOTO_MAX): Promise<string> {
+async function keepablePhoto(uri: string, max = PHOTO_MAX): Promise<string> {
   if (Platform.OS !== 'web' || !uri.startsWith('blob:')) return uri;
   try {
     const img = new window.Image();

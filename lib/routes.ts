@@ -24,7 +24,7 @@ export function estimateEtaMin(from: LatLng, to: LatLng) {
   return Math.max(1, Math.round((roadKm / CITY_SPEED_KMH) * 60));
 }
 
-export function routeLengthKm(path: LatLng[]) {
+function routeLengthKm(path: LatLng[]) {
   let sum = 0;
   for (let i = 1; i < path.length; i++) sum += distanceKm(path[i - 1], path[i]);
   return sum;

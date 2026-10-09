@@ -44,7 +44,7 @@ const NOTES = ['offer.note1', 'offer.note2', 'offer.note3'];
 const pick = <T,>(a: readonly T[]) => a[Math.floor(Math.random() * a.length)];
 
 /** Ustaning filtriga (kategoriya, radius) mos soxta buyurtma */
-export function makeMockOrder(here: LatLng, categories: CategoryId[], radiusKm: number): MasterOrder {
+function makeMockOrder(here: LatLng, categories: CategoryId[], radiusKm: number): MasterOrder {
   const categoryId = pick(categories.length ? categories : (['plumber'] as CategoryId[]));
   const problem = pick(problemsOf(categoryId));
   // Mijoz 0,6 km dan radiusgacha (ko'pi bilan 3 km) uzoqlikda

@@ -2,7 +2,7 @@
 // Excel o'zbek/rus harflarini to'g'ri ochishi uchun UTF-8 BOM, ajratuvchi — nuqtali vergul.
 import { Platform, Share } from 'react-native';
 
-export function toCsv(header: string[], rows: (string | number | null | undefined)[][]) {
+function toCsv(header: string[], rows: (string | number | null | undefined)[][]) {
   const esc = (v: string | number | null | undefined) => {
     let s = v == null ? '' : String(v);
     // Formula in'ektsiyasidan himoya (=, +, -, @ bilan boshlangan matn)

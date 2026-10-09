@@ -77,7 +77,7 @@ export function AButton({
 
 // ---------- Holat belgisi ----------
 export type Tone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
-export function toneColors(tone: Tone) {
+function toneColors(tone: Tone) {
   return {
     neutral: { bg: colors.field, fg: colors.ink2, dot: colors.muted },
     primary: { bg: colors.primarySoft, fg: colors.primary, dot: colors.primary },
