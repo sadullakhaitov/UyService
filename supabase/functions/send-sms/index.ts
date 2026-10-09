@@ -70,18 +70,24 @@ Deno.serve(async (req) => {
   try {
     data = new Webhook(secret).verify(payload, Object.fromEntries(req.headers)) as HookPayload;
   } catch (e) {
+    // Ko'pincha: SEND_SMS_HOOK_SECRET Dashboard'dagi hook siri bilan bir xil emas
+    console.error('send-sms: imzo noto\'g\'ri (SEND_SMS_HOOK_SECRET hook siriga mos emas)', (e as Error).message);
     return hookError(401, `invalid signature: ${(e as Error).message}`);
   }
 
   const phone = (data.user?.phone ?? '').replace(/\D/g, ''); // Eskiz: faqat raqamlar, 998XXXXXXXXX
   const otp = data.sms?.otp;
-  if (!/^998\d{9}$/.test(phone) || !otp) return hookError(400, 'Faqat O\'zbekiston raqamlari (+998)');
+  if (!/^998\d{9}$/.test(phone) || !otp) {
+    console.warn('send-sms: raqam O\'zbekistonniki emas', phone.slice(0, 5));
+    return hookError(400, 'Faqat O\'zbekiston raqamlari (+998)');
+  }
 
   const sms = Deno.env.get('ESKIZ_EMAIL')
     ? (to: string, code: string) => eskizSend(to, (Deno.env.get('SMS_TEMPLATE') || 'UyService kodi: {code}').replace('{code}', code))
     : null; // Eskiz hali ulanmagan — faqat Telegram
   try {
     const via = await deliverOtp(adminClient(), { userId: data.user?.id ?? '', digits: phone, otp, botToken: Deno.env.get('TELEGRAM_BOT_TOKEN'), sms });
+    console.log(`send-sms: ${via}`, `…${phone.slice(-4)}`);
     if (via === 'no_channel') return hookError(422, 'no_channel'); // ilova: "Botga kirib raqamingizni ulashing"
   } catch (e) {
     console.error(e);
