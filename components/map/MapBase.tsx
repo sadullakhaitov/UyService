@@ -1,16 +1,16 @@
-// Yandex xaritasi (Android/iOS): Yandex Maps JS API WebView ichida. Expo Go'da ham ishlaydi.
-// Brauzer uchun: MapBase.web.tsx. Xarita sahifasi: yandex/html.ts
+// Xarita (Android/iOS): OpenStreetMap sahifasi (osm/html.ts, MapLibre) WebView ichida. Expo Go'da ham ishlaydi.
+// Brauzer uchun: MapBase.web.tsx
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Keyboard, Linking, StyleSheet, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { colors, themed, useScheme } from '@/constants/theme';
 import { DEFAULT_ZOOM, type MapBaseProps, type MapHandle } from './types';
-import { MAP_BASE_URL, type MapCommand, type MapEvent } from './yandex/html';
-import { useYandexMap } from './yandex/useYandexMap';
+import { MAP_BASE_URL, type MapCommand, type MapEvent } from './page';
+import { useMapPage } from './useMapPage';
 
 export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(props, handle) {
   useScheme();
-  const { html, json, onEvent } = useYandexMap(props);
+  const { html, json, onEvent } = useMapPage(props);
   const { insets = { top: 0, bottom: 0 }, overlay } = props;
   const web = useRef<WebView>(null);
   const booted = useRef(false);
@@ -70,7 +70,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(prop
       clearTimeout(retry.current);
       setReady(true);
     } else if (m.type === 'error') {
-      if (!ready && (m.message === 'script' || m.message === 'ymaps')) reload();
+      if (!ready && (m.message === 'script' || m.message === 'lib')) reload();
     } else if (m.type === 'press') Keyboard.dismiss();
     else onEvent(m);
   };
@@ -95,7 +95,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(prop
         textInteractionEnabled={false}
         androidLayerType="hardware"
         cacheEnabled
-        // Yandex logotipi/havolalari bosilsa — ilova ichida emas, tashqarida ochiladi
+        // "© OpenStreetMap" havolalari bosilsa — ilova ichida emas, tashqarida ochiladi
         onShouldStartLoadWithRequest={(r) => {
           if (r.isTopFrame === false || /^(about:|data:|blob:)/.test(r.url) || r.url.startsWith(MAP_BASE_URL)) return true;
           Linking.openURL(r.url).catch(() => {});

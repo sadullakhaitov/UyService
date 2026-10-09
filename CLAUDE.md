@@ -34,9 +34,9 @@ Hammasi TypeScript'da, o'z serverimiz yo'q.
 |---|---|
 | Mobil ilova | Expo SDK 57 (React Native) + TypeScript |
 | Ekranlar orasida o'tish | Expo Router (fayl nomi = ekran) |
-| Xarita | **Yandex Maps** JS API 2.1 — hamma joyda bir xil: telefonda `react-native-webview` ichida (Expo Go'da ham ishlaydi), brauzer/Telegram'da iframe ichida. Kalit: `EXPO_PUBLIC_YANDEX_MAPS_KEY`. **Sinov: 2GIS MapGL** — `EXPO_PUBLIC_MAP_PROVIDER=2gis` + `EXPO_PUBLIC_2GIS_KEY` (`lib/mapProvider.ts`; kalit bo'lmasa — Yandex) |
+| Xarita | **OpenStreetMap** (9-oktabr qarori: Yandex va 2GIS olib tashlandi — bepul, kalitsiz, shartnomasiz): chizuvchi — **MapLibre GL JS** 4.7.1 (unpkg), ko'chalar — **OpenFreeMap** (`liberty` uslubi, cheklovsiz, tijoratda ham mumkin). Hamma joyda bir xil: telefonda `react-native-webview` ichida (Expo Go'da ham ishlaydi), brauzer/Telegram'da iframe ichida (blob manzil — srcdoc'da MapLibre ko'chalarni yuklamaydi). "© OpenStreetMap" yozuvi — litsenziya talabi, yashirilmaydi |
 | Yo'nalish va vaqt | Hozircha bepul OSRM (OpenStreetMap) — haqiqiy ko'chalar bo'ylab yo'l va vaqt (`lib/routes.ts`); 7-bosqichda Google Routes API |
-| Manzil qidirish | Google Places API (keyinroq) |
+| Manzil qidirish | OpenStreetMap: qidiruv — Photon (komoot), zaxira — Nominatim; koordinatadan manzil — telefon xizmati → Nominatim (`lib/geocode.ts`, `lib/location.ts`) |
 | Animatsiyalar | react-native-reanimated 4 |
 | Pastdan chiqadigan panel | @gorhom/bottom-sheet 5 |
 | Backend | Supabase (Postgres + PostGIS, Auth, Realtime, Edge Functions, Storage) |
@@ -93,11 +93,11 @@ app/                      ← ekranlar (Expo Router)
   master/works.tsx, edit.tsx, promo.tsx, invite.tsx, learn.tsx, settings.tsx  ← profil bo'limlari
 components/
   map/                    ← xarita bilan bog'liq hamma narsa
-    MapBase.tsx           ← Yandex xaritasi WebView ichida (Android/iOS)
-    MapBase.web.tsx       ← Yandex xaritasi iframe ichida (brauzer); 8 s ichida chiqmasa — vaqtincha FakeMap.tsx, Yandex yuklangach o'zi almashadi
-    yandex/html.ts        ← xarita sahifasi: belgilar, to'lqinlar, yo'l, silliq siljish (60 fps sahifaning o'zida)
-    yandex/useYandexMap.ts ← props → holat; React ↔ sahifa xabarlari (state / flyTo / zoomBy ↔ moveStart / moveEnd); sahifani lib/mapProvider.ts tanlaydi
-    twogis/html.ts        ← xuddi shu xabarlar bilan 2GIS MapGL sahifasi (zoom Yandex masshtabiga o'zi moslanadi, belgilar — HtmlMarker)
+    MapBase.tsx           ← xarita WebView ichida (Android/iOS)
+    MapBase.web.tsx       ← xarita iframe ichida (brauzer); 8 s ichida chiqmasa — vaqtincha FakeMap.tsx, haqiqiy xarita yuklangach o'zi almashadi
+    osm/html.ts           ← xarita sahifasi (MapLibre + OpenFreeMap): belgilar (DOM Marker), to'lqinlar, yo'l (GeoJSON), silliq siljish (60 fps sahifaning o'zida); ilova zoom'i 256 px masshtabda, MapLibre'ga −1
+    page.ts               ← React ↔ sahifa xabarlari turlari (state / flyTo / panTo / zoomBy ↔ boot / ready / error / moveStart / moveEnd / press / point)
+    useMapPage.ts         ← props → holat
     FakeMap.tsx           ← zaxira soxta xarita (faqat dizayn/demo)
     ClientDot.tsx, CenterPin.tsx, MasterIcon.tsx, usePulse.ts, useBlink.ts
   ui/                     ← Button, Card, Chip, Rating, Logo, ...
@@ -118,10 +118,9 @@ lib/                      ← i18n, geo, location, routes, supabase
   telegram.ts             ← Telegram Mini App: oyna sozlamalari, avtomatik kirish, requestContact → telegram-auth → sessiya (sinovda — soxta kirish)
   afterSignIn.ts          ← raqam tasdiqlangach (SMS yoki Telegram) qayerga o'tish
   push.ts                 ← serverdan push: Expo push tokeni → profiles.push_token (til, "Yangi buyurtma" sozlamasi bilan); chiqishda o'chiriladi
-  geocode.ts              ← manzil qidirish butun O'zbekiston bo'ylab, foydalanuvchiga yaqinlari birinchi (Yandex Geocoder, kalit bo'lmasa OSM Nominatim)
+  geocode.ts              ← manzil qidirish butun O'zbekiston bo'ylab, foydalanuvchiga yaqinlari birinchi (Photon, zaxira — Nominatim)
   schedule.ts, photos.ts  ← rejalashtirish vaqtlari; rasm tanlash/suratga olish
   share.ts                ← ulashish (telefonda tizim oynasi, brauzerda nusxalash): taklif havolasi, "Do'stlarga tavsiya qilish"
-  yandex.ts               ← Yandex kaliti + HTTP Geocoder (qidiruv, koordinatadan manzil); kalit bo'lmasa — Nominatim / telefon xizmati
   useLayout.ts            ← `useWide()` — kompyuter brauzeri (≥ 900 px): yon panel, o'rtadagi ustun, chap menyu
   useMyLocation.ts        ← telefon joyi (bitta, butun ilova uchun): avval oxirgi ma'lum joy, keyin aniq GPS; `useLocStatus`
   useOnline.ts            ← internet bormi (NetInfo); yo'q bo'lsa tepada banner (components/ui/OfflineBanner.tsx)
@@ -192,9 +191,9 @@ Eslatma: asl TZ'da `(client)/`, `(master)/` guruhlari edi; ikkala guruhning `ind
 ## 5. Xarita va animatsiyalar
 
 - Xarita har doim to'liq orqa fonda, panellar ustidan chiqadi; 60 fps.
-- Yandex xaritasi (standart Yandex uslubi), boshqaruv tugmalari va "Yandex Kartada ochish" bloki o'chirilgan; POI bosilmaydi. Hamma belgilar — xarita sahifasining o'zida (`yandex/html.ts`), React faqat holat yuboradi.
-- Ochilganda kamera telefonning haqiqiy joyiga (GPS) 16-zoom bilan uchib keladi: avval oxirgi ma'lum joy (darhol), keyin aniq GPS. Oxirgi joy va manzil telefonda saqlanadi (`useUser().lastLocation`) — keyingi ochilishda xarita darhol shu yerdan boshlanadi; birinchi ochilishda — Toshkent umumiy ko'rinishi va "Joylashuv aniqlanmoqda…". Ruxsat berilmasa — manzil kartasida ogohlantirish, xaritani surib tanlanadi. Xarita yuklanmasdan oldin kelgan GPS ham yo'qolmaydi (MapBase navbatga qo'yadi). Manzil nomi: Yandex → telefon xizmati → OpenStreetMap. Ko'k nuqta — foydalanuvchi joyi; "joylashuv" tugmasi har bosilganda GPS'ni qayta oladi.
-- Xarita ustidagi suzuvchi tugmalar (logo, tarix, profil, «+ / −», joylashuv) — shisha uslubida, `shadow.float` soyasi kuchliroq (rang-barang Yandex xaritasida ajralib turishi uchun). «+ / −» — `components/map/MapZoom.tsx` (mijoz bosh sahifasi va usta xaritasida bir xil, `MapHandle.zoomBy`).
+- OpenStreetMap xaritasi (OpenFreeMap `liberty` uslubi, ko'cha nomlari ilova tilida — `name:uz/ru/en`, bo'lmasa mahalliy nomi), aylantirish va qiyalatish o'chirilgan; "© OpenStreetMap" — chap pastda, panel ustida. Hamma belgilar — xarita sahifasining o'zida (`osm/html.ts`), React faqat holat yuboradi.
+- Ochilganda kamera telefonning haqiqiy joyiga (GPS) 16-zoom bilan uchib keladi: avval oxirgi ma'lum joy (darhol), keyin aniq GPS. Oxirgi joy va manzil telefonda saqlanadi (`useUser().lastLocation`) — keyingi ochilishda xarita darhol shu yerdan boshlanadi; birinchi ochilishda — Toshkent umumiy ko'rinishi va "Joylashuv aniqlanmoqda…". Ruxsat berilmasa — manzil kartasida ogohlantirish, xaritani surib tanlanadi. Xarita yuklanmasdan oldin kelgan GPS ham yo'qolmaydi (MapBase navbatga qo'yadi). Manzil nomi: telefon xizmati → OpenStreetMap (Nominatim). Ko'k nuqta — foydalanuvchi joyi; "joylashuv" tugmasi har bosilganda GPS'ni qayta oladi.
+- Xarita ustidagi suzuvchi tugmalar (logo, tarix, profil, «+ / −», joylashuv) — shisha uslubida, `shadow.float` soyasi kuchliroq (rang-barang xaritada ajralib turishi uchun). «+ / −» — `components/map/MapZoom.tsx` (mijoz bosh sahifasi va usta xaritasida bir xil, `MapHandle.zoomBy`).
 - Pin ustida pufakcha: eng yaqin ustagacha taxminiy vaqt ("3 daq"), Yandex'dagidek.
 - Mijoz belgisi: to'q sariq doira + "nafas oluvchi" halqa. Manzil xaritani surish bilan tanlanadi: markazdagi pin surilganda ko'tariladi, to'xtaganda tushadi.
 - Atrofdagi ustalar ~100 m aniqlikda (`lib/geo.ts` → `blur`).
@@ -249,16 +248,15 @@ Kod: `supabase/functions/_shared/dispatch.ts` (`rankCandidates`, `advanceDispatc
 - Panellar pastdan chiqadi, yuqori burchaklari yumaloq, tepasida tortish chizig'i.
 - Hamma matn `locales/{uz,ru,en}.json`da, kodda `t('kalit')`; yangi kalit uchala faylga qo'shiladi. Son bilan o'zgaradigan matn — ko'plik obyekti `{one, few, many, other}` (ru: one/few/many, en: one/other, uz: other), son `count` (yoki `n`, `days`, `years`) parametridan olinadi. Tizim chatlari (qo'llab-quvvatlash, yangiliklar) ham kalitlar bilan (`i18n: true`, `chatTitle`/`msgText`).
 - `Text` komponenti `fontSize` berilib `lineHeight` berilmasa, uni o'zi hisoblaydi (harflar tepasi kesilmasligi uchun).
-- **Kunduzgi va tungi rejim**: `constants/theme.ts` — ikki palitra (`light`, `dark`), `colors.x` har o'qilganda joriy rejim rangini beradi. Ekran uslublari `StyleSheet.create` emas, **`themed(() => ({ ... }))`** bilan yoziladi (har rejimga bir marta yaratiladi). Rangni modul darajasida o'zgarmasga saqlamang (funksiya qiling); qattiq hex o'rniga token qo'shing. Kategoriya ranglari ham ikki variantli (`pick(day, night)`). Tanlov: Profil/Sozlamalar → "Ko'rinish" (Avtomatik / Kunduzgi / Tungi, `useUser().themeMode`). Almashganda **ekranlar yopilmaydi** — rangli har bir komponent boshida `useScheme()` chaqiradi va joyida qayta chiziladi; yangi komponent yozsangiz, uni ham qo'shing. Telegram'dagidek animatsiya: yangi rejim bosilgan joydan doira bo'lib ochiladi (`components/ui/ThemeReveal.tsx`, react-native-view-shot; brauzerda animatsiyasiz). Xarita: Yandex 2.1 da tungi xarita yo'q — xarita qatlami CSS filtr bilan qorong'ilashtiriladi (`yandex/html.ts` → `applyDark`), belgilar o'z rangida.
+- **Kunduzgi va tungi rejim**: `constants/theme.ts` — ikki palitra (`light`, `dark`), `colors.x` har o'qilganda joriy rejim rangini beradi. Ekran uslublari `StyleSheet.create` emas, **`themed(() => ({ ... }))`** bilan yoziladi (har rejimga bir marta yaratiladi). Rangni modul darajasida o'zgarmasga saqlamang (funksiya qiling); qattiq hex o'rniga token qo'shing. Kategoriya ranglari ham ikki variantli (`pick(day, night)`). Tanlov: Profil/Sozlamalar → "Ko'rinish" (Avtomatik / Kunduzgi / Tungi, `useUser().themeMode`). Almashganda **ekranlar yopilmaydi** — rangli har bir komponent boshida `useScheme()` chaqiradi va joyida qayta chiziladi; yangi komponent yozsangiz, uni ham qo'shing. Telegram'dagidek animatsiya: yangi rejim bosilgan joydan doira bo'lib ochiladi (`components/ui/ThemeReveal.tsx`, react-native-view-shot; brauzerda animatsiyasiz). Xarita: xarita qatlami (canvas) CSS filtr bilan qorong'ilashtiriladi (`osm/html.ts` → `applyDark`), belgilar o'z rangida.
 - **Kompyuter brauzeri** (`useWide()`, ≥ 900 px): xaritali ekranlarda panel chapda suzuvchi shisha oyna (420 px), xarita fokus nuqtasi o'ng tomondagi bo'sh joy markazida (`MapInsets.left`); oddiy sahifalar o'rtada 600 px ustun (`PageFrame`, yonida logotip va brend foni); usta menyusi — chapda vertikal (`SideRail`); oynalar — o'rtada dialog. Telefon brauzerida — mobil ko'rinish (`public/index.html`: viewport-fit, 100dvh, kattalashmaydi). Brauzerda matn maydonlari klaviatura yopuvchi `Pressable` ichida bo'lmasin (bosilganda fokus yo'qoladi) — `AuthShell`dagi `DismissArea`ga qarang; matn maydoni shrifti ≥ 16.
 - **Liquid Glass**: xarita/kontent ustidagi tugmalar, pastki panel (Sheet), usta menyusi, oynalar — `components/ui/Glass.tsx` (`GlassBg` — ota element orqasidagi shisha qatlam, `strong` — ko'p matnli panellar uchun). iOS 26+ — tizimning haqiqiy Liquid Glass'i (expo-glass-effect), eski iOS va brauzer — xiralashtirish (expo-blur), Android — yarim shaffof shisha tus. Shisha ustidagi ikonka/kontent `position: relative` bo'lishi kerak (brauzerda absolute qatlam ustidan chiziladi). Uslub — minimalizm: kam chiziq, ko'p havo, shisha faqat suzuvchi elementlarda.
-- Yandex ranglari/logotipi ishlatilmaydi.
 - **Sayt hajmi** (brauzer/Telegram): har ekran alohida fayl (`app.config.ts` → expo-router `asyncRoutes.web`) — admin panel mijozga yuklanmaydi; `babel.config.js` lucide ikonkalarini bittalab import qiladi (butun to'plam emas); `ThemeReveal.web.tsx` — brauzerda ekran suratini oladigan kutubxona yo'q. Yangi og'ir kutubxona qo'shsangiz — faqat kerakli ekranda import qiling.
 
 ## 9. Bosqichlar
 
 1. ✅ Loyiha skeleti, papkalar, `theme.ts`.
-2. ✅ Xarita: `MapBase` (Yandex), uchib kelish, nafas oluvchi nuqta.
+2. ✅ Xarita: `MapBase` (OpenStreetMap / MapLibre; oldin Yandex), uchib kelish, nafas oluvchi nuqta.
 3. ✅ Mijoz ekranlari (soxta ma'lumot bilan).
 4. ✅ Animatsiyalar (to'lqinlar, miltillash, zoom, silliq usta belgisi, oqib turuvchi yo'l) — telefonda sinab ko'rish kerak.
 5. 🟡 Supabase: migratsiyalar, PostGIS, RLS, Storage, Realtime, SMS (Eskiz.uz) — yozilgan va mahalliy sinalgan (`supabase/`); kirish (`lib/auth.ts`) va hamma ekranlar (`lib/live.ts`) kalit bo'lsa o'zi serverga ulanadi — ikki brauzerda (mijoz + usta) mahalliy Postgres + PostgREST + Edge Functions bilan to'liq oqim sinaldi (ro'yxatdan o'tish → buyurtma → taklif → kod → narx → yakun → baho). Supabase loyihasi yaratildi va joylandi (8-oktabr, `setup.ps1`): migratsiyalar, funksiyalar, sirlar, har 15 s tekshiruv (cron → offer-timeout 200 OK), push sozlandi; sayt kalitlari Cloudflare build o'zgaruvchilarida. Qoladi: Eskiz.uz akkaunti, birinchi admin.
@@ -273,12 +271,12 @@ Kod: `supabase/functions/_shared/dispatch.ts` (`rankCandidates`, `advanceDispatc
 npm install
 cp .env.example .env      # kalitlarni yozing (git'ga yuklanmaydi)
 npx expo start            # telefonda Expo Go bilan QR kodni skanerlang
-npm run web               # brauzerda (xarita soxta, faqat dizayn uchun)
+npm run web               # brauzerda
 npm run typecheck
 ```
 
-Xarita (Yandex, WebView) Expo Go'da ham ishlaydi; telefonda internet bo'lishi kerak.
+Xarita (OpenStreetMap, WebView) Expo Go'da ham ishlaydi; telefonda internet bo'lishi kerak.
 
 ## 11. Kalitlar
 
-Yandex va Supabase kalitlari `.env` faylida, git'ga yuklanmaydi. Eskiz.uz login/paroli ilovaga emas, Supabase secrets'ga yoziladi (`supabase/README.md`). Yandex kaliti: developer.tech.yandex.ru → "JavaScript API и HTTP Геокодер"; HTTP Referer cheklovi `uyservice.uz` (telefonda xarita sahifasi shu manzil nomidan ochiladi, `MAP_BASE_URL`). Kalit bo'lmasa xarita cheklangan rejimda ishlaydi yoki umuman ochilmasligi mumkin — kalit qo'yish shart. 2GIS (sinov): platform.2gis.ru → MapGL kaliti, ruxsat etilgan domen `uyservice.uz`; `.env` va Cloudflare build o'zgaruvchilariga `EXPO_PUBLIC_MAP_PROVIDER=2gis`, `EXPO_PUBLIC_2GIS_KEY=...` (qaytarish — `EXPO_PUBLIC_MAP_PROVIDER`ni o'chirish).
+Supabase kalitlari `.env` faylida, git'ga yuklanmaydi. Eskiz.uz login/paroli ilovaga emas, Supabase secrets'ga yoziladi (`supabase/README.md`). Xarita va manzil qidirish (OpenStreetMap: OpenFreeMap, Photon, Nominatim, OSRM) — kalitsiz. Ular bepul ochiq serverlar: OpenFreeMap — cheklovsiz; Photon, Nominatim (sekundiga 1 so'rov) va OSRM — "insofli foydalanish" qoidasi bilan. Foydalanuvchi ko'paysa — o'z serverimizga (Photon/Nominatim/OSRM Docker'da) yoki pullik xizmatga o'tamiz; ilovada faqat manzil (`lib/geocode.ts`, `lib/routes.ts`, `osm/html.ts` → `STYLE`) o'zgaradi.

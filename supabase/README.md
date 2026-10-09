@@ -228,13 +228,12 @@ npx eas login
 npx eas init                       # chiqqan ID — EAS_PROJECT_ID
 npx eas env:create --environment preview --name EXPO_PUBLIC_SUPABASE_URL --value "https://PROJECT_REF.supabase.co" --visibility plaintext
 npx eas env:create --environment preview --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "ANON_KALIT" --visibility plaintext
-npx eas env:create --environment preview --name EXPO_PUBLIC_YANDEX_MAPS_KEY --value "YANDEX_KALIT" --visibility plaintext
 npx eas env:create --environment preview --name EAS_PROJECT_ID --value "EAS_ID" --visibility plaintext
 npx eas build --profile preview --platform android   # tayyor APK havolasi chiqadi
 ```
 
 `production` uchun ham xuddi shu buyruqlar (`--environment production`). Bu kalitlar ilova ichida baribir ochiq
-turadi (anon kalit va Yandex kaliti shunday mo'ljallangan) — maxfiy kalitlar (service_role, Eskiz, Telegram) bu
+turadi (anon kalit shunday mo'ljallangan; xarita — OpenStreetMap, kalit kerak emas) — maxfiy kalitlar (service_role, Eskiz, Telegram) bu
 yerga **yozilmaydi**, ular faqat Supabase sirlarida.
 
 ## 15. Sayt (uyservice.uz) uchun kalitlar — Cloudflare
@@ -244,8 +243,8 @@ Cloudflare'ga ham bir marta yozish kerak, aks holda sayt sinov rejimida qolavera
 
 1. dash.cloudflare.com → **Workers & Pages** → `uyservice` → **Settings** → **Build** → **Variables and secrets**
    (build vaqtidagi o'zgaruvchilar).
-2. Qo'shing: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_YANDEX_MAPS_KEY`
-   (qiymatlari `.env`dagi bilan bir xil).
+2. Qo'shing: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (qiymatlari `.env`dagi bilan bir xil).
+   Xarita (OpenStreetMap) kalitsiz ishlaydi — eski `EXPO_PUBLIC_YANDEX_MAPS_KEY`, `EXPO_PUBLIC_MAP_PROVIDER`, `EXPO_PUBLIC_2GIS_KEY` o'chirilsa bo'ladi.
 3. **Deployments** → oxirgisi → **Retry deployment** (yoki GitHub'ga yangi push). Tepadagi "Sinov rejimi" belgisi
    yo'qolsa — sayt serverga ulandi.
 

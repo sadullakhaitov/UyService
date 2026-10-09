@@ -1,6 +1,6 @@
 // Faol buyurtma ekrani: qidiruv (to'lqinlar) va kuzatuv (usta yo'lda) BITTA xaritada.
 // Usta topilganda boshqa ekranga o'tilmaydi — faqat panel almashadi, xarita qayta yuklanmaydi
-// (Yandex xaritasi har yuklanishda limitdan yeydi). /client/searching va /client/tracking — ikkalasi shu ekran.
+// (xarita qayta yuklanmaydi — tezroq va trafik kam). /client/searching va /client/tracking — ikkalasi shu ekran.
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';

@@ -2,7 +2,6 @@ import * as Location from 'expo-location';
 import { Platform } from 'react-native';
 import type { LatLng } from './geo';
 import { getLanguage } from './i18n';
-import { yandexReverse } from './yandex';
 
 export type LocPermission = 'granted' | 'denied';
 
@@ -72,10 +71,8 @@ async function osmReverse(p: LatLng): Promise<string | null> {
   }
 }
 
-// Koordinatadan manzil matni: Yandex (kalit bo'lsa) → telefonning o'z xizmati → OpenStreetMap
+// Koordinatadan manzil matni: telefonning o'z xizmati → OpenStreetMap
 export async function reverseGeocode(p: LatLng): Promise<string | null> {
-  const ya = await yandexReverse(p);
-  if (ya) return ya;
   if (Platform.OS !== 'web') {
     try {
       const [r] = await Location.reverseGeocodeAsync(p);

@@ -10,7 +10,7 @@ export const SIDE_GAP = 16;
 export const SIDE_INSET = SIDE_W + SIDE_GAP * 2;
 /** Oddiy sahifalar ustunining eng katta kengligi */
 export const PAGE_MAX = 600;
-/** Kompyuterda xarita pastidagi Yandex yozuvlari (logotip, shartlar) balandligi — ular ko'rinib turishi shart,
+/** Kompyuterda xarita pastidagi "© OpenStreetMap" yozuvi balandligi — u ko'rinib turishi shart (litsenziya),
  * suzuvchi tugmalar shundan yuqorida turadi */
 export const MAP_ATTRIBUTION_H = 34;
 

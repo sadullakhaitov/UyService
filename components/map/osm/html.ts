@@ -1,21 +1,21 @@
-// 2GIS MapGL JS API asosidagi xarita sahifasi — Yandex sahifasi (yandex/html.ts) bilan bir xil xabarlar:
-// React → sahifa: state / flyTo / panTo / zoomBy; sahifa → React: boot / ready / error / moveStart / moveEnd / press / point.
-// Shuning uchun MapBase (WebView / iframe) va ekranlar o'zgarmaydi — faqat qaysi sahifa qurilishi tanlanadi (lib/mapProvider.ts).
-//
-// API'ga kam tayanadi (2GIS hujjatidagi asosiy, barqaror qismlar): Map (center/zoom/setCenter/setZoom/getCenter/getZoom,
-// project/unproject, on), HtmlMarker (coordinates, html, zIndex; setCoordinates, destroy), Polyline (coordinates, width, color;
-// destroy). Fokus nuqtasi (panel orasidagi joy), "sig'dirish" va to'lqin radiusi — o'zimiz hisoblaymiz (proyeksiyadan).
-import type { MapInit } from '../yandex/html';
+// Xarita sahifasi: OpenStreetMap ma'lumotlari, ko'chalar — OpenFreeMap (bepul, kalitsiz, cheklovsiz; tijoratda ham mumkin),
+// chizuvchi — MapLibre GL JS (ochiq kodli). Xabarlar — page.ts: React → sahifa: state / flyTo / panTo / zoomBy;
+// sahifa → React: boot / ready / error / moveStart / moveEnd / press / point.
+// Belgilar — DOM (Marker), yo'l — GeoJSON chizig'i, to'lqinlar va fokus nuqtasi (panel orasidagi joy) — o'zimiz hisoblaymiz.
+// Pastki burchakdagi "© OpenStreetMap" yozuvi litsenziya talabi — yashirilmaydi.
+import type { MapInit } from '../page';
 
-const LANG: Record<string, string> = { uz: 'ru', ru: 'ru', en: 'en' };
+const MAPLIBRE = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl';
+const STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 
-export function buildTwoGisHtml({ apiKey, lang, init, colors }: { apiKey: string; lang: string; init: MapInit; colors: Record<string, string> }) {
-  const boot = JSON.stringify({ init, colors, key: apiKey, lang: LANG[lang] ?? 'ru' }).replace(/</g, '\\u003c');
+export function buildMapHtml({ lang, init, colors }: { lang: string; init: MapInit; colors: Record<string, string> }) {
+  const boot = JSON.stringify({ init, colors, lang, style: STYLE }).replace(/</g, '\\u003c');
   return `<!doctype html>
 <html><head>
 <meta charset="utf-8">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<link rel="stylesheet" href="${MAPLIBRE}.css">
 <style>
 html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:${colors.map}}
 *{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
@@ -28,6 +28,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
 .ys-pulse{position:absolute;border-radius:50%;box-sizing:border-box;border:2px solid;pointer-events:none;will-change:width,height,opacity}
 .ys-mk{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
 .ys-mk.ys-click{pointer-events:auto}
+.maplibregl-ctrl-attrib{font:11px/1.4 system-ui,sans-serif}
 </style>
 <script>
 (function(){
@@ -45,36 +46,28 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
   send({type:'boot'});
 })();
 </script>
-<script src="https://mapgl.2gis.com/api/js/v1" onerror="window.__ys.send({type:'error',message:'script'})"></script>
+<script src="${MAPLIBRE}.js" onerror="window.__ys.send({type:'error',message:'script'})"></script>
 </head><body><div id="map"></div>
 <script>
 (function(){
   var ys = window.__ys, send = ys.send, init = ys.BOOT.init, C = ys.BOOT.colors;
-  // Yandex sahifasi bilan bir xil xato nomi — MapBase zaxira xaritaga o'tadi / qayta yuklaydi
-  if (typeof mapgl === 'undefined') { send({type:'error', message:'ymaps'}); return; }
+  // Kutubxona yuklanmadi — MapBase zaxira xaritaga o'tadi / qayta yuklaydi
+  if (typeof maplibregl === 'undefined') { send({type:'error', message:'lib'}); return; }
 
   var S = null, map = null;
   var insets = init.insets;
   var MIN_Z = init.minZoom || 9, MAX_Z = 19;
   var gl = function(p){ return [p.longitude, p.latitude]; };
 
-  // --- Merkator: kenglik/uzunlik ↔ 0..1. Ilovadagi zoom raqamlari Yandex masshtabida (256 px plitka): 16 — ko'cha, 14 — tuman.
-  // 2GIS zoom'i boshqa masshtabda bo'lishi mumkin — farqi (OFF) xaritaning o'z proyeksiyasidan o'lchanadi va chegarada almashtiriladi.
+  // --- Merkator: kenglik/uzunlik ↔ 0..1. Ilovadagi zoom raqamlari 256 px plitka masshtabida (16 — ko'cha, 14 — tuman),
+  // MapLibre 512 px plitka bilan ishlaydi — farqi bitta zoom (OFF), chegarada almashtiriladi.
   function mx(lng){ return (lng + 180) / 360; }
   function my(lat){ var s = Math.sin(lat * Math.PI / 180); return 0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI); }
   function lngOf(x){ return x * 360 - 180; }
   function latOf(y){ var n = Math.PI - 2 * Math.PI * y; return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))); }
-  var W = 256, OFF = 0;
+  var W = 256, OFF = 1;
   function getZ(){ return map.getZoom() + OFF; }
-  function setZ(z, opt){ map.setZoom(z - OFF, opt); }
-  function measure(){
-    try {
-      var c = map.getCenter(), z = map.getZoom();
-      var a = map.project(c), b = map.project([c[0] + 0.01, c[1]]);
-      var px = Math.abs(b[0] - a[0]);
-      if (px > 0) OFF = Math.round(Math.log(px / ((mx(c[0] + 0.01) - mx(c[0])) * Math.pow(2, z)) / W) / Math.LN2 * 100) / 100;
-    } catch (e) {}
-  }
+  function center(){ var c = map.getCenter(); return [c.lng, c.lat]; }
 
   // --- Fokus nuqtasi: panellar orasidagi bo'sh joy markazi (pin shu yerda turadi) ---
   function shiftY(){ return (insets.top - insets.bottom) / 2; }
@@ -84,38 +77,45 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
     return [lngOf(mx(p.longitude) - shiftX() / s), latOf(my(p.latitude) - shiftY() / s)];
   }
   function focalCenter(){
-    var c = map.getCenter(), s = W * Math.pow(2, getZ());
+    var c = center(), s = W * Math.pow(2, getZ());
     return { latitude: latOf(my(c[1]) + shiftY() / s), longitude: lngOf(mx(c[0]) + shiftX() / s) };
   }
   var target = null;
   function moveTo(p, z, duration){
     target = { p: p, z: z, end: Date.now() + (duration || 0) };
     var d = duration || 0;
-    setZ(z, d ? { duration: d } : { animate: false });
-    map.setCenter(viewCenterFor(p, z), d ? { duration: d } : { animate: false });
+    var cam = { center: viewCenterFor(p, z), zoom: z - OFF };
+    if (d) { cam.duration = d; map.easeTo(cam); } else map.jumpTo(cam);
   }
 
-  // Tungi rejim: faqat xarita qatlami (canvas) qorong'ilashadi, belgilar (HTML) o'z rangida
+  // "© OpenStreetMap" yozuvi (chap pastda; o'ngda tugmalar) pastki panel ostida qolmasin — panel ustida turadi
+  var attribCss = document.createElement('style');
+  document.head.appendChild(attribCss);
+  function placeAttribution(){ attribCss.textContent = '.maplibregl-ctrl-bottom-left{bottom:' + (insets.bottom || 0) + 'px;left:' + (insets.left || 0) + 'px}'; }
+  placeAttribution();
+
+  // Tungi rejim: faqat xarita qatlami (canvas) qorong'ilashadi, belgilar (DOM) o'z rangida
   var DARK = 'invert(92%) hue-rotate(180deg) saturate(0.55) brightness(0.92) contrast(0.92)';
   var darkCss = document.createElement('style');
   document.head.appendChild(darkCss);
-  function applyDark(){ darkCss.textContent = init.dark ? '#map canvas{filter:' + DARK + '}' : ''; }
+  function applyDark(){ darkCss.textContent = init.dark ? '.maplibregl-canvas{filter:' + DARK + '}' : ''; }
 
   try {
     var start = init.flyFrom || init.center, startZoom = init.flyFrom ? 12 : init.zoom;
-    map = new mapgl.Map('map', {
-      center: gl(start), zoom: startZoom, key: ys.BOOT.key, lang: ys.BOOT.lang,
-      zoomControl: false,
-      disableRotationByUserInteraction: true, disablePitchByUserInteraction: true
+    map = new maplibregl.Map({
+      container: 'map', style: ys.BOOT.style, center: gl(start), zoom: startZoom - OFF,
+      minZoom: MIN_Z - OFF, maxZoom: MAX_Z - OFF, attributionControl: false,
+      dragRotate: false, pitchWithRotate: false, touchPitch: false, renderWorldCopies: false
     });
-  } catch (e) { send({type:'error', message:'ymaps'}); return; }
+    map.touchZoomRotate.disableRotation();
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left');
+  } catch (e) { send({type:'error', message:'lib'}); return; }
 
   var readySent = false;
   function onReady(){
     if (readySent) return;
     readySent = true;
-    measure();
-    try { map.setMinZoom(MIN_Z - OFF); map.setMaxZoom(MAX_Z - OFF); } catch (e) {}
+    localize();
     moveTo(start, startZoom, 0);
     setup();
     applyDark();
@@ -125,19 +125,30 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
     queued.forEach(apply);
     if (init.flyFrom && !(S && S.fitTo.length)) setTimeout(function(){ moveTo(init.center, init.zoom, 1600); }, 250);
   }
-  // Xarita uslubi yuklanganda; hodisa nomi versiyaga qarab farq qilishi mumkin — zaxira taymer
-  try { map.on('styleload', onReady); } catch (e) {}
-  setTimeout(function(){ try { if (map.getCenter()) onReady(); } catch (e) {} }, 1500);
+  map.on('load', onReady);
 
-  // --- Belgilar: HtmlMarker (DOM) — o'lchami va miltillashi o'zimizda ---
-  // html — DOM element (satr emas): belgining ichini darhol topamiz, sahifaga qo'shilishini kutmaymiz
+  // Ko'cha va joy nomlari ilova tilida (OSM'da bo'lsa), bo'lmasa — mahalliy nomi
+  function localize(){
+    try {
+      var L = ys.BOOT.lang;
+      map.getStyle().layers.forEach(function(l){
+        if (l.type !== 'symbol') return;
+        var tf = map.getLayoutProperty(l.id, 'text-field');
+        if (!tf || JSON.stringify(tf).indexOf('name') < 0) return;
+        map.setLayoutProperty(l.id, 'text-field', ['coalesce', ['get', 'name:' + L], ['get', 'name']]);
+      });
+    } catch (e) {}
+  }
+
+  // --- Belgilar: DOM (Marker) — o'lchami va miltillashi o'zimizda; bosilmaydiganlari surishga xalaqit bermaydi ---
   function marker(p, html, z, click){
     var box = document.createElement('div');
     box.className = 'ys-mk' + (click ? ' ys-click' : '');
     box.innerHTML = html;
-    var m = new mapgl.HtmlMarker(map, { coordinates: gl(p), html: box, zIndex: z || 100, interactive: Boolean(click) });
-    m.__box = box;
-    return m;
+    var m = new maplibregl.Marker({ element: box, anchor: 'center' }).setLngLat(gl(p)).addTo(map);
+    box.style.zIndex = z || 100;
+    box.style.pointerEvents = click ? 'auto' : 'none';
+    return { __box: box, setCoordinates: function(c){ m.setLngLat(c); }, destroy: function(){ m.remove(); } };
   }
   function el(m, sel){ return m && m.__box ? m.__box.querySelector(sel) : null; }
   function drop(m){ try { if (m) m.destroy(); } catch (e) {} }
@@ -146,12 +157,6 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
     return '<div class="ys-dot" style="left:-' + h + 'px;top:-' + h + 'px;width:' + size + 'px;height:' + size + 'px;background:' + bg + ';border-width:' + border + 'px"></div>';
   }
   var ARROW = '<svg width="19" height="19" viewBox="0 0 24 24"><path d="M12 2.5 19.5 20 12 16.2 4.5 20z" fill="#fff"/></svg>';
-  function hexA(hex, a){
-    var h = String(hex || '#0E5A4B').replace('#', '');
-    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
-    var x = Math.round(a * 255).toString(16);
-    return '#' + h.slice(0, 6) + (x.length < 2 ? '0' + x : x);
-  }
   function rgba(hex, a){
     var h = String(hex || '#0E5A4B').replace('#', '');
     if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
@@ -160,7 +165,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
   }
 
   var nearbyMarks = [], pulseMarks = [], pointMarks = [];
-  var client = null, user = null, master = null, routeHalo = null, routeLine = null;
+  var client = null, user = null, master = null;
   var masterPos = null, anim = null, heading = 0;
 
   function setup(){
@@ -169,7 +174,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
       var t = e.target && e.target.closest ? e.target.closest('[data-pt]') : null;
       if (t) { e.stopPropagation(); send({type:'point', id: t.getAttribute('data-pt')}); }
     }, true);
-    try { map.on('click', function(){ send({type:'press'}); }); } catch (e) {}
+    map.on('click', function(){ send({type:'press'}); });
 
     // Foydalanuvchi surishi: barmoq tegdi + xarita harakatlandi → moveStart; ikkalasi tugadi → moveEnd
     var touching = false, acting = false, moving = false, opt = {passive:true, capture:true};
@@ -178,9 +183,8 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
     ['touchstart', 'mousedown', 'pointerdown'].forEach(function(n){ window.addEventListener(n, down, opt); });
     ['touchend', 'touchcancel', 'mouseup', 'pointerup', 'pointercancel'].forEach(function(n){ window.addEventListener(n, up, opt); });
     function begin(){ acting = true; if (touching && !moving) { moving = true; send({type:'moveStart'}); } }
-    try { map.on('movestart', begin); map.on('move', begin); } catch (e) {}
-    try { map.on('moveend', function(){ acting = false; measure(); settle(); }); } catch (e) {}
-    try { map.on('zoomend', measure); } catch (e) {}
+    map.on('movestart', begin); map.on('move', begin);
+    map.on('moveend', function(){ acting = false; settle(); });
     function settle(){
       if (!moving || touching || acting) return;
       moving = false;
@@ -250,13 +254,21 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
     m.style.transform = 'rotate(' + heading + 'deg)';
   }
 
+  // Yo'l: bitta GeoJSON manba, ikki chiziq (yumshoq halo + asosiy). Yangilanganda ma'lumot joyida almashadi — miltillamaydi
+  function line(pts){ return { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: pts } }; }
   function drawRoute(s){
-    var pts = s.route.map(gl);
-    // Yangisi avval chiziladi, keyin eskisi o'chadi — chiziq miltillamaydi
-    var halo = new mapgl.Polyline(map, { coordinates: pts, width: 10, color: hexA(s.accent, 0.25), zIndex: 60 });
-    var line = new mapgl.Polyline(map, { coordinates: pts, width: 6, color: hexA(s.accent, 1), zIndex: 61 });
-    drop(routeHalo); drop(routeLine);
-    routeHalo = halo; routeLine = line;
+    var data = line(s.route.length > 1 ? s.route.map(gl) : []);
+    var src = map.getSource('ys-route');
+    if (!src) {
+      map.addSource('ys-route', { type: 'geojson', data: data });
+      var lay = { 'line-join': 'round', 'line-cap': 'round' };
+      map.addLayer({ id: 'ys-route-halo', type: 'line', source: 'ys-route', layout: lay, paint: { 'line-color': s.accent, 'line-opacity': 0.25, 'line-width': 10 } });
+      map.addLayer({ id: 'ys-route-line', type: 'line', source: 'ys-route', layout: lay, paint: { 'line-color': s.accent, 'line-width': 6 } });
+    } else {
+      src.setData(data);
+      map.setPaintProperty('ys-route-halo', 'line-color', s.accent);
+      map.setPaintProperty('ys-route-line', 'line-color', s.accent);
+    }
   }
 
   function apply(cmd){
@@ -281,6 +293,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
         keep = left > 0 ? { p: target.p, z: target.z, d: left } : { p: focalCenter(), z: getZ(), d: 0 };
       }
       insets = s.insets;
+      placeAttribution();
       if (keep) moveTo(keep.p, keep.z, keep.d);
 
       if (!prev || !same(prev.nearby, s.nearby)) {
@@ -309,8 +322,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
       }
 
       if (!prev || !same(prev.route, s.route) || prev.accent !== s.accent) {
-        if (s.route.length > 1) drawRoute(s);
-        else { drop(routeHalo); drop(routeLine); routeHalo = routeLine = null; }
+        drawRoute(s);
       }
 
       if (!prev || !same(prev.clientMarker, s.clientMarker)) {

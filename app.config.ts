@@ -1,7 +1,7 @@
 import type { ExpoConfig } from 'expo/config';
 
 // Kalitlar .env faylidan olinadi (git'ga yuklanmaydi). Namuna: .env.example
-// Xarita — Yandex (EXPO_PUBLIC_YANDEX_MAPS_KEY) yoki 2GIS (EXPO_PUBLIC_MAP_PROVIDER=2gis, EXPO_PUBLIC_2GIS_KEY): lib/mapProvider.ts
+// Xarita — OpenStreetMap (components/map/osm/html.ts), kalit kerak emas
 
 const config: ExpoConfig = {
   name: 'UyService',

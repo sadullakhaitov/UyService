@@ -1,5 +1,5 @@
-// Zaxira soxta xarita: Yandex skripti yuklanmasa (masalan, demo sahifa ichida) brauzerda shu ko'rinadi.
-// Faqat dizaynni ko'rish uchun — haqiqiy xarita MapBase.tsx / MapBase.web.tsx (Yandex).
+// Zaxira soxta xarita: xarita kutubxonasi yuklanmasa (masalan, demo sahifa ichida) brauzerda shu ko'rinadi.
+// Faqat dizaynni ko'rish uchun — haqiqiy xarita MapBase.tsx / MapBase.web.tsx (OpenStreetMap).
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
