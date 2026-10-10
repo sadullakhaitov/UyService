@@ -1,5 +1,7 @@
 # UyService — reklama to'plami
 
+**Hammasini bitta faylda yuklab olish:** [`design/UyService-reklama.zip`](https://github.com/sadullakhaitov/UyService/raw/claude/awesome-goldberg-nul9rt/design/UyService-reklama.zip) (PNG, PDF, SVG — asl o'lchamda; rasmlar qayta yig'ilsa ZIP ham yangilanadi).
+
 Hammasi bitta skriptdan yig'iladi: `build.js` (matn, rang, o'lcham — shu yerda). PDF — bosmaxonaga (vektor, shriftlar ichida), PNG — ko'rish va ijtimoiy tarmoqlar uchun.
 QR-kodlar: mijoz → `https://uyservice.uz`, usta → `https://uyservice.uz/usta`, Telegram → `https://t.me/uyservice_bot`.
 Avvalgi varaqalar: `design/print/` (ustalar uchun A5, podyezd e'loni A4 — yirtib olinadigan qismlar bilan).
