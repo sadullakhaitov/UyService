@@ -321,7 +321,14 @@
       "other": "Bepul davr: {{count}} kun qoldi — ulush olinmaydi"
     },
     "freeTitle": "Bepul davr",
-    "freeSub": "Komissiya ham, obuna ham yo'q — butun daromad sizniki"
+    "freeSub": "Komissiya ham, obuna ham yo'q — butun daromad sizniki",
+    "bgTitle": "Telegram'ni yopsangiz ham ishdasiz",
+    "bgSub": "Buyurtma bot xabari bo'lib keladi. Joylashuv 45 daqiqa amal qiladi — jonli joylashuvni ulang, o'zi yangilanib turadi",
+    "bgLiveBtn": "Ulash",
+    "bgLiveTitle": "Jonli joylashuv: {{time}} gacha",
+    "bgLiveSub": "Telegram yopiq bo'lsa ham buyurtmalar keladi, yursangiz ham joylashuv yangilanadi",
+    "bgOffTitle": "Ilova yopilsa, buyurtma kelmaydi",
+    "bgOffSub": "«Yangi buyurtma» bildirishnomasi o'chiq — Sozlamalarda yoqing"
   },
   "money": {
     "title": "Pul",

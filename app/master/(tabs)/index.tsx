@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ChevronRight, Gauge, LocateFixed, Power, SlidersHorizontal, Wallet } from 'lucide-react-native';
+import { ChevronRight, Gauge, LocateFixed, MoonStar, Power, SlidersHorizontal, Wallet } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -17,6 +17,8 @@ import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/th
 import { freeDaysLeft, useFreeUntil } from '@/lib/freePass';
 import { formatSum, t } from '@/lib/i18n';
 import { useBlocked } from '@/lib/masterFeed';
+import { LIVE, liveMyPresence, type Presence } from '@/lib/live';
+import { inTelegram, openBotLive } from '@/lib/telegram';
 import { askNotifications } from '@/lib/notify';
 import { locateMe, useMyLocation } from '@/lib/useMyLocation';
 import { MAP_ATTRIBUTION_H, useWide } from '@/lib/useLayout';
@@ -233,6 +235,9 @@ export default function MasterOrders() {
           </View>
         ) : null}
 
+        {/* Telegram ichida: yig'ib qo'ysa ham ishda qoladi (fon rejimi) — holati va jonli joylashuv */}
+        {online && LIVE && inTelegram() ? <BackgroundCard /> : null}
+
         {blocked ? (
           <SwipeButton title={t('mOrders.blockedTitle')} hint={t('mOrders.blockedHint')} disabled onComplete={() => {}} />
         ) : online ? (
@@ -252,6 +257,41 @@ export default function MasterOrders() {
 
       <FilterModal visible={filters} onClose={() => setFilters(false)} />
     </View>
+  );
+}
+
+// Fon rejimi (server: …_background_presence.sql): Telegram yig'ilsa ham buyurtma bot xabari bo'lib keladi,
+// joylashuv 45 daqiqa amal qiladi; botda jonli joylashuv ulansa — muddati tugaguncha o'zi yangilanadi
+function BackgroundCard() {
+  useScheme();
+  const [p, setP] = useState<Presence | null>(null);
+  useEffect(() => {
+    let alive = true;
+    const load = () => liveMyPresence().then((x) => alive && setP(x));
+    load();
+    const id = setInterval(load, 60_000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, []);
+  if (!p) return null;
+  const live = p.liveUntil && p.liveUntil > Date.now();
+  const time = live ? new Date(p.liveUntil!).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '';
+  return (
+    <Squish accessibilityRole="button" onPress={p.reachable ? openBotLive : () => router.push('/master/settings')} style={[styles.bg, !p.reachable && styles.bgOff]}>
+      <View style={[styles.statIcon, { backgroundColor: p.reachable ? colors.primarySoft : colors.accentSoft }]}>
+        <MoonStar size={20} color={p.reachable ? colors.primary : colors.accent} strokeWidth={2.2} />
+      </View>
+      <View style={styles.flex}>
+        <Text style={[styles.bgTitle, !p.reachable && { color: colors.accentInk }]}>
+          {!p.reachable ? t('mOrders.bgOffTitle') : live ? t('mOrders.bgLiveTitle', { time }) : t('mOrders.bgTitle')}
+        </Text>
+        <Text variant="caption">{!p.reachable ? t('mOrders.bgOffSub') : live ? t('mOrders.bgLiveSub') : t('mOrders.bgSub')}</Text>
+      </View>
+      {p.reachable && !live ? <Text style={styles.activeGo}>{t('mOrders.bgLiveBtn')}</Text> : null}
+      <ChevronRight size={18} color={p.reachable ? colors.primary : colors.accentInk} strokeWidth={2.6} />
+    </Squish>
   );
 }
 
@@ -323,5 +363,8 @@ const styles = themed(() => ({
   promoSub: { color: colors.accentInk },
   promoPrice: { fontFamily: fonts.heavy, fontSize: 16, color: colors.accent },
   onlineRow: { flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center' },
+  bg: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.card, borderWidth: 1.5, borderColor: colors.primarySoft },
+  bgOff: { borderColor: colors.accentSoft },
+  bgTitle: { fontFamily: fonts.heavy, fontSize: 14, color: colors.primary },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 }));

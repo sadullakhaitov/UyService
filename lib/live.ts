@@ -471,6 +471,20 @@ export async function syncMaster() {
 }
 
 /** Anketa (master/register): masters qatori + rasmlar Storage'ga */
+/** Fon rejimi holati (server: my_presence): xabar ilova yopiq paytda ham boradimi, jonli joylashuv qachongacha */
+export type Presence = { reachable: boolean; telegram: boolean; liveUntil: number | null; locationAt: number | null };
+export async function liveMyPresence(): Promise<Presence | null> {
+  const { data, error } = await db().rpc('my_presence');
+  if (error || !data) return null;
+  const d = data as { reachable?: boolean; telegram?: boolean; live_until?: string | null; location_at?: string | null };
+  return {
+    reachable: Boolean(d.reachable),
+    telegram: Boolean(d.telegram),
+    liveUntil: d.live_until ? Date.parse(d.live_until) : null,
+    locationAt: d.location_at ? Date.parse(d.location_at) : null,
+  };
+}
+
 export async function liveSubmitMaster() {
   const uid = await myId();
   if (!uid) throw new Error('not_signed_in');

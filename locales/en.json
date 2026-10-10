@@ -334,7 +334,14 @@
       "other": "Free period: {{count}} days left — no commission"
     },
     "freeTitle": "Free period",
-    "freeSub": "No commission, no subscription — all income is yours"
+    "freeSub": "No commission, no subscription — all income is yours",
+    "bgTitle": "You stay online even if you minimize Telegram",
+    "bgSub": "Orders arrive as bot messages. Your location is valid for 45 minutes — share live location so it updates by itself",
+    "bgLiveBtn": "Share",
+    "bgLiveTitle": "Live location until {{time}}",
+    "bgLiveSub": "Orders arrive even with Telegram minimized, and your location updates on the move",
+    "bgOffTitle": "If you close the app, orders won't arrive",
+    "bgOffSub": "\"New order\" notifications are off — turn them on in Settings"
   },
   "money": {
     "title": "Money",

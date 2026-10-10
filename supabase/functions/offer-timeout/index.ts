@@ -3,7 +3,7 @@
 // 2) qidiruvdagi har bir buyurtma uchun bitta qadam: 60 s javobsiz taklif yopiladi (aktivlik −5),
 //    keyingi usta / radius kengaytirish / 3 daqiqadan keyin "bo'sh usta yo'q"
 // 3) yetim qolgan eski takliflar yopiladi
-// 4) bepul davr eslatmalari (7 kun, 1 kun qoldi, tugadi)
+// 4) bepul davr eslatmalari (7 kun, 1 kun qoldi, tugadi); fon rejimi: "Hali ishdamisiz?" (35 daq) / "Buyurtmalar to'xtadi" (45 daq)
 // 5) push-bildirishnomalar navbati (zaxira yo'l — odatda push-send darhol yuboradi)
 // Ruxsat: `x-cron-secret: <CRON_SECRET>` yoki `Authorization: Bearer <service_role key>`.
 import { activeSearches, dispatchStep, startDueScheduled } from '../_shared/engine.ts';
@@ -39,6 +39,8 @@ Deno.serve(async (req) => {
     // Bepul davr tugashi haqida eslatmalar (har bosqich bir marta; xabar navbatga yoziladi va shu yerning o'zida ketadi)
     const { error: remindErr } = await db.rpc('free_pass_reminders');
     if (remindErr) console.error('free_pass_reminders', remindErr.message);
+    const { error: presErr } = await db.rpc('presence_reminders');
+    if (presErr) console.error('presence_reminders', presErr.message);
     try {
       result.pushed = (await flushPush(db)).sent;
     } catch (e) {

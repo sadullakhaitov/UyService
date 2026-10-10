@@ -4,6 +4,7 @@
 // push-send (darhol, navbatga yozilganda) va offer-timeout (zaxira, har 15 s) chaqiradi.
 // Matnlar — ilovadagi locales/{uz,ru,en}.json → notify.* bilan bir xil (ilova yopiq bo'lsa ham to'g'ri tilda).
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2';
+import { presenceKeyboard } from './presence.ts';
 
 type Lang = 'uz' | 'ru' | 'en';
 type Params = Record<string, string | number | boolean | null | undefined>;
@@ -39,6 +40,9 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     inviteBonus: (p, l) => ({ title: "Do'stingiz uchun bonus", body: `${p.name || "Do'stingiz"} 5 ta ishni bajardi — balansingizga ${sum(p.sum, l)}` }),
     freeEnding: (p) => ({ title: 'Bepul davr tugayapti', body: `${p.days} kun qoldi. Keyin tanlagan tarifingiz bo'yicha ishlaysiz — "Pul" bo'limida tekshiring` }),
     freeEnded: () => ({ title: 'Bepul davr tugadi', body: 'Endi tanlagan tarifingiz amal qiladi. "Pul" bo\'limida balans va tarifni tekshiring' }),
+    // Fon rejimi (…_background_presence.sql): Telegram'da — pastida «📍 Joylashuvni yuborish» tugmasi
+    stillWorking: () => ({ title: 'Hali ishdamisiz?', body: "35 daqiqadan beri joylashuvingiz kelmadi. Buyurtmalar kelib turishi uchun joylashuvni yuboring yoki ilovani oching" }),
+    presenceLost: () => ({ title: "Buyurtmalar to'xtatildi", body: "45 daqiqa joylashuv kelmadi. Davom etish uchun joylashuvni yuboring yoki ilovani oching" }),
     priceDeclined: (p, l) => ({ title: "Mijoz narxga rozi bo'lmadi", body: `Faqat chaqiruv to'lanadi: ${sum(p.fee, l)}` }),
   },
   ru: {
@@ -60,6 +64,8 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     inviteBonus: (p, l) => ({ title: 'Бонус за друга', body: `${p.name || 'Ваш друг'} выполнил 5 заказов — на баланс ${sum(p.sum, l)}` }),
     freeEnding: (p) => ({ title: 'Бесплатный период заканчивается', body: `Осталось дней: ${p.days}. Затем действует выбранный тариф — проверьте раздел «Деньги»` }),
     freeEnded: () => ({ title: 'Бесплатный период закончился', body: 'Теперь действует выбранный тариф. Проверьте баланс и тариф в разделе «Деньги»' }),
+    stillWorking: () => ({ title: 'Вы ещё на линии?', body: 'Геопозиция не обновлялась 35 минут. Чтобы заказы приходили, отправьте геопозицию или откройте приложение' }),
+    presenceLost: () => ({ title: 'Заказы приостановлены', body: 'Геопозиции нет 45 минут. Чтобы продолжить, отправьте геопозицию или откройте приложение' }),
     priceDeclined: (p, l) => ({ title: 'Клиент не согласился с ценой', body: `Оплачивается только вызов: ${sum(p.fee, l)}` }),
   },
   en: {
@@ -81,6 +87,8 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     inviteBonus: (p, l) => ({ title: 'Bonus for your friend', body: `${p.name || 'Your friend'} completed 5 jobs — ${sum(p.sum, l)} added to your balance` }),
     freeEnding: (p) => ({ title: 'Your free period is ending', body: `${p.days} day(s) left. Then your chosen plan applies — check the Money tab` }),
     freeEnded: () => ({ title: 'Your free period has ended', body: 'Your chosen plan now applies. Check your balance and plan in the Money tab' }),
+    stillWorking: () => ({ title: 'Still working?', body: "Your location hasn't updated for 35 minutes. Send your location or open the app to keep getting orders" }),
+    presenceLost: () => ({ title: 'Orders paused', body: 'No location for 45 minutes. Send your location or open the app to continue' }),
     priceDeclined: (p, l) => ({ title: 'The client declined the price', body: `Only the call-out fee is paid: ${sum(p.fee, l)}` }),
   },
 };
@@ -118,7 +126,9 @@ async function sendTelegram(rows: Row[], opts: PushOptions, fetchImpl: typeof fe
       chat_id: r.telegram_id,
       text: `<b>${esc(text.title)}</b>\n${esc(text.body)}`,
       parse_mode: 'HTML',
-      ...(r.url ? { reply_markup: { inline_keyboard: [[{ text: OPEN[lang], web_app: { url: appUrl + r.url } }]] } } : {}),
+      ...(r.kind === 'stillWorking' || r.kind === 'presenceLost'
+        ? { reply_markup: presenceKeyboard(lang) } // bitta bosishda joylashuv yuboriladi (telegram-bot qabul qiladi)
+        : r.url ? { reply_markup: { inline_keyboard: [[{ text: OPEN[lang], web_app: { url: appUrl + r.url } }]] } } : {}),
     };
     try {
       const res = await fetchImpl(`https://api.telegram.org/bot${opts.telegramToken}/sendMessage`, {

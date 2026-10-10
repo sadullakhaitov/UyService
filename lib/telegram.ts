@@ -43,6 +43,14 @@ export function openBot() {
   else Linking.openURL(url).catch(() => {});
 }
 
+/** Bot chatini "jonli joylashuv" yo'riqnomasi bilan ochish (fon rejimi: Telegram yig'ilsa ham buyurtma keladi) */
+export function openBotLive() {
+  const url = `https://t.me/${COMPANY.telegram}?start=live`;
+  const tg = telegram();
+  if (tg?.openTelegramLink) tg.openTelegramLink(url);
+  else Linking.openURL(url).catch(() => {});
+}
+
 /** "+998 90 123 45 67" (ilovadagi ko'rinish) yoki null — faqat O'zbekiston raqami */
 export function displayPhone(phone: string | null | undefined): string | null {
   const d = String(phone ?? '').replace(/\D/g, '');

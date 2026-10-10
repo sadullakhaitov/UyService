@@ -300,6 +300,23 @@ Ishga tushirish aksiyasi: admin panel → **Bepul davr** → ustaning raqami + 3
 
 Joylash: `update.ps1` — migratsiya va yangi funksiya birga ketadi.
 
+## 19. Fon rejimi — usta Telegram'ni yig'ib qo'ysa ham ishda (`…_background_presence.sql`)
+
+Mini App yig'ilsa sahifa to'xtaydi va joylashuv kelmay qoladi. Oldin usta 2 daqiqadan keyin ro'yxatdan chiqardi, endi:
+
+| Holat | Usta taklif oladimi |
+|---|---|
+| Ilova ochiq (joylashuv har 5 s) | ha — oldingidek |
+| Yig'ilgan, xabar oladi (Telegram bot yoki telefon push'i, «Yangi buyurtma» yoqilgan) | ha — oxirgi joylashuv **45 daqiqa** amal qiladi, taklif bot xabari bo'lib keladi |
+| Botda **jonli joylashuv** ulangan (📎 → Joylashuv → «Jonli joylashuvni ulashish») | ha — muddati tugaguncha (≤ 12 soat), yursa ham joyi yangilanadi |
+| Faqat oddiy brauzer (xabar olmaydi) | yo'q — 2 daqiqadan keyin chiqadi (taklifni ko'rmay qoladi) |
+
+- 35 daqiqa joylashuv kelmasa — bot «Hali ishdamisiz?» deb yozadi, pastida **«📍 Joylashuvni yuborish»** (bitta bosish) va **«⏸ Ishni tugatish»**; 45 daqiqada — «Buyurtmalar to'xtatildi» (online o'chmaydi: joylashuv yuborilsa yoki ilova ochilsa — darhol davom etadi). Ishdagi (band) ustaga eslatma bormaydi.
+- Ilovada (Telegram ichida, ishda bo'lganda) karta: fon rejimi holati, jonli joylashuv qachongacha, «Ulash» → botda yo'riqnoma (`/start live`).
+- Server: `master_present()` — taqsimlash (`nearby_masters`), mijoz xaritasidagi «N onlayn» (`masters_around`) va admin «hozir onlayn» shu qoida bilan; `presence_reminders()` — offer-timeout har 15 s; `masters.live_until/bg_*` ni faqat server yozadi.
+- Bot: `telegram-bot` endi joylashuv xabarlarini (`message.location`, jonli yangilanishi — `edited_message`) va «Ishni tugatish»ni qabul qiladi (`_shared/presence.ts`). Webhook'ni qayta o'rnatish shart emas — Telegram bu turdagi yangilanishlarni sukut bo'yicha yuboradi.
+- Joylash: `update.ps1` (migratsiya 19 + `telegram-bot`, `offer-timeout`, `push-send`). Sinovlar: `tests/presence_test.sql`, `tests/e2e/presence_e2e.ts`.
+
 ## Eskiz.uz hali yo'q bo'lsa
 
 - **Mijoz va ustalar** Telegram orqali kiradi (11-bo'lim) — SMS kerak emas. Oddiy brauzerda raqam + SMS bilan kirish
