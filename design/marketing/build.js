@@ -487,6 +487,22 @@ async function socialDocs() {
     <div class="sub" style="margin-top:36px;font-size:42px;opacity:.9">Ilova o'rnatmasdan, SMS'siz —<br>botni oching va "Ochish"ni bosing</div>
     <div style="position:absolute;left:0;right:0;bottom:150px;text-align:center"><span class="pill" style="color:#229ED9;font-size:48px">${CO.bot}</span></div></div>`));
 
+  // Story 4: aloqa — "Aloqa" highlight'i uchun (telefon, ish vaqti, Telegram, e-mail, sayt)
+  const row = (ic, label, value) => `<div style="display:flex;align-items:center;gap:34px;padding:30px 36px;border-radius:36px;background:rgba(255,255,255,.1);text-align:left">
+      <div style="flex:0 0 110px;height:110px;border-radius:30px;background:#fff;display:flex;align-items:center;justify-content:center">${icon(ic, C.green, 58, 2.2)}</div>
+      <div><div style="font-size:30px;font-weight:700;opacity:.75">${label}</div><div style="margin-top:6px;font-size:54px;font-weight:800;letter-spacing:-1px">${value}</div></div></div>`;
+  docs.push(px('instagram/story-4-aloqa', 1080, 1920, SOC, `<div class="g" style="width:1080px;height:1920px;padding:150px 80px 0;color:#fff;text-align:center;display:flex;flex-direction:column;align-items:center">
+    ${logo(42, true)}
+    <div class="k" style="margin-top:110px;font-size:36px">Aloqa</div>
+    <div class="h" style="margin-top:24px;font-size:112px">Savol bo'lsa,<br><span style="color:${C.orange}">yozing</span></div>
+    <div style="margin-top:80px;width:100%;display:flex;flex-direction:column;gap:26px">
+      ${row('phone', 'Telefon', CO.phone)}
+      ${row('clock', 'Ish vaqti', CO.hours)}
+      ${row('send', 'Telegram', CO.bot)}
+      ${row('mail', 'E-mail', CO.email)}
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:150px;text-align:center"><span class="pill" style="font-size:44px">${icon('globe', C.green, 44, 2.4)}${CO.site}</span></div></div>`));
+
 
   // ---------- Profil to'ri uchun qo'shimcha (instagram/PROFIL.md) ----------
   // Reels muqovalari 1080×1920: to'rda o'rtadagi 1080×1440 qismi ko'rinadi — matn shu oraliqda
