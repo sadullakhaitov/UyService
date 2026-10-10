@@ -1,6 +1,7 @@
 import BottomSheet, { BottomSheetTextInput, BottomSheetView, useBottomSheetSpringConfigs } from '@gorhom/bottom-sheet';
 import { createContext, forwardRef, useContext, useEffect, useRef, type ReactNode } from 'react';
-import { Keyboard, Platform, ScrollView, StyleSheet, TextInput, View, useWindowDimensions, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { Keyboard, Platform, ScrollView, StyleSheet, TextInput, View, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import { SIDE_GAP, SIDE_W, useWide } from '@/lib/useLayout';
 import { GlassBg } from '@/components/ui/Glass';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +29,7 @@ export function Sheet({
   peek = 84,
   bottomInset,
   top,
+  position,
 }: {
   children: ReactNode;
   /** Panelning hozir ko'rinib turgan balandligi (xarita fokus nuqtasi uchun) */
@@ -38,10 +40,35 @@ export function Sheet({
   bottomInset?: number;
   /** Kompyuterda: yon panel shuncha pastdan boshlanadi (tepadagi tugmalar ostidan) */
   top?: number;
+  /** Panel tepasining jonli o'rni (useSheetFollow) — xarita tugmalari panel bilan birga silliq yuradi */
+  position?: SharedValue<number>;
 }) {
   useScheme();
   if (useWide()) return <SidePanel onHeight={onHeight} top={top}>{children}</SidePanel>;
-  return <BottomPanel onHeight={onHeight} peek={peek} bottomInset={bottomInset}>{children}</BottomPanel>;
+  return (
+    <BottomPanel onHeight={onHeight} peek={peek} bottomInset={bottomInset} position={position}>
+      {children}
+    </BottomPanel>
+  );
+}
+
+/**
+ * Panel ustida turadigan tugmalar (zoom, joylashuv) uchun: panel tortilganda yoki ochilib-yopilganda
+ * ular bir kadr ham kechikmay birga yuradi. `onLayout` — panel joylashgan ota element (ekran) ga.
+ * Panel hali o'lchanmagan bo'lsa — `fallback` (oxirgi ma'lum balandlik).
+ */
+export function useSheetFollow(fallback: number, gap = 12) {
+  const position = useSharedValue(0);
+  const box = useSharedValue(0);
+  const onLayout = (e: LayoutChangeEvent) => {
+    box.value = e.nativeEvent.layout.height;
+  };
+  const style = useAnimatedStyle(() => {
+    const p = position.value;
+    const live = box.value > 0 && p > 0 && p < box.value;
+    return { bottom: (live ? box.value - p : fallback) + gap };
+  });
+  return { position, onLayout, style };
 }
 
 // Kompyuter: chapda, xarita ustida suzuvchi shisha oyna; kontent uzun bo'lsa — ichida aylantiriladi
@@ -62,7 +89,19 @@ function SidePanel({ children, onHeight, top = 76 }: { children: ReactNode; onHe
   );
 }
 
-function BottomPanel({ children, onHeight, peek = 84, bottomInset }: { children: ReactNode; onHeight?: (h: number) => void; peek?: number; bottomInset?: number }) {
+function BottomPanel({
+  children,
+  onHeight,
+  peek = 84,
+  bottomInset,
+  position,
+}: {
+  children: ReactNode;
+  onHeight?: (h: number) => void;
+  peek?: number;
+  bottomInset?: number;
+  position?: SharedValue<number>;
+}) {
   useScheme();
   const safe = useSafeAreaInsets();
   const insets = { bottom: bottomInset ?? safe.bottom };
@@ -71,8 +110,8 @@ function BottomPanel({ children, onHeight, peek = 84, bottomInset }: { children:
   const fullH = useRef(0);
   const index = useRef(1);
 
-  const report = () => {
-    const h = index.current === 0 ? peekH : fullH.current;
+  const report = (i = index.current) => {
+    const h = i === 0 ? peekH : fullH.current;
     if (h > 0) onHeight?.(h);
   };
 
@@ -83,9 +122,14 @@ function BottomPanel({ children, onHeight, peek = 84, bottomInset }: { children:
       enableDynamicSizing
       animateOnMount
       animationConfigs={spring}
+      animatedPosition={position}
       enablePanDownToClose={false}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
+      // Xarita panel bilan bir vaqtda siljiy boshlaydi (animatsiya oxirini kutmaydi)
+      onAnimate={(_from, to) => {
+        if (to >= 0) report(to);
+      }}
       onChange={(i) => {
         if (i < 0) return;
         if (i === 0) Keyboard.dismiss();

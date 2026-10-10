@@ -2,11 +2,12 @@ import { router } from 'expo-router';
 import { ChevronRight, Gauge, LocateFixed, Power, SlidersHorizontal, Wallet } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapBase, type MapHandle } from '@/components/map';
 import { MapZoom } from '@/components/map/MapZoom';
 import { ModalSheet } from '@/components/sheets/ModalSheet';
-import { Sheet } from '@/components/sheets/Sheet';
+import { Sheet, useSheetFollow } from '@/components/sheets/Sheet';
 import { Button, Chip, IconButton, Squish, Text } from '@/components/ui';
 import { SwipeButton } from '@/components/ui/SwipeButton';
 import { BILLING, feePercent } from '@/constants/billing';
@@ -47,6 +48,7 @@ export default function MasterOrders() {
   }, [online]);
   const plan = useUser((s) => s.billingPlan) ?? 'commission';
   const [sheetH, setSheetH] = useState(330);
+  const above = useSheetFollow(sheetH);
   const [filters, setFilters] = useState(false);
   const map = useRef<MapHandle>(null);
   const me = useMyLocation();
@@ -87,7 +89,7 @@ export default function MasterOrders() {
   const topH = insets.top + (blocked || notice || freeUntil ? 56 : 12);
 
   return (
-    <View style={styles.root}>
+    <View style={styles.root} onLayout={above.onLayout}>
       <MapBase
         ref={map}
         center={initial}
@@ -148,12 +150,12 @@ export default function MasterOrders() {
         <IconButton icon={SlidersHorizontal} label={t('mOrders.filters')} floating onPress={() => setFilters(true)} style={styles.round} />
       </View>
 
-      <View style={[styles.rightCol, { bottom: (wide ? MAP_ATTRIBUTION_H : sheetH) + 12 }]} pointerEvents="box-none">
+      <Animated.View style={[styles.rightCol, wide ? { bottom: MAP_ATTRIBUTION_H + 12 } : above.style]} pointerEvents="box-none">
         <MapZoom onZoom={(d) => map.current?.zoomBy(d)} size={52} radius={26} />
         <IconButton icon={LocateFixed} label={t('client.myLocation')} floating onPress={locate} style={styles.round} />
-      </View>
+      </Animated.View>
 
-      <Sheet onHeight={setSheetH} bottomInset={0} peek={70} top={topH + 60}>
+      <Sheet onHeight={setSheetH} bottomInset={0} peek={70} top={topH + 60} position={above.position}>
         {job ? (
           <Squish accessibilityRole="button" onPress={() => router.push('/master/job')} style={[styles.activeCard, { borderColor: colors.primary }]}>
             <View style={[styles.dot, { backgroundColor: colors.primary }]} />

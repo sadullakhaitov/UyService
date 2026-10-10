@@ -5,6 +5,11 @@
 import type { LatLng } from '@/lib/geo';
 import type { MapInsets, MapPoint } from './types';
 
+export type { MapInsets };
+
+/** Panel balandligi o'zgarganda kamera va markazdagi pin shuncha ms da silliq siljiydi */
+export const INSET_MS = 380;
+
 /** React → xarita: to'liq holat (har o'zgarishda qayta yuboriladi) */
 export type MapState = {
   center: LatLng;

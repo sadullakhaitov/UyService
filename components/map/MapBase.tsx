@@ -7,6 +7,7 @@ import { colors, themed, useScheme } from '@/constants/theme';
 import { DEFAULT_ZOOM, type MapBaseProps, type MapHandle } from './types';
 import { MAP_BASE_URL, type MapCommand, type MapEvent } from './page';
 import { useMapPage } from './useMapPage';
+import { Focal } from './Focal';
 
 export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(props, handle) {
   useScheme();
@@ -105,9 +106,7 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(prop
       {/* Xarita yuklanguncha — tekis fon (oq ekran ko'rinmaydi) */}
       {ready ? null : <View pointerEvents="none" style={styles.fill} />}
       {overlay ? (
-        <View pointerEvents="none" style={[styles.focal, { top: insets.top, bottom: insets.bottom }]}>
-          {overlay}
-        </View>
+<Focal insets={insets}>{overlay}</Focal>
       ) : null}
     </View>
   );
@@ -115,5 +114,4 @@ export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(prop
 
 const styles = themed(() => ({
   fill: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: colors.map },
-  focal: { position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
 }));

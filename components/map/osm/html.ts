@@ -3,7 +3,7 @@
 // sahifa → React: boot / ready / error / moveStart / moveEnd / press / point.
 // Belgilar — DOM (Marker), yo'l — GeoJSON chizig'i, to'lqinlar va fokus nuqtasi (panel orasidagi joy) — o'zimiz hisoblaymiz.
 // Pastki burchakdagi "© OpenStreetMap" yozuvi litsenziya talabi — yashirilmaydi.
-import type { MapInit } from '../page';
+import { INSET_MS, type MapInit } from '../page';
 
 const MAPLIBRE = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl';
 const STYLE = 'https://tiles.openfreemap.org/styles/liberty';
@@ -290,7 +290,8 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
       var keep = null;
       if (prev && !same(prev.insets, s.insets) && !s.fitTo.length) {
         var left = target ? target.end - Date.now() : 0;
-        keep = left > 0 ? { p: target.p, z: target.z, d: left } : { p: focalCenter(), z: getZ(), d: 0 };
+        // Panel ochilib-yopilganda xarita sakramaydi — pin (Focal.tsx) bilan bir xil vaqtda silliq siljiydi
+        keep = left > 0 ? { p: target.p, z: target.z, d: Math.max(left, ${INSET_MS}) } : { p: focalCenter(), z: getZ(), d: ${INSET_MS} };
       }
       insets = s.insets;
       placeAttribution();

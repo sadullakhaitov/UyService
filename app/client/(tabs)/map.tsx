@@ -2,10 +2,11 @@ import { router, useFocusEffect } from 'expo-router';
 import { CalendarClock, ChevronRight, LocateFixed, MapPin, ReceiptText, Search, User } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapZoom } from '@/components/map/MapZoom';
 import { CenterPin, MapBase, type MapHandle } from '@/components/map';
-import { Sheet, SheetInput } from '@/components/sheets/Sheet';
+import { Sheet, SheetInput, useSheetFollow } from '@/components/sheets/Sheet';
 import { Avatar, IconButton, Logo, RatingBadge, Squish, Text } from '@/components/ui';
 import { ActiveOrders } from '@/components/ui/ActiveOrders';
 import { categories, problems, type CategoryId } from '@/constants/categories';
@@ -25,6 +26,9 @@ export default function ClientMap() {
   useScheme();
   const insets = useSafeAreaInsets();
   const [sheetH, setSheetH] = useState(520);
+  // Yopiq panelda faqat manzil ko'rinadi (qidiruv maydoni chetidan ham chiqib turmaydi) — manzil qatorining pastigacha
+  const [peek, setPeek] = useState(64);
+  const follow = useSheetFollow(sheetH);
   const [moving, setMoving] = useState(false);
   const [query, setQuery] = useState('');
   const { address, location, setAddress, setDraft, reset, scheduledAt } = useOrder();
@@ -118,7 +122,7 @@ export default function ClientMap() {
   const topH = insets.top + 76;
 
   return (
-    <View style={styles.root}>
+    <View style={styles.root} onLayout={follow.onLayout}>
       <MapBase
         ref={map}
         center={initial}
@@ -149,15 +153,22 @@ export default function ClientMap() {
         </View>
       </View>
 
-      <View style={[styles.rightCol, { bottom: (wide ? MAP_ATTRIBUTION_H : sheetH) + 12 }]} pointerEvents="box-none">
+      {/* Tugmalar panel bilan birga yuradi (tortilganda ham, ochilib-yopilganda ham) */}
+      <Animated.View style={[styles.rightCol, wide ? { bottom: MAP_ATTRIBUTION_H + 12 } : follow.style]} pointerEvents="box-none">
         <MapZoom onZoom={(d) => map.current?.zoomBy(d)} />
         <IconButton icon={LocateFixed} label={t('client.address')} floating onPress={locate} />
-      </View>
+      </Animated.View>
 
       {/* Pastki menyu xavfsiz joyni o'zi egallaydi — panel to'g'ridan-to'g'ri uning ustida */}
-      <Sheet onHeight={setSheetH} top={topH} bottomInset={0}>
+      <Sheet onHeight={setSheetH} top={topH} bottomInset={0} peek={peek} position={follow.position}>
         <ActiveOrders />
-        <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/client/address')} style={styles.address}>
+        <Squish
+          accessibilityRole="button"
+          scaleTo={0.98}
+          onPress={() => router.push('/client/address')}
+          onLayout={(e) => setPeek(Math.round(e.nativeEvent.layout.y + e.nativeEvent.layout.height + 14))}
+          style={styles.address}
+        >
           <View style={styles.addrIcon}>
             <MapPin size={18} color={colors.accent} strokeWidth={2.4} />
           </View>

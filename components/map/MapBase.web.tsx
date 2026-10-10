@@ -7,6 +7,7 @@ import { FakeMap } from './FakeMap';
 import { DEFAULT_ZOOM, type MapBaseProps, type MapHandle } from './types';
 import type { MapCommand, MapEvent } from './page';
 import { useMapPage } from './useMapPage';
+import { Focal } from './Focal';
 import { SIDE_INSET, useWide } from '@/lib/useLayout';
 
 export const MapBase = forwardRef<MapHandle, MapBaseProps>(function MapBase(raw, handle) {
@@ -120,9 +121,7 @@ function MapFrame({ handle, ready, hidden, onMode, ...props }: FrameProps) {
       })}
       {ready ? null : <View pointerEvents="none" style={styles.fill} />}
       {overlay ? (
-        <View pointerEvents="none" style={[styles.focal, { top: insets.top, bottom: insets.bottom, left: insets.left ?? 0 }]}>
-          {overlay}
-        </View>
+<Focal insets={insets}>{overlay}</Focal>
       ) : null}
     </View>
   );
@@ -130,5 +129,4 @@ function MapFrame({ handle, ready, hidden, onMode, ...props }: FrameProps) {
 
 const styles = themed(() => ({
   fill: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: colors.map },
-  focal: { position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
 }));
