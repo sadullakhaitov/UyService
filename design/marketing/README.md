@@ -27,6 +27,7 @@ Bosmaxonaga: PDF faylni bering. Vizitka va stikerlarda chetdan 2 mm "bleed" bor 
 
 - `post-1…6` — 1080×1350 (lenta): brend, qanday ishlaydi, narx, kafolat, xizmatlar, ustalar uchun.
 - `reel-1-uyservice-nima.mp4` (29 s), `reel-2-kran-oqyapti.mp4` (23 s) — tayyor Reels videolari 1080×1920, 30 fps, ovozsiz (musiqani Instagram'da qo'shing); `.png` — ularning muqovalari (matn o'rtadagi 1080×1440 da — to'rda kesilmaydi). Qayta yig'ish: `node design/marketing/reels.js` (QR_MOD, PW — build.js kabi; ffmpeg kerak).
+- `reel-1-uyservice-nima-ovozli.mp4` (39 s) — o'sha video **o'zbekcha ovoz**, animatsiya effektlari (tomchi, telefon, bosish, xarita, hisoblagich, kafolat) va yengil fon musiqasi bilan. Ovoz — espeak-ng sintezi (kompyuter ovozi; jonli ovoz yozilsa, `audio.py` uni o'rniga qo'yadi), effektlar va musiqa `audio.py` ichida sintez qilingan — litsenziya muammosi yo'q. Qayta yig'ish: `bash design/marketing/reel1-ovozli.sh` (matn — `tts_voice.py` → `LINES`).
 - `karusel-5-savol/01…09` — karusel "Usta chaqirishdan oldin 5 savol" (1080×1350).
 - `story-1…3` — 1080×1920: mijoz (havola stikerini pastdagi tugma ustiga qo'ying), usta (QR), Telegram.
 - `avatar` — profil surati (doira ichida ham to'g'ri ko'rinadi), Telegram bot va kanal uchun ham.
