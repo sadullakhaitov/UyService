@@ -26,7 +26,7 @@ Bosmaxonaga: PDF faylni bering. Vizitka va stikerlarda chetdan 2 mm "bleed" bor 
 **Akkauntni tayyorlash — [`instagram/PROFIL.md`](instagram/PROFIL.md)**: profil matnlari (ism maydoni, bio, havola), highlights, birinchi 9 post tartibi va qadaladigan 3 tasi, tayyor izohlar, Reels ssenariylari, stories, birinchi hafta rejasi. Taxminiy ko'rinish — `instagram/profil-maket.png`. Uslub — `instagram/voice.md`.
 
 - `post-1…6` — 1080×1350 (lenta): brend, qanday ishlaydi, narx, kafolat, xizmatlar, ustalar uchun.
-- `reel-1-uyservice-nima`, `reel-2-kran-oqyapti` — Reels muqovalari 1080×1920 (matn o'rtadagi 1080×1440 da — to'rda kesilmaydi).
+- `reel-1-uyservice-nima.mp4` (29 s), `reel-2-kran-oqyapti.mp4` (23 s) — tayyor Reels videolari 1080×1920, 30 fps, ovozsiz (musiqani Instagram'da qo'shing); `.png` — ularning muqovalari (matn o'rtadagi 1080×1440 da — to'rda kesilmaydi). Qayta yig'ish: `node design/marketing/reels.js` (QR_MOD, PW — build.js kabi; ffmpeg kerak).
 - `karusel-5-savol/01…09` — karusel "Usta chaqirishdan oldin 5 savol" (1080×1350).
 - `story-1…3` — 1080×1920: mijoz (havola stikerini pastdagi tugma ustiga qo'ying), usta (QR), Telegram.
 - `avatar` — profil surati (doira ichida ham to'g'ri ko'rinadi), Telegram bot va kanal uchun ham.

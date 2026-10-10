@@ -688,7 +688,12 @@ async function main() {
   await b.close();
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// reels.js shu yordamchilarni ishlatadi (require qilinganda yig'ish boshlanmaydi)
+module.exports = { C, CO, CATS, FONTS, BASE, icon, mark, word, logo, phone, doc, b64, OUT };
+
+if (require.main === module) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

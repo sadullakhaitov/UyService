@@ -166,6 +166,8 @@ Qolgan rasmli postlar (`post-1…6`) uchun izoh qisqa bo'lsin:
 
 ## 6. Reels ssenariylari
 
+**Tayyor videolar:** `reel-1-uyservice-nima.mp4` va `reel-2-kran-oqyapti.mp4` (1080×1920, ovozsiz). Joylashda: Instagram'dagi musiqa kutubxonasidan ohang tanlang (litsenziyali, bepul), muqova — shu nomdagi `.png` («Обложка» → «Добавить из галереи»). Video matnli — ovoz yoqilmasa ham tushunarli.
+
 Vaqtni `beats.py` o'lchagan; o'zbekcha so'zlar uzun, shuning uchun aslida 20–25 soniya chiqadi. Qisqa video — yaxshi.
 
 Variantlar:
