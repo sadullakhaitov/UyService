@@ -21,16 +21,17 @@ Bosmaxonaga: PDF faylni bering. Vizitka va stikerlarda chetdan 2 mm "bleed" bor 
 
 ## Instagram (`instagram/`)
 
+**Akkauntni tayyorlash — [`instagram/PROFIL.md`](instagram/PROFIL.md)**: profil matnlari (ism maydoni, bio, havola), highlights, birinchi 9 post tartibi va qadaladigan 3 tasi, tayyor izohlar, Reels ssenariylari, stories, birinchi hafta rejasi. Taxminiy ko'rinish — `instagram/profil-maket.png`. Uslub — `instagram/voice.md`.
+
 - `post-1…6` — 1080×1350 (lenta): brend, qanday ishlaydi, narx, kafolat, xizmatlar, ustalar uchun.
+- `reel-1-uyservice-nima`, `reel-2-kran-oqyapti` — Reels muqovalari 1080×1920 (matn o'rtadagi 1080×1440 da — to'rda kesilmaydi).
+- `karusel-5-savol/01…09` — karusel "Usta chaqirishdan oldin 5 savol" (1080×1350).
 - `story-1…3` — 1080×1920: mijoz (havola stikerini pastdagi tugma ustiga qo'ying), usta (QR), Telegram.
 - `avatar` — profil surati (doira ichida ham to'g'ri ko'rinadi), Telegram bot va kanal uchun ham.
-- `highlight-*` — "Aktual" muqovalari: xizmatlar, narx, kafolat, ustalar, aloqa.
+- `highlight-*` — "Aktual" muqovalari: narx, qanday, kafolat, ustalar, aloqa (+ xizmatlar zaxirada).
 - `social/havola-1200x630` — havola ulashilganda chiqadigan rasm (Telegram, Facebook, WhatsApp).
 
-Post matni uchun namuna (izohga):
-
-> Uyda nimadir buzildimi? 🛠 UyService — eng yaqin santexnik, elektrik, konditsioner ustasi bir bosishda. Xaritada kelayotganini ko'rasiz, narx ish boshlanishidan oldin kelishiladi, chaqiruv — 50 000 so'm (ish qilinsa — narx ichida), 30 kun kafolat. 👉 uyservice.uz · Telegram: @uyservice_bot
-> #usta #santexnik #elektrik #toshkent #uyservice #ремонт #мастер
+Izoh qoidalari: havola izohga emas — bio'ga (izohda bosilmaydi); hashteg ko'pi bilan 5 ta; bitta iltimos. Tayyor izohlar — `PROFIL.md`.
 
 ## Logotiplar (`logo/`)
 
@@ -41,6 +42,7 @@ PNG — shaffof fon (yuqori aniqlik), PDF — vektor (bosma, bannerlar). `logo-g
 ```bash
 # bir marta, loyihadan tashqari papkada: npm i qrcode playwright
 QR_MOD=<papka>/node_modules/qrcode PW=<papka>/node_modules/playwright node design/marketing/build.js
+# faqat bir qismi: ONLY=instagram (nomga mos regex)
 ```
 
 `screens/` — ilovaning haqiqiy ekranlari (telefon ramkalari ichida ishlatiladi). Ilova o'zgarsa — yangi suratlarni shu nomlar bilan qo'ying.

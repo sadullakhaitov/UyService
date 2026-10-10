@@ -487,12 +487,58 @@ async function socialDocs() {
     <div class="sub" style="margin-top:36px;font-size:42px;opacity:.9">Ilova o'rnatmasdan, SMS'siz —<br>botni oching va "Ochish"ni bosing</div>
     <div style="position:absolute;left:0;right:0;bottom:150px;text-align:center"><span class="pill" style="color:#229ED9;font-size:48px">${CO.bot}</span></div></div>`));
 
+
+  // ---------- Profil to'ri uchun qo'shimcha (instagram/PROFIL.md) ----------
+  // Reels muqovalari 1080×1920: to'rda o'rtadagi 1080×1440 qismi ko'rinadi — matn shu oraliqda
+  docs.push(px('instagram/reel-1-uyservice-nima', 1080, 1920, SOC, `<div class="g" style="width:1080px;height:1920px;padding:300px 90px 0;text-align:center;display:flex;flex-direction:column;align-items:center">
+    ${logo(46, true)}
+    <div class="h" style="margin-top:80px;font-size:150px;letter-spacing:-5px">UyService<br><em>nima?</em></div>
+    <div style="margin-top:46px;display:inline-flex;align-items:center;gap:18px;background:rgba(255,255,255,.12);border-radius:60px;padding:22px 40px;font-size:46px;font-weight:800">${icon('play', C.orange, 44, 2.6)}30 soniyada</div>
+    <div style="margin-top:70px">${phone('home', 330)}</div></div>`));
+  docs.push(px('instagram/reel-2-kran-oqyapti', 1080, 1920, SOC, `<div style="width:1080px;height:1920px;padding:300px 90px 0;background:#E3F1FB;text-align:center;display:flex;flex-direction:column;align-items:center">
+    ${logo(46)}
+    <div style="margin-top:90px;width:300px;height:300px;border-radius:150px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(11,111,184,.18)">${icon('droplets', '#0B6FB8', 170, 1.8)}</div>
+    <div class="h" style="margin-top:80px;font-size:140px;letter-spacing:-5px;color:#0B3E66">Kran<br>oqyaptimi?</div>
+    <div style="margin-top:40px;font-size:58px;font-weight:800;color:#0B6FB8">Avval shuni qiling</div></div>`));
+
+  // Karusel: "Usta chaqirishdan oldin 5 savol" (1080×1350, har slaydda raqam va sayt)
+  const KS = [
+    ['Chaqiruv qancha?', "Kelib ko'rish ham pul turadi. Buni oldindan biling.", "Chaqiruv 50 000 so'm. Ish qilinsa, narx ichida."],
+    ['Narx qachon aytiladi?', "Ish boshlanishidan oldin. Usta ko'rib, aniq summani aytsin.", 'Usta narx yuboradi, siz ilovada tasdiqlaysiz.'],
+    ['Ehtiyot qism alohidami?', "Ish haqi va qism narxini alohida so'rang.", 'Ikkalasi alohida yoziladi, hammasi oldindan ko\'rinadi.'],
+    ['Kafolat bormi?', "Necha kun va nimaga ekanini so'rang.", '30 kun. Muammo chiqsa, ilovada "Kafolat" tugmasi.'],
+    ['Kim keladi?', "Ismi, reytingi, boshqalar nima degani.", "Usta profili va sharhlar. Eshik kodi: kelgan odam aynan o'sha usta."],
+  ];
+  const NSL = KS.length + 4;
+  const slide = (i, bg, body, dark = false) => px(`instagram/karusel-5-savol/${String(i).padStart(2, '0')}`, 1080, 1350, SOC, `<div style="position:relative;width:1080px;height:1350px;padding:120px 120px 180px;background:${bg};color:${dark ? '#fff' : C.ink};display:flex;flex-direction:column;justify-content:center">
+    <div>${body}</div>
+    <div style="position:absolute;left:120px;right:120px;bottom:80px;display:flex;justify-content:space-between;font-size:28px;font-weight:800;color:${dark ? '#BFE0D6' : C.muted}"><span>@uyservice.uz</span><span>${i}/${NSL}</span></div></div>`);
+  docs.push(slide(1, C.green, `${logo(38, true)}
+    <div class="h" style="margin-top:90px;font-size:132px;letter-spacing:-5px">Usta<br>chaqirishdan<br>oldin <em>5 savol</em></div>
+    <div class="sub" style="margin-top:44px;font-size:44px;color:#BFE0D6">Keyin tortishuv bo'lmaydi</div>
+    <div style="margin-top:80px;display:flex;gap:18px">${CATS.map(([ic]) => `<span style="width:110px;height:110px;border-radius:32px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center">${icon(ic, '#FFFFFF', 54, 2)}</span>`).join('')}</div>`, true));
+  docs.push(slide(2, '#fff', `<div class="k" style="color:#B4561A">Nega muhim</div>
+    <div class="h" style="margin-top:30px;font-size:84px;letter-spacing:-2px">Narxni ish boshlangandan keyin so'rasangiz, <span style="color:${C.green}">kelishish qiyin.</span></div>
+    <div class="sub" style="margin-top:44px;font-size:40px;color:${C.ink2}">Kran yechilgan, usta 300 000 deydi, siz 150 000 kutgan edingiz.</div>`));
+  KS.forEach(([q, a, u], k) => docs.push(slide(k + 3, k % 2 ? C.page : '#fff', `<div style="width:130px;height:130px;border-radius:40px;background:${C.mint};display:flex;align-items:center;justify-content:center;font-size:72px;font-weight:800;color:${C.green}">${k + 1}</div>
+    <div class="h" style="margin-top:56px;font-size:96px;letter-spacing:-3px">${q}</div>
+    <div class="sub" style="margin-top:36px;font-size:44px;color:${C.ink2}">${a}</div>
+    <div style="margin-top:60px;background:${C.green};color:#fff;border-radius:36px;padding:38px 44px"><div style="font-size:28px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:${C.orange}">UyService'da</div><div style="margin-top:12px;font-size:40px;font-weight:700;line-height:1.35">${u}</div></div>`)));
+  docs.push(slide(NSL - 1, '#fff', `<div class="k" style="color:#B4561A">Saqlab qo'ying</div>
+    <div class="h" style="margin-top:24px;font-size:80px;letter-spacing:-2px">5 savol</div>
+    <div style="margin-top:50px;display:flex;flex-direction:column;gap:30px">${KS.map(([q], k) => `<div style="display:flex;gap:28px;align-items:center;font-size:50px;font-weight:800"><span style="flex:none;width:84px;height:84px;border-radius:26px;background:${C.mint};color:${C.green};display:flex;align-items:center;justify-content:center;font-size:44px">${k + 1}</span>${q}</div>`).join('')}</div>`));
+  docs.push(slide(NSL, C.green, `${logo(38, true)}
+    <div style="margin-top:150px;width:200px;height:200px;border-radius:60px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center">${icon('bookmark', C.orange, 110, 2)}</div>
+    <div class="h" style="margin-top:60px;font-size:112px;letter-spacing:-4px">Saqlab<br>qo'ying</div>
+    <div class="sub" style="margin-top:40px;font-size:44px;color:#BFE0D6">Keyingi safar usta chaqirganda kerak bo'ladi. Usta kerak bo'lsa: ${CO.site}</div>`, true));
+
   // Avatar (profil surati) — doira ichida ham chiroyli
   docs.push(px('instagram/avatar', 1080, 1080, '', `<div style="width:1080px;height:1080px;background:${C.green};display:flex;align-items:center;justify-content:center">${mark('#FFFFFF', C.green, 640)}</div>`));
 
   // Highlight muqovalari
   const HL = [
     ['xizmatlar', 'wrench'],
+    ['qanday', 'list-checks'],
     ['narx', 'wallet'],
     ['kafolat', 'shield-check'],
     ['ustalar', 'hard-hat'],
@@ -531,9 +577,82 @@ function logoDocs() {
   return docs;
 }
 
+
+// ====================================================================================
+// PROFIL MAKETI — akkaunt tayyor bo'lgandagi taxminiy ko'rinish (instagram/PROFIL.md)
+// Rasmlar yig'ilgandan keyin o'qiladi (html — funksiya)
+// ====================================================================================
+function profileMockup() {
+  const img = (n) => `data:image/png;base64,${b64(path.join(OUT, 'instagram', `${n}.png`))}`;
+  const GRID = [
+    ['reel-1-uyservice-nima', 'reel', true],
+    ['post-2-qanday-ishlaydi', '', true],
+    ['post-4-kafolat', '', true],
+    ['karusel-5-savol/01', 'multi'],
+    ['reel-2-kran-oqyapti', 'reel'],
+    ['post-3-narx', ''],
+    ['post-5-xizmatlar', ''],
+    ['post-1-buzildimi', ''],
+    ['post-6-ustalar', ''],
+  ];
+  const HL = [['Narx', 'wallet'], ['Qanday?', 'list-checks'], ['Kafolat', 'shield-check'], ['Ustalarga', 'hard-hat'], ['Aloqa', 'message-circle']];
+  const I = (n, s = 24, c = '#000', w = 2) => icon(n, c, s, w);
+  const css = `
+.page{width:390px;background:#fff;font-family:-apple-system,'SF Pro Text',Manrope,system-ui,sans-serif;color:#000}
+.sb{height:47px;display:flex;align-items:center;justify-content:space-between;padding:0 30px 0 34px;font-weight:700;font-size:16px}
+.hd{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.hd b{font-size:21px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:4px}
+.top{display:flex;align-items:center;gap:26px;padding:10px 16px 0}
+.ring{flex:none;width:92px;height:92px;border-radius:50%;padding:3px;background:conic-gradient(from 210deg,#FEDA75,#FA7E1E,#D62976,#962FBF,#4F5BD5,#FEDA75)}
+.ring>div{width:100%;height:100%;border-radius:50%;background:#fff;padding:3px}
+.ring img{width:100%;height:100%;border-radius:50%;display:block}
+.st{flex:1;display:flex;justify-content:space-between;padding-right:8px}
+.st div{display:flex;flex-direction:column;font-size:13px;line-height:1.2}
+.st b{font-size:17px;font-weight:700}
+.bio{padding:12px 16px 0;font-size:14px;line-height:1.36}
+.bio .nm{font-weight:700}
+.bio .cat{color:#737373}
+.bio .ln{color:#00376B;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:2px}
+.btns{display:flex;gap:6px;padding:14px 16px 0}
+.btns div{flex:1;height:34px;border-radius:9px;background:#EFEFEF;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;white-space:nowrap;padding:0 6px}
+.btns .sq{flex:none;width:34px}
+.hl{display:flex;gap:16px;padding:18px 16px 0;overflow:hidden}
+.hl>div{flex:none;width:64px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px}
+.hl .c{width:64px;height:64px;border-radius:50%;border:1px solid #DBDBDB;padding:3px}
+.hl .c div{width:100%;height:100%;border-radius:50%;background:${C.green};display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;margin-top:18px;border-bottom:1px solid #DBDBDB}
+.tabs div{flex:1;height:44px;display:flex;align-items:center;justify-content:center}
+.tabs .on{border-bottom:1.5px solid #000}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.cell{position:relative;aspect-ratio:3/4;overflow:hidden;background:#eee}
+.cell img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.cell .tag{position:absolute;top:7px;right:7px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+.nav{display:flex;justify-content:space-around;align-items:center;height:56px;border-top:1px solid #EFEFEF;padding-bottom:4px}
+.home{height:30px;display:flex;justify-content:center}
+.home div{width:134px;height:5px;border-radius:3px;background:#000;margin-top:12px}
+`;
+  const html = () => doc('profil-maket', css, `<div class="page">
+  <div class="sb"><span>19:30</span><span style="display:flex;gap:6px;align-items:center">${I('signal', 17, '#000', 2.6)}${I('wifi', 17, '#000', 2.6)}${I('battery-full', 22, '#000', 2)}</span></div>
+  <div class="hd">${I('plus', 26, '#000', 2)}<b>uyservice.uz ${I('chevron-down', 16, '#000', 2.6)}</b><span style="display:flex;gap:20px">${I('at-sign', 24)}${I('menu', 26)}</span></div>
+  <div class="top"><div class="ring"><div><img src="${img('avatar')}"></div></div>
+    <div class="st"><div><b>9</b>публикаций</div><div><b>0</b>подписчиков</div><div><b>12</b>подписок</div></div></div>
+  <div class="bio"><div class="nm">UyService | Usta chaqirish</div><div class="cat">Услуги для дома</div>
+    Uyda nimadir buzildimi? Eng yaqin usta keladi.<br>Chaqiruv 50 000 so'm, ish qilinsa narx ichida.<br>30 kun kafolat. Naqd to'lov.
+    <div class="ln">${I('link', 14, '#00376B', 2.4)}uyservice.uz</div></div>
+  <div class="btns"><div>Редактировать</div><div>Поделиться профилем</div><div>Контакты</div></div>
+  <div class="hl">${HL.map(([t, ic]) => `<div><div class="c"><div>${I(ic, 26, '#fff', 2)}</div></div>${t}</div>`).join('')}</div>
+  <div class="tabs"><div class="on">${I('grid-3x3', 24, '#000', 2)}</div><div>${I('clapperboard', 24, '#737373', 2)}</div><div>${I('square-user', 24, '#737373', 2)}</div></div>
+  <div class="grid">${GRID.map(([n, kind, pin]) => `<div class="cell"><img src="${img(n)}">${pin ? `<span class="tag">${I('pin', 17, '#fff', 2.4)}</span>` : kind === 'reel' ? `<span class="tag">${I('clapperboard', 17, '#fff', 2.4)}</span>` : kind === 'multi' ? `<span class="tag">${I('copy', 17, '#fff', 2.4)}</span>` : ''}</div>`).join('')}</div>
+  <div class="nav">${I('house', 26)}${I('clapperboard', 26)}${I('send', 26)}${I('search', 26)}<div style="width:28px;height:28px;border-radius:50%;border:2px solid #000;padding:1px"><img src="${img('avatar')}" style="width:100%;height:100%;border-radius:50%;display:block"></div></div>
+  <div class="home"><div></div></div></div>`);
+  return [{ name: 'instagram/profil-maket', px: [390, 0], scale: 3, html }];
+}
+
 // ====================================================================================
 async function main() {
-  const all = [...(await printDocs()), ...(await socialDocs()), ...logoDocs()];
+  // ONLY=<regex> — faqat nomi mos keladiganlarni qayta yig'ish (masalan ONLY=instagram)
+  const only = process.env.ONLY ? new RegExp(process.env.ONLY) : null;
+  const all = [...(await printDocs()), ...(await socialDocs()), ...logoDocs(), ...profileMockup()].filter((d) => !only || only.test(d.name));
   const b = await chromium.launch({ executablePath: process.env.CHROME || undefined });
   for (const d of all) {
     const file = path.join(OUT, d.name);
@@ -555,11 +674,12 @@ async function main() {
       await page.screenshot({ path: `${file}.png`, fullPage: false, omitBackground: false });
       await page.close();
     } else {
+      // h = 0 — balandlik kontentga qarab (maket)
       const [w, h] = d.px;
-      const page = await b.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
-      await page.setContent(d.html, { waitUntil: 'load' });
+      const page = await b.newPage({ viewport: { width: w, height: h || 800 }, deviceScaleFactor: d.scale ?? 1 });
+      await page.setContent(typeof d.html === 'function' ? d.html() : d.html, { waitUntil: 'load' });
       await page.evaluate(() => document.fonts.ready);
-      await page.screenshot({ path: `${file}.png`, omitBackground: Boolean(d.transparent) });
+      await page.screenshot({ path: `${file}.png`, omitBackground: Boolean(d.transparent), fullPage: !h });
       if (d.pdf) await page.pdf({ path: `${file}.pdf`, width: `${w}px`, height: `${h}px`, printBackground: true, pageRanges: '1' });
       await page.close();
     }
