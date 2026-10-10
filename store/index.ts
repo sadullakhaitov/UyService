@@ -162,6 +162,8 @@ export type MasterProfile = {
   photo: string | null;
   passportPhoto: string | null;
   selfie: string | null;
+  /** Pasport va selfi uchun alohida rozilik vaqti (ms); belgilanmaguncha hujjat yuklanmaydi */
+  docConsentAt?: number | null;
   works: string[];
   status: VerifyStatus;
   submittedAt: number | null;
@@ -175,6 +177,7 @@ const emptyProfile: MasterProfile = {
   photo: null,
   passportPhoto: null,
   selfie: null,
+  docConsentAt: null,
   works: [],
   status: 'none',
   submittedAt: null,

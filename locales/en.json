@@ -557,7 +557,8 @@
     "recheckText": "If you replace the document, verification is reset and your fee is {{pct}}% until it's re-checked."
   },
   "works": {
-    "count": "{{n}} / {{max}} photos"
+    "count": "{{n}} / {{max}} photos",
+    "rules": "Upload only photos of your own work. No faces, documents, house numbers or addresses should be visible; if you shoot in a client's home, ask their permission."
   },
   "edit": {
     "title": "Edit profile"
@@ -1628,5 +1629,10 @@
     "9": "October",
     "10": "November",
     "11": "December"
+  },
+  "docConsent": {
+    "text": "I agree that my passport photo and selfie are used only to verify my identity. Clients never see them — only the reviewing staff.",
+    "needTitle": "Give consent first",
+    "needText": "To upload your passport and selfie, tick the consent above."
   }
 }

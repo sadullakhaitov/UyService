@@ -504,6 +504,8 @@ export async function liveSubmitMaster() {
     photo_path: photo,
     passport_path: passport,
     selfie_path: selfie,
+    // Rozilik vaqtini server qo'yadi; bu yerda faqat "rozi" belgisi (…_doc_consent.sql)
+    ...(profile.docConsentAt ? { doc_consent_at: new Date(profile.docConsentAt).toISOString() } : {}),
     works: works.filter(Boolean),
     billing_plan: useUser.getState().billingPlan,
   };

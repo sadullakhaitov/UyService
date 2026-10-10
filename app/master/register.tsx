@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Chip, ScreenHeader, Text } from '@/components/ui';
 import { CategoryPicker } from '@/components/ui/CategoryPicker';
 import { PhotoTile } from '@/components/ui/PhotoTile';
+import { DocConsent, needDocConsent } from '@/components/ui/DocConsent';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { AVATAR_MAX, DOC_MAX, pickImages, takePhoto } from '@/lib/photos';
@@ -36,7 +37,8 @@ export default function Register() {
     // Profil surati majburiy: mijoz eshik ochishdan oldin ustaning yuzini ko'radi
     profile.firstName.trim().length >= 2 && profile.lastName.trim().length >= 2 && Boolean(profile.photo),
     profile.categories.length > 0,
-    true, // pasport ixtiyoriy
+    // pasport ixtiyoriy; yuklangan bo'lsa — alohida rozilik belgilangan bo'lishi kerak (server ham tekshiradi)
+    !(profile.passportPhoto || profile.selfie) || Boolean(profile.docConsentAt),
     true, // ish namunalari ixtiyoriy (keyin Profil → Ish namunalari)
   ][step];
 
@@ -136,6 +138,7 @@ export default function Register() {
 
           {step === 2 ? (
             <>
+              <DocConsent />
               <View style={styles.docs}>
                 <View style={styles.doc}>
                   <PhotoTile
@@ -144,6 +147,7 @@ export default function Register() {
                     label={t('register.passport')}
                     size="100%"
                     onAdd={async () => {
+                      if (!(await needDocConsent())) return;
                       const uri = await takePhoto({ max: DOC_MAX });
                       if (uri) setProfile({ passportPhoto: uri });
                     }}
@@ -160,6 +164,7 @@ export default function Register() {
                     label={t('register.selfie')}
                     size="100%"
                     onAdd={async () => {
+                      if (!(await needDocConsent())) return;
                       const uri = await takePhoto({ front: true, max: DOC_MAX });
                       if (uri) setProfile({ selfie: uri });
                     }}
@@ -187,6 +192,7 @@ export default function Register() {
             </>
           ) : null}
 
+          {step === 3 ? <Text variant="caption">{t('works.rules')}</Text> : null}
           {step === 3 ? (
             <View style={styles.works}>
               {profile.works.map((uri) => (

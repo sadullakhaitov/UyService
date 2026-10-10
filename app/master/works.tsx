@@ -20,6 +20,7 @@ export default function Works() {
       <ScreenHeader title={t('profile.works')} kicker={t('works.count', { n: works.length, max: MAX_WORKS })} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text variant="small">{t('profile.worksHint')}</Text>
+        <Text variant="caption">{t('works.rules')}</Text>
         <View style={styles.grid}>
           {works.length < MAX_WORKS ? (
             <PhotoTile

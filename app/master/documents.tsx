@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ScreenHeader, Text } from '@/components/ui';
 import { PhotoTile } from '@/components/ui/PhotoTile';
+import { DocConsent, needDocConsent } from '@/components/ui/DocConsent';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
 import { DOC_MAX, takePhoto } from '@/lib/photos';
@@ -58,6 +59,7 @@ export default function Documents() {
         </View>
 
         <Text style={styles.section}>{t('docs.passport')}</Text>
+        <DocConsent />
         <View style={styles.docs}>
           <View style={styles.doc}>
             <PhotoTile
@@ -66,6 +68,7 @@ export default function Documents() {
               label={t('register.passport')}
               size="100%"
               onAdd={async () => {
+                if (!(await needDocConsent())) return;
                 const uri = await takePhoto({ max: DOC_MAX });
                 if (uri) replace({ passportPhoto: uri });
               }}
@@ -82,6 +85,7 @@ export default function Documents() {
               label={t('register.selfie')}
               size="100%"
               onAdd={async () => {
+                if (!(await needDocConsent())) return;
                 const uri = await takePhoto({ front: true, max: DOC_MAX });
                 if (uri) replace({ selfie: uri });
               }}

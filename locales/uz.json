@@ -538,7 +538,8 @@
     "recheckText": "Hujjatni almashtirsangiz, tasdiq bekor bo'ladi va admin qayta tekshirguncha ulushingiz {{pct}}% bo'ladi."
   },
   "works": {
-    "count": "{{n}} / {{max}} ta rasm"
+    "count": "{{n}} / {{max}} ta rasm",
+    "rules": "Faqat o'zingiz bajargan ish suratini yuklang. Odamlar yuzi, hujjatlar, uy raqami va manzil ko'rinmasin; mijoz uyida suratga olsangiz — undan ruxsat so'rang."
   },
   "edit": {
     "title": "Profilni tahrirlash"
@@ -1599,5 +1600,10 @@
     "9": "Oktyabr",
     "10": "Noyabr",
     "11": "Dekabr"
+  },
+  "docConsent": {
+    "text": "Pasport rasmim va selfim faqat shaxsimni tasdiqlash uchun ishlatilishiga roziman. Ularni mijozlar ko'rmaydi, faqat tekshiruvchi xodim ko'radi.",
+    "needTitle": "Avval rozilik bering",
+    "needText": "Pasport va selfi yuklash uchun yuqoridagi rozilik belgisini qo'ying."
   }
 }

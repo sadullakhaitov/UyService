@@ -36,7 +36,7 @@ const days = WARRANTY_DAYS;
 
 const termsUz: LegalText = {
   title: 'Foydalanish shartlari',
-  updated: `Oxirgi tahrir: 2026-yil 6-oktabr`,
+  updated: `Oxirgi tahrir: 2026-yil 10-oktabr`,
   sections: [
     {
       h: '1. Umumiy qoidalar',
@@ -57,6 +57,7 @@ const termsUz: LegalText = {
       p: [
         `Platformani ko'rish uchun ro'yxatdan o'tish shart emas. Buyurtma berish yoki usta bo'lib ishlash uchun telefon raqami SMS kod orqali tasdiqlanadi. Platformadan 16 yoshga to'lgan shaxslar foydalanishi mumkin; usta bo'lib ishlash uchun 18 yoshga to'lgan bo'lish kerak.`,
         `Hisobingiz orqali qilingan barcha harakatlar uchun o'zingiz javobgarsiz. SMS kodni hech kimga bermang. Raqamingiz boshqa birovning qo'liga o'tgan deb gumon qilsangiz, darhol ${EMAIL} manziliga yozing.`,
+        `Telegram ichida (Mini App) raqamni Telegram orqali tasdiqlab kirish mumkin — bu SMS kod bilan tasdiqlashga teng. Kirish kodi va bildirishnomalar @uyservice_bot xabari bo'lib kelishi mumkin.`,
       ],
     },
     {
@@ -73,6 +74,8 @@ const termsUz: LegalText = {
         `Usta ishni sifatli, o'z vaqtida va xavfsizlik qoidalariga rioya qilib bajaradi. Aniq narx usta kelib ko'rgandan keyin, ish boshlanishidan oldin mijoz bilan kelishiladi; kelishilgan narxni mijozning roziligisiz oshirish mumkin emas.`,
         `Usta bajargan ishiga ${days} kun kafolat beradi: shu muddatda ishdagi kamchilik aniqlansa, uni qo'shimcha haq olmasdan tuzatadi. Kafolat mijoz aybi bilan yuzaga kelgan nosozliklar va mijoz bergan materiallarga tatbiq etilmaydi.`,
         `Usta soliq va boshqa majburiy to'lovlarni o'zi to'laydi hamda faoliyati uchun zarur ruxsatnomalarga ega bo'lishi kerak.`,
+        `Ish namunalari rasmlari profilda boshqa foydalanuvchilarga ko'rinadi. Usta faqat o'zi bajargan ishning, o'zi olgan yoki foydalanishga haqli bo'lgan rasmlarini yuklaydi. Rasmda odamlarning yuzi, hujjatlar, uy raqami, manzil va mijozning boshqa shaxsiy narsalari ko'rinmasligi kerak; mijoz uyida olingan rasm uchun mijozning roziligi olinadi. Operator bu qoidaga zid rasmni ogohlantirishsiz o'chirishi mumkin.`,
+        `Pasport va selfi faqat usta alohida rozilik bergandan keyin yuklanadi va faqat shaxsni tasdiqlash uchun ishlatiladi.`,
       ],
     },
     {
@@ -81,6 +84,7 @@ const termsUz: LegalText = {
         `Hozircha to'lov faqat naqd pulda, to'g'ridan-to'g'ri ustaga amalga oshiriladi. Chaqiruv narxi (usta kelib ko'rishi) — ${fee} so'm, barcha kategoriyalar uchun bir xil. Ilovada ko'rsatilgan ish narxlari taxminiy; usta joyida ko'rib narx taklif qiladi va mijoz ilovada tasdiqlaydi. Mijoz rozi bo'lsa, chaqiruv narxi ish narxi ichida bo'ladi; rozi bo'lmasa, faqat chaqiruv narxi to'lanadi.`,
         `Usta Platformadan foydalanish uchun ikki tarifdan birini tanlaydi: oylik obuna — oyiga ${subFee} so'm, yoki komissiya — har bir ish narxining ${pct}% (chaqiruv narxi ham kiradi). Komissiya tarifida Operator ulushi ustaning Platformadagi balansidan yechiladi; balans ${limit} so'mdan past bo'lsa, yangi buyurtmalar vaqtincha yopiladi. Tarifni ilovaning "Pul" bo'limida o'zgartirish mumkin.`,
         `Operator tariflar narxini o'zgartirishi mumkin; bu haqda ustalar kamida 14 kun oldin xabardor qilinadi.`,
+        `Operator ayrim ustalarga shaxsiy "bepul davr" kodini (30, 60 yoki 90 kun) berishi mumkin: kod faqat o'sha usta raqami uchun, bir marta ishlatiladi; shu muddatda olingan buyurtmalardan Operator ulushi olinmaydi. Bepul davr uchun pasport yuklangan bo'lishi shart; hujjat rad etilsa, bepul davr amal qilmaydi. Operator bepul davrni sababini ko'rsatib uzaytirishi yoki to'xtatishi mumkin.`,
       ],
     },
     {
@@ -126,7 +130,7 @@ const termsUz: LegalText = {
 
 const termsRu: LegalText = {
   title: 'Условия использования',
-  updated: 'Последняя редакция: 6 октября 2026 г.',
+  updated: 'Последняя редакция: 10 октября 2026 г.',
   sections: [
     {
       h: '1. Общие положения',
@@ -147,6 +151,7 @@ const termsRu: LegalText = {
       p: [
         `Просматривать Платформу можно без регистрации. Чтобы сделать заказ или работать мастером, нужно подтвердить номер телефона SMS-кодом. Пользоваться Платформой могут лица от 16 лет; работать мастером — от 18 лет.`,
         `Вы отвечаете за все действия, совершённые через ваш аккаунт. Никому не сообщайте SMS-код. Если подозреваете, что вашим номером воспользовался кто-то другой, сразу напишите на ${EMAIL}.`,
+        `Внутри Telegram (Mini App) можно войти, подтвердив номер через Telegram — это равнозначно подтверждению SMS-кодом. Код входа и уведомления могут приходить сообщением от @uyservice_bot.`,
       ],
     },
     {
@@ -163,6 +168,8 @@ const termsRu: LegalText = {
         `Мастер выполняет работу качественно, в срок и с соблюдением правил безопасности. Точная цена согласовывается с клиентом после осмотра, до начала работ; повышать согласованную цену без согласия клиента нельзя.`,
         `Мастер даёт гарантию ${days} дней на выполненную работу: если в этот срок обнаружен недостаток, он устраняет его без дополнительной оплаты. Гарантия не распространяется на поломки по вине клиента и на материалы, предоставленные клиентом.`,
         `Мастер самостоятельно уплачивает налоги и иные обязательные платежи и должен иметь разрешения, необходимые для своей деятельности.`,
+        `Фотографии работ видны другим пользователям в профиле. Мастер загружает только фото работ, которые выполнил сам и которые снял сам или вправе использовать. На фото не должно быть лиц людей, документов, номера дома, адреса и других личных вещей клиента; для фото, сделанного в доме клиента, нужно согласие клиента. Оператор может удалить фото, нарушающее это правило, без предупреждения.`,
+        `Паспорт и селфи загружаются только после отдельного согласия мастера и используются только для подтверждения личности.`,
       ],
     },
     {
@@ -171,6 +178,7 @@ const termsRu: LegalText = {
         `Сейчас оплата только наличными, напрямую мастеру. Стоимость вызова (выезд и осмотр) — ${fee} сум, одинаково для всех категорий. Цены работ в приложении ориентировочные; мастер осматривает на месте и предлагает цену, клиент подтверждает её в приложении. Если клиент согласен, вызов входит в стоимость работы; если нет — оплачивается только вызов.`,
         `За пользование Платформой мастер выбирает один из двух тарифов: месячная подписка — ${subFee} сум в месяц, или комиссия — ${pct}% от стоимости каждой работы (включая стоимость вызова). На тарифе с комиссией доля Оператора списывается с баланса мастера на Платформе; если баланс ниже ${limit} сум, новые заказы временно закрываются. Тариф можно сменить в разделе «Деньги».`,
         `Оператор может изменять стоимость тарифов, уведомив мастеров не менее чем за 14 дней.`,
+        `Оператор может выдать отдельным мастерам персональный код «бесплатного периода» (30, 60 или 90 дней): код действует только для номера этого мастера и один раз; с заказов, принятых в этот период, доля Оператора не взимается. Для бесплатного периода обязателен загруженный паспорт; если документ отклонён, бесплатный период не действует. Оператор может продлить или остановить бесплатный период с указанием причины.`,
       ],
     },
     {
@@ -216,7 +224,7 @@ const termsRu: LegalText = {
 
 const termsEn: LegalText = {
   title: 'Terms of Use',
-  updated: 'Last updated: October 6, 2026',
+  updated: 'Last updated: October 10, 2026',
   sections: [
     {
       h: '1. General',
@@ -237,6 +245,7 @@ const termsEn: LegalText = {
       p: [
         `You can browse the Platform without registering. To place an order or work as a master, you confirm your phone number with an SMS code. You must be at least 16 to use the Platform and at least 18 to work as a master.`,
         `You are responsible for everything done through your account. Never share your SMS code. If you suspect someone else has used your number, write to ${EMAIL} immediately.`,
+        `Inside Telegram (Mini App) you can sign in by confirming your number through Telegram — this is equivalent to confirming with an SMS code. Sign-in codes and notifications may arrive as messages from @uyservice_bot.`,
       ],
     },
     {
@@ -253,6 +262,8 @@ const termsEn: LegalText = {
         `The master performs the work well, on time and in line with safety rules. The exact price is agreed with the client after inspection and before the work starts; the agreed price may not be raised without the client's consent.`,
         `The master gives a ${days}-day warranty on the work: if a defect appears within that period, the master fixes it at no extra charge. The warranty does not cover damage caused by the client or materials supplied by the client.`,
         `The master pays their own taxes and other mandatory charges and must hold any permits their work requires.`,
+        `Work sample photos are visible to other users on the profile. A master uploads only photos of work they did themselves and that they took or have the right to use. Photos must not show people's faces, documents, house numbers, addresses or other personal belongings of the client; a photo taken in a client's home requires the client's consent. The Operator may remove a photo that breaks this rule without notice.`,
+        `Passport and selfie are uploaded only after the master's separate consent and are used only to verify identity.`,
       ],
     },
     {
@@ -261,6 +272,7 @@ const termsEn: LegalText = {
         `For now, payment is cash only, made directly to the master. The call-out fee (visit and inspection) is ${fee} UZS, the same for all categories. Prices shown in the app are estimates; the master inspects on site and proposes a price, which the client approves in the app. If the client agrees, the call-out fee is included in the work price; if not, only the call-out fee is paid.`,
         `To use the Platform, a master chooses one of two plans: a monthly subscription of ${subFee} UZS per month, or a commission of ${pct}% of each job's price (including the call-out fee). On the commission plan, the Operator's share is deducted from the master's Platform balance; if the balance falls below ${limit} UZS, new orders are paused. The plan can be changed in the "Money" section of the app.`,
         `The Operator may change plan prices with at least 14 days' notice to masters.`,
+        `The Operator may give individual masters a personal "free period" code (30, 60 or 90 days): the code works only for that master's number and only once; no Operator share is taken from orders accepted during that period. An uploaded passport is required for the free period; if the document is rejected, the free period does not apply. The Operator may extend or stop a free period, stating the reason.`,
       ],
     },
     {
@@ -312,7 +324,7 @@ const termsEn: LegalText = {
 
 const privacyUz: LegalText = {
   title: 'Maxfiylik siyosati',
-  updated: `Oxirgi tahrir: 2026-yil 6-oktabr`,
+  updated: `Oxirgi tahrir: 2026-yil 10-oktabr`,
   sections: [
     {
       h: '1. Umumiy qoidalar',
@@ -328,6 +340,9 @@ const privacyUz: LegalText = {
         `Joylashuv: ruxsat bersangiz — GPS bo'yicha joylashuv (mijozda — manzilni aniqlash va yaqin ustani topish uchun; ustada — onlayn bo'lganda har 5 soniyada, buyurtma va yo'lni ko'rsatish uchun).`,
         `Buyurtmalar: kategoriya, muammo tavsifi, manzil, siz yuklagan rasmlar, vaqt, narx, baho va sharhlar; mijoz va usta o'rtasidagi chat xabarlari, qo'llab-quvvatlash bilan yozishmalar.`,
         `Ustalar qo'shimcha ravishda: ism-familiya, tajriba, kategoriyalar, pasport rasmi va ixtiyoriy selfi, ish namunalari rasmlari, tanlangan tarif, balans va to'lovlar tarixi, aktivlik va reyting.`,
+        `Telegram orqali foydalansangiz: Telegram ID raqamingiz, Telegram'dagi ismingiz va siz ulashgan telefon raqami. Usta bot chatiga joylashuvini yuborsa (bitta yoki "jonli joylashuv"), u ustaning ish joylashuvi sifatida saqlanadi.`,
+        `Ilovadan foydalanish statistikasi: qaysi asosiy qadamlar bajarilgani (masalan, buyurtma yaratildi, usta ishga chiqdi) va ilova xatolari — vaqti, ekran va qurilma turi bilan. Biz Google Analytics, Facebook pikseli kabi uchinchi tomon reklama yoki kuzatuv tizimlarini ishlatmaymiz.`,
+        `Qurilmangizda saqlanadigan ma'lumotlar ("cookie" o'rniga): tanlangan til va ko'rinish, kirish holati, oxirgi manzil, joriy buyurtma va qoralamalar — ilova sahifa yangilanganda ham ishlashi uchun. Bular reklama yoki kuzatuv uchun emas. Hisobdan chiqqanda hisob va buyurtma ma'lumotlari o'chadi (til, ko'rinish va oxirgi manzil qoladi); brauzer yoki ilova ma'lumotlarini tozalasangiz — hammasi o'chadi.`,
       ],
     },
     {
@@ -335,6 +350,7 @@ const privacyUz: LegalText = {
       p: [
         `Hisobga kirish (SMS kod), buyurtmani qabul qilish va eng yaqin mos ustani topish, xaritada ustaning kelishini ko'rsatish, mijoz va usta o'rtasidagi aloqa, bildirishnomalar yuborish.`,
         `Ustaning shaxsini tasdiqlash va firibgarlikning oldini olish, nizolar va kafolat murojaatlarini ko'rib chiqish, tariflarni hisoblash, xizmat sifatini yaxshilash va xatolarni tuzatish. Biz ma'lumotlaringizni sotmaymiz va reklama uchun uchinchi shaxslarga bermaymiz.`,
+        `Statistika ilovaning qaysi joyi qiyinligini va xatolarni topish uchun ishlatiladi; u faqat Operatorning o'zida saqlanadi va hech kimga berilmaydi.`,
       ],
     },
     {
@@ -342,6 +358,7 @@ const privacyUz: LegalText = {
       p: [
         `Ma'lumotlaringizga ishlov berishning asosiy asosi — sizning roziligingiz: telefon raqamini tasdiqlash va Shartlarni qabul qilish orqali hamda qurilmangizda joylashuv, kamera va bildirishnomalarga ruxsat berganingizda alohida beriladi.`,
         `Ba'zi ma'lumotlar Foydalanish shartlarini bajarish va qonunda belgilangan majburiyatlarni (masalan, davlat organlarining qonuniy so'rovlari) bajarish uchun ishlatiladi. Rozilikni istalgan vaqtda qaytarib olishingiz mumkin — 8-bo'limga qarang.`,
+        `Pasport va selfi (selfi — biometrik ma'lumot) uchun ilovada alohida rozilik so'raladi: rozilik belgilanmaguncha ularni yuklab bo'lmaydi, rozilik vaqti saqlanadi.`,
       ],
     },
     {
@@ -350,6 +367,7 @@ const privacyUz: LegalText = {
         `Usta yangi buyurtma taklifida faqat kategoriya, muammo tavsifi, rasmlar va taxminiy masofani ko'radi. Mijozning aniq manzili, ismi va telefon raqami usta buyurtmani qabul qilgandan keyingina ochiladi.`,
         `Mijoz tayinlangan ustaning ismi, rasmi, reytingi, sharhlari va buyurtma davomida uning joylashuvini ko'radi. Pasport va selfi boshqa foydalanuvchilarga hech qachon ko'rsatilmaydi — ularni faqat Operatorning tekshiruvchi xodimlari ko'radi.`,
         `Baho va sharhlar (ismingizning qisqartmasi bilan) boshqa foydalanuvchilarga ko'rinadi. Operator xodimlari ma'lumotlarga faqat ish vazifasi doirasida (qo'llab-quvvatlash, nizolar, tekshiruv) kiradi.`,
+        `Ustaning profil surati va ish namunalari rasmlari mijozlarga ko'rinadi.`,
       ],
     },
     {
@@ -365,6 +383,7 @@ const privacyUz: LegalText = {
       p: [
         `Platforma ishlashi uchun ma'lumotlarning bir qismi hamkorlarga beriladi: SMS yuborish xizmati (telefon raqami), xarita va yo'nalish xizmatlari (koordinatalar), bildirishnoma xizmati (qurilma tokeni), bulutli ma'lumotlar bazasi va fayl saqlash xizmati. Hamkorlar ma'lumotlardan faqat bizning topshirig'imiz bilan va maxfiylikni saqlash sharti bilan foydalanadi.`,
         `Qonunda nazarda tutilgan hollarda ma'lumotlar vakolatli davlat organlariga ularning qonuniy so'rovi asosida beriladi.`,
+        `Hozirgi hamkorlar: Supabase — ma'lumotlar bazasi, fayllar va kirish; Cloudflare — sayt joylashuvi; OpenStreetMap va OpenFreeMap — xarita (qurilmangiz ko'rilayotgan xarita qismini yuklaydi); Photon (komoot) va Nominatim — manzil qidirish (qidiruv matni va koordinatalar); OSRM — yo'l va vaqt hisoblash (koordinatalar); Telegram — kirish, kodlar, bildirishnomalar va ustaning bot orqali yuborgan joylashuvi; Eskiz.uz — SMS (telefon raqami va kod); Expo — telefon ilovasiga bildirishnoma (qurilma tokeni va xabar matni). Hamkorlar ro'yxati o'zgarsa, shu bo'lim yangilanadi.`,
       ],
     },
     {
@@ -400,7 +419,7 @@ const privacyUz: LegalText = {
 
 const privacyRu: LegalText = {
   title: 'Политика конфиденциальности',
-  updated: 'Последняя редакция: 6 октября 2026 г.',
+  updated: 'Последняя редакция: 10 октября 2026 г.',
   sections: [
     {
       h: '1. Общие положения',
@@ -416,6 +435,9 @@ const privacyRu: LegalText = {
         `Местоположение: с вашего разрешения — GPS-координаты (у клиента — чтобы определить адрес и найти ближайшего мастера; у мастера — каждые 5 секунд, пока он на линии, чтобы показывать заказы и маршрут).`,
         `Заказы: категория, описание проблемы, адрес, загруженные фото, время, цена, оценки и отзывы; сообщения в чате между клиентом и мастером, переписка с поддержкой.`,
         `Дополнительно у мастеров: ФИО, опыт, категории, фото паспорта и необязательное селфи, фото примеров работ, выбранный тариф, баланс и история платежей, активность и рейтинг.`,
+        `Если вы пользуетесь через Telegram: ваш Telegram ID, имя в Telegram и номер телефона, которым вы поделились. Если мастер отправляет геопозицию в чат бота (разово или «трансляцию»), она сохраняется как рабочая геопозиция мастера.`,
+        `Статистика использования: какие основные шаги выполнены (например, создан заказ, мастер вышел на линию) и ошибки приложения — со временем, экраном и типом устройства. Мы не используем сторонние рекламные и трекинговые системы вроде Google Analytics или пикселя Facebook.`,
+        `Данные, хранящиеся на вашем устройстве (вместо «cookie»): выбранный язык и тема, состояние входа, последний адрес, текущий заказ и черновики — чтобы приложение работало и после обновления страницы. Они не используются для рекламы и слежки. При выходе из аккаунта удаляются данные аккаунта и заказов (язык, тема и последний адрес остаются); при очистке данных браузера или приложения удаляется всё.`,
       ],
     },
     {
@@ -423,6 +445,7 @@ const privacyRu: LegalText = {
       p: [
         `Вход в аккаунт (SMS-код), приём заказа и поиск ближайшего подходящего мастера, отображение движения мастера на карте, связь клиента и мастера, отправка уведомлений.`,
         `Подтверждение личности мастера и защита от мошенничества, рассмотрение споров и гарантийных обращений, расчёт тарифов, улучшение сервиса и исправление ошибок. Мы не продаём ваши данные и не передаём их третьим лицам для рекламы.`,
+        `Статистика нужна, чтобы находить неудобные места и ошибки в приложении; она хранится только у Оператора и никому не передаётся.`,
       ],
     },
     {
@@ -430,6 +453,7 @@ const privacyRu: LegalText = {
       p: [
         `Основное основание обработки — ваше согласие: оно даётся при подтверждении номера телефона и принятии Условий, а также отдельно — при разрешении доступа к геолокации, камере и уведомлениям на устройстве.`,
         `Часть данных используется для исполнения Условий использования и обязанностей, установленных законом (например, законных запросов государственных органов). Согласие можно отозвать в любой момент — см. раздел 8.`,
+        `Для паспорта и селфи (селфи — биометрические данные) в приложении запрашивается отдельное согласие: без отметки согласия их нельзя загрузить, время согласия сохраняется.`,
       ],
     },
     {
@@ -438,6 +462,7 @@ const privacyRu: LegalText = {
         `В предложении нового заказа мастер видит только категорию, описание проблемы, фото и примерное расстояние. Точный адрес, имя и телефон клиента открываются только после того, как мастер принял заказ.`,
         `Клиент видит имя, фото, рейтинг и отзывы назначенного мастера и его местоположение во время заказа. Паспорт и селфи никогда не показываются другим пользователям — их видят только проверяющие сотрудники Оператора.`,
         `Оценки и отзывы (с сокращённым именем) видны другим пользователям. Сотрудники Оператора получают доступ к данным только в рамках своих обязанностей (поддержка, споры, проверка).`,
+        `Фото профиля мастера и фото его работ видны клиентам.`,
       ],
     },
     {
@@ -453,6 +478,7 @@ const privacyRu: LegalText = {
       p: [
         `Для работы Платформы часть данных передаётся партнёрам: сервису отправки SMS (номер телефона), сервисам карт и маршрутов (координаты), сервису уведомлений (токен устройства), облачной базе данных и файловому хранилищу. Партнёры используют данные только по нашему поручению и с соблюдением конфиденциальности.`,
         `В случаях, предусмотренных законом, данные предоставляются уполномоченным государственным органам по их законному запросу.`,
+        `Текущие партнёры: Supabase — база данных, файлы и вход; Cloudflare — размещение сайта; OpenStreetMap и OpenFreeMap — карта (устройство загружает просматриваемый участок карты); Photon (komoot) и Nominatim — поиск адреса (текст запроса и координаты); OSRM — расчёт маршрута и времени (координаты); Telegram — вход, коды, уведомления и геопозиция, которую мастер отправил боту; Eskiz.uz — SMS (номер и код); Expo — уведомления в телефонном приложении (токен устройства и текст). При изменении списка этот раздел обновляется.`,
       ],
     },
     {
@@ -488,7 +514,7 @@ const privacyRu: LegalText = {
 
 const privacyEn: LegalText = {
   title: 'Privacy Policy',
-  updated: 'Last updated: October 6, 2026',
+  updated: 'Last updated: October 10, 2026',
   sections: [
     {
       h: '1. General',
@@ -504,6 +530,9 @@ const privacyEn: LegalText = {
         `Location: with your permission, GPS location (for clients — to set the address and find the nearest master; for masters — every 5 seconds while online, to show orders and routes).`,
         `Orders: category, problem description, address, photos you upload, time, price, ratings and reviews; chat messages between client and master and conversations with support.`,
         `Additionally for masters: full name, experience, categories, passport photo and optional selfie, photos of past work, chosen plan, balance and payment history, activity score and rating.`,
+        `If you use the service through Telegram: your Telegram ID, your Telegram name and the phone number you shared. If a master sends their location to the bot chat (once or as "live location"), it is stored as the master's working location.`,
+        `Usage statistics: which main steps were taken (for example, an order was created, a master went online) and app errors — with time, screen and device type. We do not use third-party advertising or tracking systems such as Google Analytics or the Facebook pixel.`,
+        `Data stored on your device (instead of "cookies"): chosen language and theme, sign-in state, last address, current order and drafts — so the app keeps working after a page reload. They are not used for advertising or tracking. Signing out removes account and order data (language, theme and last address stay); clearing browser or app data removes everything.`,
       ],
     },
     {
@@ -511,6 +540,7 @@ const privacyEn: LegalText = {
       p: [
         `To sign you in (SMS code), accept orders and find the nearest suitable master, show the master's approach on the map, let client and master communicate, and send notifications.`,
         `To verify masters' identity and prevent fraud, handle disputes and warranty claims, calculate plans, improve the service and fix bugs. We do not sell your data or share it with third parties for advertising.`,
+        `Statistics help us find confusing places and errors in the app; they are kept only by the Operator and are not shared with anyone.`,
       ],
     },
     {
@@ -518,6 +548,7 @@ const privacyEn: LegalText = {
       p: [
         `The main basis for processing is your consent: it is given when you confirm your phone number and accept the Terms, and separately when you allow location, camera and notification access on your device.`,
         `Some data is used to perform the Terms of Use and to meet legal obligations (for example, lawful requests from public authorities). You can withdraw consent at any time — see section 8.`,
+        `For the passport and selfie (a selfie is biometric data) the app asks for separate consent: they cannot be uploaded until consent is ticked, and the time of consent is stored.`,
       ],
     },
     {
@@ -526,6 +557,7 @@ const privacyEn: LegalText = {
         `In a new order offer, a master sees only the category, problem description, photos and approximate distance. The client's exact address, name and phone number are revealed only after the master accepts the order.`,
         `The client sees the assigned master's name, photo, rating, reviews and location during the order. Passport photos and selfies are never shown to other users — only the Operator's verification staff can see them.`,
         `Ratings and reviews (with a shortened name) are visible to other users. Operator staff access data only as their duties require (support, disputes, verification).`,
+        `A master's profile photo and work sample photos are visible to clients.`,
       ],
     },
     {
@@ -541,6 +573,7 @@ const privacyEn: LegalText = {
       p: [
         `To run the Platform, some data is shared with providers: an SMS delivery service (phone number), map and routing services (coordinates), a notification service (device token), and cloud database and file storage. Providers use the data only on our instructions and under confidentiality obligations.`,
         `Where required by law, data is disclosed to competent public authorities upon their lawful request.`,
+        `Current providers: Supabase — database, files and sign-in; Cloudflare — website hosting; OpenStreetMap and OpenFreeMap — map (your device loads the part of the map you view); Photon (komoot) and Nominatim — address search (search text and coordinates); OSRM — route and time calculation (coordinates); Telegram — sign-in, codes, notifications and the location a master sends to the bot; Eskiz.uz — SMS (phone number and code); Expo — notifications in the phone app (device token and message text). This section is updated when the list changes.`,
       ],
     },
     {

@@ -317,6 +317,12 @@ Mini App yig'ilsa sahifa to'xtaydi va joylashuv kelmay qoladi. Oldin usta 2 daqi
 - Bot: `telegram-bot` endi joylashuv xabarlarini (`message.location`, jonli yangilanishi — `edited_message`) va «Ishni tugatish»ni qabul qiladi (`_shared/presence.ts`). Webhook'ni qayta o'rnatish shart emas — Telegram bu turdagi yangilanishlarni sukut bo'yicha yuboradi.
 - Joylash: `update.ps1` (migratsiya 19 + `telegram-bot`, `offer-timeout`, `push-send`). Sinovlar: `tests/presence_test.sql`, `tests/e2e/presence_e2e.ts`.
 
+## 20. Pasport va selfi roziligi (`…_doc_consent.sql`)
+
+- `masters.doc_consent_at` — usta ilovada alohida rozilik bergan vaqt. Vaqtni server qo'yadi (telefon soati emas), bir marta beriladi va o'zgarmaydi.
+- Rozilik bo'lmasa pasport yoki selfi yo'li yozilmaydi (xato `23514 doc_consent`) — ilova ham rozilik belgilanmaguncha hujjat yuklatmaydi.
+- Oldin hujjat yuklagan ustalar: hujjat o'z joyida qoladi; yangisini yuklashda rozilik so'raladi. Sinov — `tests/consent_test.sql`.
+
 ## Eskiz.uz hali yo'q bo'lsa
 
 - **Mijoz va ustalar** Telegram orqali kiradi (11-bo'lim) — SMS kerak emas. Oddiy brauzerda raqam + SMS bilan kirish
