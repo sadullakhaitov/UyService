@@ -1674,5 +1674,20 @@
   },
   "catalog": {
     "unknown": "Service"
+  },
+  "install": {
+    "row": "Install the app",
+    "rowHint": "To your phone's home screen — free",
+    "title": "Install the app",
+    "why": "UyService will sit on your phone like an app: one tap on the icon, no address bar.",
+    "ios1": "Tap «Share» at the bottom (or «⋯» → «Share»)",
+    "ios1Chrome": "Tap «Share» on the right of the address bar",
+    "ios2": "Scroll down and choose «Add to Home Screen»",
+    "ios3": "Tap «Add» — the icon appears on your home screen",
+    "tg1": "It can't be installed inside Telegram: tap «⋯» at the top → «Open in browser»",
+    "tg2": "In the browser, tap Profile → «Install the app» again",
+    "manual1": "Open the browser menu (⋮ or ⋯)",
+    "manual2": "Choose «Install app» or «Add to Home screen»",
+    "ok": "Got it"
   }
 }

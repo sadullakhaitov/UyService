@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { MessageCircle, Navigation, Wallet } from 'lucide-react-native';
+import { MessageCircle, Navigation, Wallet, UserRound } from 'lucide-react-native';
 import { View } from 'react-native';
 import { Text } from '@/components/ui';
 import { SideRail, TabLabel as Label, useTabBarOptions } from '@/components/ui/TabChrome';
@@ -53,7 +53,11 @@ export default function MasterTabs() {
           tabBarLabel: ({ color }) => <Label text={t('tabs.profile')} color={color} />,
           tabBarIcon: ({ focused }) => (
             <View style={[styles.avatar, focused && styles.avatarOn]}>
-              <Text style={[styles.avatarText, focused && { color: colors.onPrimary }]}>{initials}</Text>
+              {initials !== '?' ? (
+                <Text style={[styles.avatarText, focused && { color: colors.onPrimary }]}>{initials}</Text>
+              ) : (
+                <UserRound size={15} color={focused ? colors.onPrimary : colors.primary} strokeWidth={2.4} />
+              )}
             </View>
           ),
         }}
