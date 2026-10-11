@@ -8,3 +8,6 @@
   X-Robots-Tag: noindex, nofollow
   X-Frame-Options: DENY
   Referrer-Policy: same-origin
+# PWA: service worker har safar yangisi tekshiriladi
+/sw.js
+  Cache-Control: no-cache
