@@ -33,6 +33,7 @@ import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { adminApi, type AdminOrder, type Stats } from '@/lib/admin';
 import { useAdminQuery } from '@/lib/admin/hooks';
 import { formatDate, t } from '@/lib/i18n';
+import { catName } from '@/constants/categories';
 
 const DEFAULTS = { d: '30' };
 const PERIODS = [7, 30, 90];
@@ -103,7 +104,7 @@ export default function Dashboard() {
             <HBars
               items={s.byCategory.map((c) => ({
                 key: c.categoryId,
-                label: t(`categories.${c.categoryId}`),
+                label: catName(c.categoryId),
                 icon: <CategoryIcon id={c.categoryId} size={24} />,
                 value: c.orders,
                 sub: fmtSumShort(c.gmv),

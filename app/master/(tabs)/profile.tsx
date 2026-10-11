@@ -23,6 +23,7 @@ import { confirm, notice } from '@/lib/dialog';
 import { t } from '@/lib/i18n';
 import { guardActiveJob } from '@/lib/masterGuard';
 import { useMaster, useUser } from '@/store';
+import { catName } from '@/constants/categories';
 
 
 export default function Profile() {
@@ -72,7 +73,7 @@ export default function Profile() {
           <View style={styles.group}>
             <Item
               label={t('profile.categories')}
-              value={categories.map((c) => t(`categories.${c}`)).join(', ')}
+              value={categories.map((c) => catName(c)).join(', ')}
               onPress={() => router.push('/master/edit')}
             />
             <Item

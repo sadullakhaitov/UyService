@@ -4,7 +4,7 @@
 import { router, usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { BALANCE_LIMIT, feePercent } from '@/constants/billing';
-import { problemsOf, type CategoryId } from '@/constants/categories';
+import { problemsOf, type CategoryId, problemName } from '@/constants/categories';
 import { MASTER_LOCATION_INTERVAL_MS } from '@/constants/dispatch';
 import { publishMasterLocation } from '@/lib/backend';
 import { distanceKm, type LatLng } from '@/lib/geo';
@@ -99,7 +99,7 @@ export function useMasterFeed() {
       const o = makeMockOrder(here.current, categories, radiusKm);
       useMasterWork.getState().setOffer(o);
       router.push('/master/offer');
-      if (notifications) notify(t('notify.offerTitle'), `${t(`problems.${o.problemId}`)} · ${t('common.km', { value: o.distanceKm })}`, { url: '/master/offer' });
+      if (notifications) notify(t('notify.offerTitle'), `${problemName(o.problemId)} · ${t('common.km', { value: o.distanceKm })}`, { url: '/master/offer' });
     }, nextDelay());
     return () => clearTimeout(id);
   }, [canReceive, categories.join(), radiusKm, notifications]); // eslint-disable-line react-hooks/exhaustive-deps

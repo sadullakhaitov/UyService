@@ -9,7 +9,7 @@ import { CenterPin, MapBase, type MapHandle } from '@/components/map';
 import { Sheet, SheetInput, useSheetFollow } from '@/components/sheets/Sheet';
 import { Avatar, IconButton, Logo, RatingBadge, Squish, Text } from '@/components/ui';
 import { ActiveOrders } from '@/components/ui/ActiveOrders';
-import { categories, problems, type CategoryId } from '@/constants/categories';
+import { categories, problems, type CategoryId, catName, problemName, useCatalog } from '@/constants/categories';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { blur, distanceKm, type LatLng } from '@/lib/geo';
 import { formatSchedule, t } from '@/lib/i18n';
@@ -24,6 +24,7 @@ import { GlassBg } from '@/components/ui/Glass';
 
 export default function ClientMap() {
   useScheme();
+  useCatalog();
   const insets = useSafeAreaInsets();
   const [sheetH, setSheetH] = useState(520);
   // Yopiq panelda faqat manzil ko'rinadi (qidiruv maydoni chetidan ham chiqib turmaydi) — manzil qatorining pastigacha
@@ -91,8 +92,8 @@ export default function ClientMap() {
     if (!q) return categories;
     return categories.filter(
       (c) =>
-        t(`categories.${c.id}`).toLowerCase().includes(q) ||
-        problems.some((p) => p.categoryId === c.id && t(`problems.${p.id}`).toLowerCase().includes(q)),
+        catName(c.id).toLowerCase().includes(q) ||
+        problems.some((p) => p.categoryId === c.id && problemName(p.id).toLowerCase().includes(q)),
     );
   }, [query]);
 
@@ -101,8 +102,8 @@ export default function ClientMap() {
 
   const pick = (categoryId: CategoryId, preferredMasterId: string | null = null) => {
     reset();
-    const first = problems.find((p) => p.categoryId === categoryId)!;
-    setDraft({ categoryId, problemId: first.id, preferredMasterId });
+    const first = problems.find((p) => p.categoryId === categoryId);
+    setDraft({ categoryId, problemId: first?.id ?? 'other', preferredMasterId });
     router.push('/client/order');
   };
 
@@ -227,7 +228,7 @@ export default function ClientMap() {
               <Squish key={c.id} accessibilityRole="button" onPress={() => pick(c.id)} style={[styles.tile, { backgroundColor: c.tint }]}>
                 <Icon size={28} color={c.ink} strokeWidth={2} />
                 <Text style={styles.tileText} numberOfLines={1}>
-                  {t(`categories.${c.id}`)}
+                  {catName(c.id)}
                 </Text>
               </Squish>
             );
@@ -239,7 +240,7 @@ export default function ClientMap() {
             <Avatar initials={favorite.initials} size={42} solid />
             <View style={styles.flex}>
               <Text variant="caption">
-                {t('client.myMasters')} · {t(`categories.${favorite.categories[0]}`)}
+                {t('client.myMasters')} · {catName(favorite.categories[0])}
               </Text>
               <View style={styles.favRow}>
                 <Text variant="bodyBold" numberOfLines={1}>

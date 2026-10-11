@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { getCategory } from '@/constants/categories';
+import { getCategory, catName } from '@/constants/categories';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatSchedule, t } from '@/lib/i18n';
 import { etaMin } from '@/lib/orderSimulator';
@@ -50,7 +50,7 @@ function OrderCard({ order, single }: { order: ActiveOrder; single: boolean }) {
       </View>
       <View style={styles.flex}>
         <Text style={[styles.title, { color: cat.ink }]} numberOfLines={1}>
-          {t(`categories.${order.categoryId}`)}
+          {catName(order.categoryId)}
         </Text>
         <Text variant="caption" numberOfLines={1} style={{ color: colors.ink }}>
           {status}

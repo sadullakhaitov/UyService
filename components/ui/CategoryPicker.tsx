@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
-import { categories, type CategoryId } from '@/constants/categories';
+import { categories, type CategoryId, catName, useCatalog } from '@/constants/categories';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { t } from '@/lib/i18n';
 import { Squish } from './Pressable';
@@ -9,6 +9,7 @@ import { Text } from './Text';
 /** Kategoriyalarni tanlash (bir nechtasi) — har biri o'z rangida */
 export function CategoryPicker({ value, onChange }: { value: CategoryId[]; onChange: (v: CategoryId[]) => void }) {
   useScheme();
+  useCatalog();
   const toggle = (id: CategoryId) => onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
   return (
     <View style={styles.grid}>
@@ -25,7 +26,7 @@ export function CategoryPicker({ value, onChange }: { value: CategoryId[]; onCha
           >
             <Icon size={28} color={on ? c.onMain : c.ink} strokeWidth={2} />
             <Text style={[styles.text, { color: on ? c.onMain : c.ink }]} numberOfLines={1}>
-              {t(`categories.${c.id}`)}
+              {catName(c.id)}
             </Text>
             {on ? (
               <View style={styles.check}>

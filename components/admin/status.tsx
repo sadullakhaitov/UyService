@@ -7,6 +7,7 @@ import type { CategoryId } from '@/constants/categories';
 import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
+import { catName, problemName } from '@/constants/categories';
 
 const ORDER_TONE: Record<OrderStatus, Tone> = {
   scheduled: 'neutral',
@@ -44,11 +45,11 @@ export function CategoryLabel({ id, problem }: { id: CategoryId; problem?: strin
       <CategoryIcon id={id} />
       <View style={styles.min}>
         <Text numberOfLines={1} style={styles.title}>
-          {t(`categories.${id}`)}
+          {catName(id)}
         </Text>
         {problem ? (
           <Text numberOfLines={1} style={styles.sub}>
-            {t(`problems.${problem}`)}
+            {problemName(problem)}
           </Text>
         ) : null}
       </View>

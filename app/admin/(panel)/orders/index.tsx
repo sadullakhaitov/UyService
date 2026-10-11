@@ -11,7 +11,7 @@ import { CategoryLabel, OrderBadge } from '@/components/admin/status';
 import { Cell, DataTable } from '@/components/admin/Table';
 import { toInt, useParamState } from '@/components/admin/useParams';
 import { Text } from '@/components/ui/Text';
-import { categories, type CategoryId } from '@/constants/categories';
+import { categories, type CategoryId, catName, problemName, useCatalog } from '@/constants/categories';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { adminApi, type AdminOrder, type OrderFilter, type OrderQuery } from '@/lib/admin';
 import { adminErrorText, toast, useAdminQuery } from '@/lib/admin/hooks';
@@ -24,6 +24,7 @@ const PAGE = 25;
 
 export default function Orders() {
   useScheme();
+  useCatalog();
   const [v, set] = useParamState(DEFAULTS);
   const query: OrderQuery = {
     filter: (FILTERS.includes(v.f as OrderFilter) ? v.f : 'all') as OrderFilter,
@@ -49,8 +50,8 @@ export default function Orders() {
         all.rows.map((o) => [
           o.id,
           new Date(o.createdAt).toISOString(),
-          t(`categories.${o.categoryId}`),
-          o.problemId ? t(`problems.${o.problemId}`) : '',
+          catName(o.categoryId),
+          o.problemId ? problemName(o.problemId) : '',
           t(`admin.status.${o.status}`),
           o.clientName ?? '',
           fmtPhone(o.clientPhone),
@@ -98,7 +99,7 @@ export default function Orders() {
       <View style={styles.pills}>
         <Pill label={t('admin.common.allCategories')} active={!query.category} onPress={() => set({ c: '' })} />
         {categories.map((c) => (
-          <Pill key={c.id} label={t(`categories.${c.id}`)} icon={c.icon} color={c.ink} active={query.category === c.id} onPress={() => set({ c: c.id })} />
+          <Pill key={c.id} label={catName(c.id)} icon={c.icon} color={c.ink} active={query.category === c.id} onPress={() => set({ c: c.id })} />
         ))}
       </View>
       {query.masterId || query.clientId ? (

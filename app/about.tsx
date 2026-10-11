@@ -20,7 +20,7 @@ import type { ComponentType } from 'react';
 import { Linking, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconButton, LogoMark, Squish, Text } from '@/components/ui';
-import { CALL_FEE, categories, WARRANTY_DAYS } from '@/constants/categories';
+import { CALL_FEE, categories, WARRANTY_DAYS, catName, useCatalog } from '@/constants/categories';
 import { COMPANY } from '@/constants/company';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { formatNumber, formatSum, t } from '@/lib/i18n';
@@ -30,6 +30,7 @@ type Icon = ComponentType<{ size?: number; color?: string; strokeWidth?: number 
 // "Biz haqimizda": logotip bosilganda ochiladi — kompaniya, qanday ishlaydi, kafolatlar, aloqa
 export default function About() {
   useScheme();
+  useCatalog();
   const version = Constants.expoConfig?.version ?? '0.1.0';
 
   const promises: { icon: Icon; title: string; text: string }[] = [
@@ -99,7 +100,7 @@ export default function About() {
               {categories.map((c) => (
                 <View key={c.id} style={[styles.cat, { backgroundColor: c.tint }]}>
                   <c.icon size={18} color={c.ink} strokeWidth={2.2} />
-                  <Text style={[styles.catText, { color: c.ink }]}>{t(`categories.${c.id}`)}</Text>
+                  <Text style={[styles.catText, { color: c.ink }]}>{catName(c.id)}</Text>
                 </View>
               ))}
             </View>

@@ -1,7 +1,7 @@
 // Admin amallari jurnali: kim, qachon, nima qildi (tushunarli matn bilan), obyektga havola
 import { router, type Href } from 'expo-router';
 import type { LucideIcon } from 'lucide-react-native';
-import { Ban, BadgeCheck, CalendarPlus, CircleCheck, Gauge, Gift, ShieldPlus, Tag, Ticket, TicketX, Trash2, Unlock, UserX, Wallet, XCircle } from 'lucide-react-native';
+import { Ban, BadgeCheck, CalendarPlus, CircleCheck, Gauge, Gift, Plus, ShieldPlus, Tag, Ticket, TicketX, Trash2, Unlock, UserX, Wallet, XCircle } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -11,6 +11,7 @@ import { useAdminQuery } from '@/lib/admin/hooks';
 import { formatRange, t } from '@/lib/i18n';
 import { fmtDateTime, fmtPhone, fmtSum, shortId } from './format';
 import { Empty, ErrorBox, Pager, SkeletonRows, useHover } from './kit';
+import { catName, problemName } from '@/constants/categories';
 
 const ICON: Record<LogAction, LucideIcon> = {
   verify: BadgeCheck,
@@ -31,6 +32,10 @@ const ICON: Record<LogAction, LucideIcon> = {
   free_pass: Gift,
   free_pass_revoke: TicketX,
   free_period: Gift,
+  category_create: Plus,
+  category_delete: Trash2,
+  problem_create: Plus,
+  problem_delete: Trash2,
 };
 
 const str = (v: unknown) => (v == null || v === '' ? null : String(v));
@@ -87,6 +92,12 @@ function logDetails(e: LogEntry): string {
       return str(d.reason) ?? '';
     case 'free_period':
       return [num(d.days) ? `+${t('admin.free.daysN', { n: num(d.days) })}` : t('admin.free.stopped'), str(d.reason)].filter(Boolean).join(' · ');
+    case 'category_create':
+    case 'problem_create':
+      return str(d.name) ?? '';
+    case 'category_delete':
+    case 'problem_delete':
+      return [str(d.name), str(d.reason)].filter(Boolean).join(' · ');
     case 'report_resolve':
       return [t(`report.kinds.${str(d.kind) ?? 'other'}`), str(d.note)].filter(Boolean).join(' · ');
     default:
@@ -106,8 +117,8 @@ function targetHref(e: LogEntry): string | null {
 }
 function targetLabel(e: LogEntry) {
   if (e.targetType === 'order' && e.targetId) return t('admin.log.order', { id: shortId(e.targetId) });
-  if (e.targetType === 'category' && e.targetId) return t(`categories.${e.targetId}`);
-  if (e.targetType === 'problem' && e.targetId) return t(`problems.${e.targetId}`);
+  if (e.targetType === 'category' && e.targetId) return catName(e.targetId);
+  if (e.targetType === 'problem' && e.targetId) return problemName(e.targetId);
   if (e.targetType === 'promo' && e.targetId) return e.targetId;
   return t(`admin.log.t.${e.targetType}`);
 }
@@ -117,7 +128,7 @@ function LogRow({ e, showTarget = true }: { e: LogEntry; showTarget?: boolean })
   const { hovered, bind } = useHover();
   const Icon = ICON[e.action] ?? Tag;
   const href = targetHref(e);
-  const danger = e.action === 'block' || e.action === 'cancel' || e.action === 'delete_review' || e.action === 'free_pass_revoke' || (e.action === 'verify' && e.details.to === 'rejected');
+  const danger = e.action === 'block' || e.action === 'cancel' || e.action === 'delete_review' || e.action === 'free_pass_revoke' || e.action === 'category_delete' || e.action === 'problem_delete' || (e.action === 'verify' && e.details.to === 'rejected');
   const body = (
     <>
       <View style={[styles.icon, { backgroundColor: danger ? colors.dangerSoft : colors.primarySoft }]}>

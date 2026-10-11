@@ -1,7 +1,7 @@
 // Admin panel ma'lumot turlari. Ikki manba bir xil shaklda qaytaradi:
 // Supabase (lib/admin/supabase.ts — server ulanganda) va sinov rejimi (lib/admin/demo.ts).
 import type { BillingPlan } from '@/constants/billing';
-import type { CategoryId } from '@/constants/categories';
+import type { CatalogNames, CategoryId } from '@/constants/categories';
 import type { FreeDays } from '@/lib/freePass';
 import type { LatLng } from '@/lib/geo';
 
@@ -28,7 +28,11 @@ export type LogAction =
   | 'delete_account'
   | 'free_pass'
   | 'free_pass_revoke'
-  | 'free_period';
+  | 'free_period'
+  | 'category_create'
+  | 'category_delete'
+  | 'problem_create'
+  | 'problem_delete';
 export type LogTarget = 'master' | 'user' | 'order' | 'review' | 'category' | 'problem' | 'support' | 'promo' | 'report';
 
 export const ACTIVE_STATUSES: OrderStatus[] = ['assigned', 'on_the_way', 'arrived', 'in_progress'];
@@ -237,8 +241,12 @@ export type SupportThread = {
   messages: number;
 };
 
-export type CatalogCategory = { id: CategoryId; callFee: number; active: boolean };
-export type CatalogProblem = { id: string; categoryId: CategoryId; priceMin: number | null; priceMax: number | null };
+/** `names` — admin qo'shgan yo'nalish nomi (asl 6 tasida null, nomi ilovada) */
+export type CatalogCategory = { id: CategoryId; callFee: number; active: boolean; names: CatalogNames | null; icon: string | null; tone: string | null };
+export type CatalogProblem = { id: string; categoryId: CategoryId; priceMin: number | null; priceMax: number | null; names: CatalogNames | null };
+/** Yangi yo'nalish: o'zbekcha nomi majburiy, ruscha/inglizcha bo'sh bo'lsa — o'zbekchasi */
+export type NewCategory = { names: CatalogNames; icon: string; tone: string; callFee: number };
+export type NewProblem = { categoryId: CategoryId; names: CatalogNames; priceMin: number | null; priceMax: number | null };
 
 export type DayPoint = { day: string; orders: number; completed: number; cancelled: number; gmv: number; revenue: number };
 
@@ -392,6 +400,12 @@ export interface AdminApi {
   catalog(): Promise<{ categories: CatalogCategory[]; problems: CatalogProblem[] }>;
   updateCategory(id: CategoryId, callFee: number, active: boolean): Promise<void>;
   updateProblem(id: string, min: number | null, max: number | null): Promise<void>;
+  /** Yangi yo'nalish / muammo turi — id qaytaradi */
+  createCategory(c: NewCategory): Promise<string>;
+  createProblem(p: NewProblem): Promise<string>;
+  /** O'chirish (sabab bilan): ilovada ko'rinmaydi, eski buyurtmalar tarixida nomi qoladi */
+  deleteCategory(id: CategoryId, reason: string): Promise<void>;
+  deleteProblem(id: string, reason: string): Promise<void>;
   promos(): Promise<PromoCode[]>;
   savePromo(p: PromoInput): Promise<void>;
 

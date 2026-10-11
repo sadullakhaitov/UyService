@@ -3,7 +3,7 @@
 // Usta qidirish — haqiqiy algoritm (lib/dispatch.ts); soxta faqat ustalarning javobi va harakati.
 // 7-bosqichda: Supabase Edge Function (dispatch, offer-timeout) + Realtime (master_locations).
 import { useEffect } from 'react';
-import { CALL_FEE, problems } from '@/constants/categories';
+import { CALL_FEE, problems, catName } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
 import { advanceDispatch, applyActivity, respondDispatch, startDispatch, type DispatchMaster } from '@/lib/dispatch';
 import { distanceKm } from '@/lib/geo';
@@ -59,7 +59,7 @@ function tick(now: number) {
         if (o.step < o.path.length - 1) update(o.id, { step: o.step + 1, phaseAt: now });
         else {
           update(o.id, { status: 'arrived', phaseAt: now });
-          notify(t('notify.arrivedTitle'), t('notify.arrivedBody', { category: t(`categories.${o.categoryId}`) }), { url: `/client/tracking?id=${o.id}` });
+          notify(t('notify.arrivedTitle'), t('notify.arrivedBody', { category: catName(o.categoryId) }), { url: `/client/tracking?id=${o.id}` });
         }
       }
     } else if (o.status === 'arrived' && o.priceStatus === 'none' && now - o.phaseAt >= ARRIVED_TO_PRICE_MS) {

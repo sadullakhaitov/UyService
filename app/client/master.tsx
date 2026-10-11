@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Text } from '@/components/ui';
-import { getCategory, type CategoryId } from '@/constants/categories';
+import { getCategory, type CategoryId, catName } from '@/constants/categories';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, t } from '@/lib/i18n';
 import { mockMasters, mockReviews } from '@/mocks';
@@ -52,7 +52,7 @@ export default function MasterInfo() {
             <Text variant="h2">{master.name}</Text>
             {master.verified ? <BadgeCheck size={20} color={colors.onPrimary} fill={c.main} accessibilityLabel={t('tracking.verified')} /> : null}
           </View>
-          <Text variant="small">{master.categories.map((x) => t(`categories.${x}`)).join(' · ')}</Text>
+          <Text variant="small">{master.categories.map((x) => catName(x)).join(' · ')}</Text>
         </View>
 
         <View style={styles.stats}>

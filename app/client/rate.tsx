@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Divider, RatingInput, Row, Squish, Text } from '@/components/ui';
-import { CALL_FEE, getCategory, WARRANTY_DAYS } from '@/constants/categories';
+import { CALL_FEE, getCategory, WARRANTY_DAYS, catName, problemName } from '@/constants/categories';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatDate, formatSum, t } from '@/lib/i18n';
 import { mockMasters } from '@/mocks';
@@ -86,7 +86,7 @@ export default function Rate() {
             <Row label={t('rate.inspection')} value={formatSum(CALL_FEE)} />
           ) : (
             <>
-              <Row label={t('rate.work', { problem: t(`problems.${problemId}`) })} value={formatSum(order.work)} />
+              <Row label={t('rate.work', { problem: problemName(problemId) })} value={formatSum(order.work)} />
               {order.parts ? <Row label={t('rate.parts')} value={formatSum(order.parts)} /> : null}
               <Text variant="caption">{t('rate.feeIncluded', { fee: formatSum(CALL_FEE) })}</Text>
             </>
@@ -144,7 +144,7 @@ export default function Rate() {
         {stars >= 4 ? (
           <Squish
             accessibilityRole="button"
-            onPress={() => shareText(t('rate.shareMessage', { category: t(`categories.${categoryId}`).toLowerCase() }))}
+            onPress={() => shareText(t('rate.shareMessage', { category: catName(categoryId).toLowerCase() }))}
             style={styles.fav}
           >
             <Share2 size={18} color={colors.primary} strokeWidth={2.2} />
