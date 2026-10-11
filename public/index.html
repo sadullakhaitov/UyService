@@ -7,15 +7,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#F6F8F7" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0E1513" media="(prefers-color-scheme: dark)" />
-    <meta name="description" content="UyService — O'zbekiston bo'ylab uyga usta chaqirish: santexnik, elektrik, konditsioner, mebel, ta'mirlash, maishiy texnika. Usta kelayotganini xaritada kuzating." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="format-detection" content="telephone=no" />
-    <meta property="og:title" content="UyService — uyingizga ishonchli usta" />
-    <meta property="og:description" content="O'zbekiston bo'ylab uyga usta chaqirish. Usta kelayotganini xaritada kuzating." />
+    <!-- Qidiruv tizimlari (Google, Yandex) va havola ulashilganda chiqadigan sarlavha, tavsif, rasm -->
+    <title>UyService — uyga usta chaqirish: santexnik, elektrik, konditsioner | uyservice.uz</title>
+    <meta name="description" content="UyService (uyservice.uz) — O'zbekiston bo'ylab uyga usta chaqirish xizmati: santexnik, elektrik, konditsioner, mebel, ta'mirlash, maishiy texnika. Eng yaqin usta, narx oldindan, 30 kun kafolat. Вызов мастера на дом по всему Узбекистану." />
+    <meta name="keywords" content="UyService, uyservice.uz, uy service, uyservis, usta chaqirish, uyga usta, santexnik, elektrik, konditsioner ustasi, mebel ustasi, ta'mirlash, maishiy texnika ta'miri, Toshkent usta, вызов мастера, мастер на дом, сантехник, электрик, ремонт кондиционеров, home service Uzbekistan" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="application-name" content="UyService" />
+    <link rel="canonical" href="https://uyservice.uz/" id="canonical" />
+    <script>
+      // Har sahifaning o'z manzili (SPA: hamma yo'lga shu fayl beriladi) — ?so'rovsiz
+      document.getElementById('canonical').href = 'https://uyservice.uz' + (location.pathname === '/' ? '/' : location.pathname.replace(/\/+$/, ''));
+    </script>
+    <meta property="og:type" content="website" />
     <meta property="og:site_name" content="UyService" />
-    <title>UyService</title>
+    <meta property="og:url" content="https://uyservice.uz/" />
+    <meta property="og:title" content="UyService — uyingizga ishonchli usta" />
+    <meta property="og:description" content="O'zbekiston bo'ylab uyga usta chaqirish: eng yaqin usta, narx oldindan, 30 kun kafolat. Usta kelayotganini xaritada kuzating." />
+    <meta property="og:image" content="https://uyservice.uz/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="uz_UZ" />
+    <meta property="og:locale:alternate" content="ru_RU" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://uyservice.uz/og.png" />
+    <!-- Google uchun tuzilgan ma'lumot: brend nomi (qidiruvda "UyService" deb chiqishi), aloqa, xizmatlar -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://uyservice.uz/#website",
+          "url": "https://uyservice.uz/",
+          "name": "UyService",
+          "alternateName": ["uyservice.uz", "Uy Service", "UyServis", "УйСервис"],
+          "inLanguage": ["uz", "ru", "en"],
+          "publisher": { "@id": "https://uyservice.uz/#org" }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://uyservice.uz/#org",
+          "name": "UyService",
+          "alternateName": "uyservice.uz",
+          "url": "https://uyservice.uz/",
+          "logo": "https://uyservice.uz/pwa/icon-512.png",
+          "email": "support@uyservice.uz",
+          "telephone": "+998901218887",
+          "foundingDate": "2026",
+          "areaServed": { "@type": "Country", "name": "Uzbekistan" },
+          "sameAs": ["https://t.me/uyservice_bot", "https://www.instagram.com/uyservice.uz/"],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+998901218887",
+            "email": "support@uyservice.uz",
+            "contactType": "customer support",
+            "areaServed": "UZ",
+            "availableLanguage": ["Uzbek", "Russian", "English"]
+          }
+        },
+        {
+          "@type": "Service",
+          "name": "Uyga usta chaqirish",
+          "alternateName": "Вызов мастера на дом",
+          "serviceType": "Home repair",
+          "provider": { "@id": "https://uyservice.uz/#org" },
+          "areaServed": { "@type": "Country", "name": "Uzbekistan" },
+          "url": "https://uyservice.uz/",
+          "offers": { "@type": "Offer", "price": "50000", "priceCurrency": "UZS", "description": "Chaqiruv narxi (ish qilinsa — narx ichida)" },
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Xizmatlar",
+            "itemListElement": [
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Santexnik" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Elektrik" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Konditsioner ustasi" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Mebel ustasi" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Ta'mirlash" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Maishiy texnika ta'miri" } }
+            ]
+          }
+        }
+      ]
+    }
+    </script>
     <!-- Telefonga ilova bo'lib o'rnatish (PWA): "Bosh ekranga qo'shish" — ikonka, nom, manzil satrisiz oyna -->
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png" />
@@ -51,12 +129,42 @@
         flex: 1;
       }
       input, textarea { outline: none; }
+      .seo {
+        margin: auto;
+        max-width: 560px;
+        padding: 24px;
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #4E625C;
+        text-align: center;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .seo-brand { font-size: 28px; font-weight: 800; color: #0B2A24; margin: 0 0 8px; }
+      .seo-brand span { color: #0E5A4B; }
+      .seo h1 { font-size: 18px; color: #0B2A24; margin: 0 0 12px; }
+      .seo a { color: #0E5A4B; }
+      @media (prefers-color-scheme: dark) {
+        .seo { color: #9DB2AB; }
+        .seo-brand, .seo h1 { color: #E8F0ED; }
+        .seo-brand span, .seo a { color: #5CC2A6; }
+      }
     </style>
   </head>
 
   <body>
     <noscript>UyService ishlashi uchun JavaScript yoqilgan bo'lishi kerak.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Ilova yuklanguncha ko'rinadigan va qidiruv tizimlari o'qiydigan matn; ilova ishga tushganda React buni almashtiradi -->
+      <main class="seo">
+        <p class="seo-brand"><span>Uy</span>Service</p>
+        <h1>UyService — uyga usta chaqirish</h1>
+        <p>O'zbekiston bo'ylab uyga ishonchli usta: santexnik, elektrik, konditsioner, mebel, ta'mirlash, maishiy texnika. Eng yaqin usta topiladi, narx oldindan aytiladi, ish 30 kun kafolatlanadi. Chaqiruv — 50 000 so'm, ish qilinsa narx ichida.</p>
+        <p lang="ru">UyService — вызов мастера на дом по всему Узбекистану: сантехник, электрик, мастер по кондиционерам, мебели, ремонту и бытовой технике.</p>
+        <nav>
+          <a href="/client">Usta chaqirish</a> · <a href="/usta">Usta bo'lib ishlash</a> · <a href="/about">Biz haqimizda</a>
+        </nav>
+      </main>
+    </div>
     <script>
       if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
     </script>

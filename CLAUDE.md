@@ -154,6 +154,7 @@ supabase/                 ← server (joylangan): README.md — joylash bo'yicha
 .github/workflows/backup-db.yml ← har kecha baza zaxirasi (supabase db dump → gpg AES-256, kalit SUPABASE_DB_PASSWORD) → Actions artifakti, 30 kun
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
+public/robots.txt, sitemap.xml, og.png ← Google/Yandex uchun (SEO): hamma sahifa ochiq, /admin yopiq; index.html'da sarlavha, tavsif (uz+ru), JSON-LD (brend, aloqa, xizmatlar), canonical (JS bilan har sahifaga) va #root ichida ilova yuklanguncha ko'rinadigan matn (React almashtiradi). Yangi ochiq sahifa — sitemap.xml'ga ham
 public/manifest.webmanifest, sw.js, pwa/ ← PWA: sayt telefonga ilova bo'lib o'rnatiladi ("Bosh ekranga qo'shish"); sw.js hech narsa keshlamaydi
 wrangler.jsonc            ← sayt (uyservice.uz) Cloudflare Workers'da: build `npx expo export --platform web` → `dist`, deploy `npx wrangler deploy`; hamma yo'llar index.html'ga (SPA)
 eas.json                  ← do'kon uchun build: preview (APK), production; kalitlar expo.dev muhitlaridan (`environment`, supabase/README.md 14-bo'lim)
