@@ -890,7 +890,10 @@
       "deleteAdmin": "Adminni o'chirib bo'lmaydi. Avval Sozlamalar'da adminlikdan olib tashlang",
       "deleteLocal": "Sinov rejimida shu qurilmadagi ustani o'chirib bo'lmaydi",
       "freeUsed": "Bu usta bepul davrdan allaqachon foydalangan — uning sahifasida uzaytiring",
-      "passportRequired": "Ustada pasport yuklanmagan (yoki rad etilgan) — bepul davr faqat pasport bilan"
+      "passportRequired": "Ustada pasport yuklanmagan (yoki rad etilgan) — bepul davr faqat pasport bilan",
+      "nameRequired": "Nomini yozing",
+      "nameTaken": "Bunday nom bor",
+      "nameLong": "Nom 40 belgidan oshmasin"
     },
     "login": {
       "title": "Admin panelga kirish",
@@ -1264,7 +1267,7 @@
       "allGood": "Hamma ustalarda buyurtma ochiq"
     },
     "catalog": {
-      "subtitle": "Chaqiruv narxi va muammolarning taxminiy narxi — mijoz ilovada shuni ko'radi",
+      "subtitle": "Yo'nalishlar, muammo turlari va narxlar — mijoz va usta ilovada shuni ko'radi",
       "callFee": "Chaqiruv narxi, so'm",
       "active": "Ilovada ko'rinadi",
       "on": "Yoqilgan",
@@ -1273,7 +1276,37 @@
       "min": "Kamida",
       "max": "Ko'pi bilan",
       "saved": "{{name}}: saqlandi",
-      "problemSaved": "{{name}}: narx saqlandi"
+      "problemSaved": "{{name}}: narx saqlandi",
+      "add": "Yangi yo'nalish",
+      "addTitle": "Yangi yo'nalish qo'shish",
+      "addText": "Masalan, Bog'bon yoki Tozalash. Qo'shilgach mijozlar uni ilovada ko'radi, ustalar o'z yo'nalishlariga qo'sha oladi. Keyin unga muammo turlarini qo'shing.",
+      "nameUz": "Nomi (o'zbekcha)",
+      "nameRu": "Ruscha",
+      "nameEn": "Inglizcha",
+      "namePlaceholder": "Masalan: Bog'bon",
+      "problemPlaceholder": "Masalan: O't o'rish",
+      "icon": "Ikonka",
+      "color": "Rang",
+      "preview": "Ilovada shunday ko'rinadi",
+      "created": "{{name}}: yo'nalish qo'shildi",
+      "delete": "O'chirish",
+      "deleteTitle": "«{{name}}» yo'nalishi o'chirilsinmi?",
+      "deleteText": "Mijozlar uni ko'rmaydi, yangi buyurtma berilmaydi, muammo turlari ham o'chadi. Eski buyurtmalar tarixida nomi qoladi. Qaytarib bo'lmaydi: vaqtincha yashirish uchun «Ilovada ko'rinadi»ni o'chiring.",
+      "deleted": "{{name}}: o'chirildi",
+      "addProblem": "Muammo turi qo'shish",
+      "addProblemTitle": "{{name}}: yangi muammo turi",
+      "addProblemText": "Mijoz buyurtma berishda shu ro'yxatdan tanlaydi.",
+      "priceHint": "Taxminiy narx oralig'i, so'm. Ikkalasi bo'sh bo'lsa — \"kelishiladi\".",
+      "problemCreated": "{{name}}: muammo turi qo'shildi",
+      "deleteProblem": "Muammo turini o'chirish",
+      "deleteProblemTitle": "«{{name}}» o'chirilsinmi?",
+      "deleteProblemText": "Mijozlar uni tanlay olmaydi. Eski buyurtmalar tarixida nomi qoladi.",
+      "problemDeleted": "{{name}}: o'chirildi",
+      "preset": {
+        "notNeeded": "Kerak emas",
+        "duplicate": "Takror",
+        "mistake": "Xato qo'shilgan"
+      }
     },
     "log": {
       "subtitle": "Har bir admin amali: kim, qachon, nima. O'zgartirib yoki o'chirib bo'lmaydi.",
@@ -1298,7 +1331,11 @@
         "delete_account": "Hisob o'chirildi",
         "free_pass": "Bepul davr kodi",
         "free_pass_revoke": "Bepul davr kodi bekor qilindi",
-        "free_period": "Bepul davr o'zgartirildi"
+        "free_period": "Bepul davr o'zgartirildi",
+        "category_create": "Yo'nalish qo'shildi",
+        "category_delete": "Yo'nalish o'chirildi",
+        "problem_create": "Muammo turi qo'shildi",
+        "problem_delete": "Muammo turi o'chirildi"
       },
       "t": {
         "master": "usta",
@@ -1605,5 +1642,8 @@
     "text": "Pasport rasmim va selfim faqat shaxsimni tasdiqlash uchun ishlatilishiga roziman. Ularni mijozlar ko'rmaydi, faqat tekshiruvchi xodim ko'radi.",
     "needTitle": "Avval rozilik bering",
     "needText": "Pasport va selfi yuklash uchun yuqoridagi rozilik belgisini qo'ying."
+  },
+  "catalog": {
+    "unknown": "Xizmat"
   }
 }

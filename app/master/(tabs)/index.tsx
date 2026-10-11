@@ -11,7 +11,7 @@ import { Sheet, useSheetFollow } from '@/components/sheets/Sheet';
 import { Button, Chip, IconButton, Squish, Text } from '@/components/ui';
 import { SwipeButton } from '@/components/ui/SwipeButton';
 import { BILLING, feePercent } from '@/constants/billing';
-import { categories } from '@/constants/categories';
+import { categories, catName, problemName, useCatalog } from '@/constants/categories';
 import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { freeDaysLeft, useFreeUntil } from '@/lib/freePass';
@@ -164,7 +164,7 @@ export default function MasterOrders() {
             <View style={styles.flex}>
               <Text variant="caption">{t('mOrders.activeJob')}</Text>
               <Text variant="bodyBold" numberOfLines={1}>
-                {job.clientName} · {t(`problems.${job.problemId}`)}
+                {job.clientName} · {problemName(job.problemId)}
               </Text>
             </View>
             <Text style={styles.activeGo}>{t('mOrders.open')}</Text>
@@ -176,7 +176,7 @@ export default function MasterOrders() {
             <View style={styles.flex}>
               <Text variant="caption">{t('offer.title')}</Text>
               <Text variant="bodyBold" numberOfLines={1}>
-                {t(`problems.${pendingOffer.problemId}`)} · {t('common.km', { value: pendingOffer.distanceKm })}
+                {problemName(pendingOffer.problemId)} · {t('common.km', { value: pendingOffer.distanceKm })}
               </Text>
             </View>
             <Text style={[styles.activeGo, { color: colors.accentInk }]}>{t('mOrders.view')}</Text>
@@ -297,6 +297,7 @@ function BackgroundCard() {
 
 function FilterModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   useScheme();
+  useCatalog();
   const { categories: mine, radiusKm, setFilter, profile } = useMaster();
   // Filtrda faqat usta ro'yxatdan o'tgan kategoriyalar; kamida bittasi yoqiq qoladi
   const own = profile.categories.length ? profile.categories : categories.map((c) => c.id);
@@ -312,7 +313,7 @@ function FilterModal({ visible, onClose }: { visible: boolean; onClose: () => vo
         {categories
           .filter((c) => own.includes(c.id))
           .map((c) => (
-            <Chip key={c.id} label={t(`categories.${c.id}`)} selected={mine.includes(c.id)} onPress={() => toggle(c.id)} />
+            <Chip key={c.id} label={catName(c.id)} selected={mine.includes(c.id)} onPress={() => toggle(c.id)} />
           ))}
       </View>
       <Text variant="bodyBold">{t('mOrders.filterRadius')}</Text>

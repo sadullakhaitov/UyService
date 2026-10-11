@@ -16,6 +16,7 @@ import { ACTIVE_STATUSES, adminApi, type LivePoint } from '@/lib/admin';
 import { useAdminQuery } from '@/lib/admin/hooks';
 import type { LatLng } from '@/lib/geo';
 import { t } from '@/lib/i18n';
+import { catName } from '@/constants/categories';
 
 type Layer = 'free' | 'busy' | 'searching' | 'active' | 'scheduled';
 const LAYERS: Layer[] = ['free', 'busy', 'searching', 'active', 'scheduled'];
@@ -91,7 +92,7 @@ export default function LiveMap() {
               {sel.categoryId ? <CategoryIcon id={sel.categoryId} size={30} /> : null}
               <View style={styles.flex}>
                 <Text style={styles.cardTitle} numberOfLines={2}>
-                  {sel.kind === 'master' ? sel.label : sel.categoryId ? t(`categories.${sel.categoryId}`) : t('admin.map.order')}
+                  {sel.kind === 'master' ? sel.label : sel.categoryId ? catName(sel.categoryId) : t('admin.map.order')}
                 </Text>
                 <Text variant="caption" numberOfLines={2}>
                   {sel.kind === 'master' ? t('admin.map.master') : sel.label}

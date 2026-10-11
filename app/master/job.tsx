@@ -8,7 +8,7 @@ import { MapZoom } from '@/components/map/MapZoom';
 import { MAP_ATTRIBUTION_H, useWide } from '@/lib/useLayout';
 import { Sheet, SheetInput } from '@/components/sheets/Sheet';
 import { Button, Card, Divider, IconButton, Row, Text } from '@/components/ui';
-import { CALL_FEE, getCategory } from '@/constants/categories';
+import { CALL_FEE, getCategory, problemName } from '@/constants/categories';
 import { colors, fonts, shadow, themed, useScheme } from '@/constants/theme';
 import { formatSum, t } from '@/lib/i18n';
 import { bboxCorners, distanceKm, type LatLng } from '@/lib/geo';
@@ -215,7 +215,7 @@ function JobView({ job }: { job: MasterJob }) {
           <View style={styles.flex}>
             <Text variant="caption">{t('job.client')}</Text>
             <Text variant="h3">
-              {job.clientName} · {t(`problems.${job.problemId}`)}
+              {job.clientName} · {problemName(job.problemId)}
             </Text>
             <View style={styles.addr}>
               <MapPin size={14} color={colors.accent} strokeWidth={2.4} />
@@ -235,7 +235,7 @@ function JobView({ job }: { job: MasterJob }) {
             icon={MessageCircle}
             label={t('job.chatClient')}
             onPress={() => {
-              ensureChat({ id: chatId, title: `${job.clientName} · ${t(`problems.${job.problemId}`)}`, subtitle: job.address, kind: 'client' });
+              ensureChat({ id: chatId, title: `${job.clientName} · ${problemName(job.problemId)}`, subtitle: job.address, kind: 'client' });
               router.push(`/master/chat/${chatId}`);
             }}
           />

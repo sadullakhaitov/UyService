@@ -16,6 +16,7 @@ import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { adminApi, type AdminMaster } from '@/lib/admin';
 import { useAdminAction, useAdminQuery } from '@/lib/admin/hooks';
 import { t } from '@/lib/i18n';
+import { catName } from '@/constants/categories';
 
 const PAGE = 10;
 
@@ -63,7 +64,7 @@ export default function Verification() {
                     {m.categories.map((c) => (
                       <View key={c} style={styles.cat}>
                         <CategoryIcon id={c} size={22} />
-                        <Text style={styles.catText}>{t(`categories.${c}`)}</Text>
+                        <Text style={styles.catText}>{catName(c)}</Text>
                       </View>
                     ))}
                   </View>

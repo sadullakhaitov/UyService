@@ -16,14 +16,32 @@ const CATEGORIES: Record<Lang, Record<string, string>> = {
   en: { plumber: 'Plumber', electric: 'Electrician', aircon: 'Air conditioning', furniture: 'Furniture', repair: 'Renovation', appliance: 'Appliances' },
 };
 
+// Admin qo'shgan yo'nalishlar nomi (categories.name_*) — flushPush har chaqiruvda yangilaydi
+let custom: Record<string, Record<Lang, string>> = {};
+export const setCustomCategories = (c: Record<string, Record<Lang, string>>) => (custom = c);
+const catLabel = (l: Lang, id: unknown) => CATEGORIES[l][String(id)] ?? custom[String(id)]?.[l];
+
+async function loadCustomCategories(db: SupabaseClient) {
+  const { data, error } = await db.from('categories').select('id, name_uz, name_ru, name_en').not('name_uz', 'is', null);
+  if (error) return; // eski baza (ustunlar yo'q) — asl nomlar yetadi
+  setCustomCategories(
+    Object.fromEntries(
+      ((data ?? []) as { id: string; name_uz: string; name_ru: string | null; name_en: string | null }[]).map((r) => [
+        r.id,
+        { uz: r.name_uz, ru: r.name_ru ?? r.name_uz, en: r.name_en ?? r.name_uz },
+      ]),
+    ),
+  );
+}
+
 const sum = (n: unknown, lang: Lang) =>
   `${Math.round(Number(n) || 0).toLocaleString('ru-RU').replace(/ |,/g, ' ')} ${lang === 'ru' ? 'сум' : lang === 'en' ? 'UZS' : "so'm"}`;
 
 const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
   uz: {
-    offer: (p, l) => ({ title: 'Yangi buyurtma', body: `${CATEGORIES[l][String(p.category)] ?? ''} · ~${p.min ?? '?'} daq. 60 soniya ichida javob bering` }),
+    offer: (p, l) => ({ title: 'Yangi buyurtma', body: `${catLabel(l, p.category) ?? ''} · ~${p.min ?? '?'} daq. 60 soniya ichida javob bering` }),
     found: (p) => ({ title: 'Usta topildi', body: `${p.name || 'Usta'} yo'lga chiqdi, ~${p.min} daqiqada yetib keladi` }),
-    arrived: (p, l) => ({ title: 'Usta yetib keldi', body: `${CATEGORIES[l][String(p.category)] ?? 'Usta'} eshigingiz oldida` }),
+    arrived: (p, l) => ({ title: 'Usta yetib keldi', body: `${catLabel(l, p.category) ?? 'Usta'} eshigingiz oldida` }),
     price: (p, l) => ({ title: 'Usta narx taklif qildi', body: `${sum(p.sum, l)}. Ko'rib chiqing: rozi bo'lsangiz ish boshlanadi` }),
     // Chek: jami summa (naqd), kafolat; sum bo'lmasa (eski navbat) — oddiy matn
     done: (p, l) => ({
@@ -46,9 +64,9 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     priceDeclined: (p, l) => ({ title: "Mijoz narxga rozi bo'lmadi", body: `Faqat chaqiruv to'lanadi: ${sum(p.fee, l)}` }),
   },
   ru: {
-    offer: (p, l) => ({ title: 'Новый заказ', body: `${CATEGORIES[l][String(p.category)] ?? ''} · ~${p.min ?? '?'} мин. Ответьте в течение 60 секунд` }),
+    offer: (p, l) => ({ title: 'Новый заказ', body: `${catLabel(l, p.category) ?? ''} · ~${p.min ?? '?'} мин. Ответьте в течение 60 секунд` }),
     found: (p) => ({ title: 'Мастер найден', body: `${p.name || 'Мастер'} выехал, будет через ~${p.min} мин` }),
-    arrived: (p, l) => ({ title: 'Мастер на месте', body: `${CATEGORIES[l][String(p.category)] ?? 'Мастер'} у вашей двери` }),
+    arrived: (p, l) => ({ title: 'Мастер на месте', body: `${catLabel(l, p.category) ?? 'Мастер'} у вашей двери` }),
     price: (p, l) => ({ title: 'Мастер предложил цену', body: `${sum(p.sum, l)}. Посмотрите: если согласны, работа начнётся` }),
     done: (p, l) => ({
       title: 'Работа завершена',
@@ -69,9 +87,9 @@ const TEXTS: Record<Lang, Record<string, (p: Params, l: Lang) => Text>> = {
     priceDeclined: (p, l) => ({ title: 'Клиент не согласился с ценой', body: `Оплачивается только вызов: ${sum(p.fee, l)}` }),
   },
   en: {
-    offer: (p, l) => ({ title: 'New order', body: `${CATEGORIES[l][String(p.category)] ?? ''} · ~${p.min ?? '?'} min. Reply within 60 seconds` }),
+    offer: (p, l) => ({ title: 'New order', body: `${catLabel(l, p.category) ?? ''} · ~${p.min ?? '?'} min. Reply within 60 seconds` }),
     found: (p) => ({ title: 'Handyman found', body: `${p.name || 'Your handyman'} is on the way, ~${p.min} min` }),
-    arrived: (p, l) => ({ title: 'Handyman has arrived', body: `${CATEGORIES[l][String(p.category)] ?? 'Handyman'} is at your door` }),
+    arrived: (p, l) => ({ title: 'Handyman has arrived', body: `${catLabel(l, p.category) ?? 'Handyman'} is at your door` }),
     price: (p, l) => ({ title: 'The master proposed a price', body: `${sum(p.sum, l)}. Take a look: work starts once you agree` }),
     done: (p, l) => ({
       title: 'The job is done',
@@ -160,11 +178,16 @@ export async function flushPush(
 ): Promise<{ sent: number; failed: number }> {
   let sent = 0;
   let failed = 0;
+  let namesLoaded = false;
   for (let round = 0; round < 5; round++) {
     const { data, error } = await db.rpc('claim_push', { p_limit: 100 });
     if (error) throw new Error(`claim_push: ${error.message}`);
     const all = (data ?? []) as Row[];
     if (!all.length) break;
+    if (!namesLoaded) {
+      namesLoaded = true;
+      await loadCustomCategories(db).catch(() => {});
+    }
 
     const out: Result = { ok: [], bad: [], dead: [], lastError: null };
     const rows = all.filter((r) => r.token);

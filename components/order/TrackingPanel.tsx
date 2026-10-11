@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MapBaseProps } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { Avatar, Button, Card, Divider, IconButton, RatingBadge, Row, Squish, Text } from '@/components/ui';
-import { CALL_FEE, getCategory } from '@/constants/categories';
+import { CALL_FEE, getCategory, catName } from '@/constants/categories';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { bboxCorners } from '@/lib/geo';
 import { DEMO } from '@/lib/demo';
@@ -132,7 +132,7 @@ export function TrackingPanel({ order, onHeight }: { order: ActiveOrder; onHeigh
               {master.verified ? <BadgeCheck size={18} color={colors.onPrimary} fill={cat.main} accessibilityLabel={t('tracking.verified')} /> : null}
             </View>
             <Text variant="small">
-              {t(`categories.${order.categoryId}`)} · {t('tracking.experience', { years: master.experienceYears })}
+              {catName(order.categoryId)} · {t('tracking.experience', { years: master.experienceYears })}
             </Text>
             <View style={styles.stats}>
               <RatingBadge value={master.rating} />
@@ -183,7 +183,7 @@ export function TrackingPanel({ order, onHeight }: { order: ActiveOrder; onHeigh
             tint={cat.tint}
             label={unread ? `${t('tracking.chatBtn')} · ${unread}` : t('tracking.chatBtn')}
             onPress={() => {
-              ensureChat({ id: `order-${order.id}`, title: master.name, subtitle: t(`categories.${order.categoryId}`), kind: 'master' });
+              ensureChat({ id: `order-${order.id}`, title: master.name, subtitle: catName(order.categoryId), kind: 'master' });
               router.push(`/client/chat?id=order-${order.id}&cat=${order.categoryId}`);
             }}
           />

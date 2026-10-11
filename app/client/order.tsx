@@ -4,7 +4,7 @@ import { CalendarClock, Camera, FlaskConical, Info, MapPin, ShieldCheck, X } fro
 import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Chip, Divider, Row, ScreenHeader, Squish, Text } from '@/components/ui';
-import { CALL_FEE, getCategory, problems, problemsOf, WARRANTY_DAYS } from '@/constants/categories';
+import { CALL_FEE, getCategory, problems, problemsOf, WARRANTY_DAYS, catName, problemName, useCatalog } from '@/constants/categories';
 import { colors, fonts, radius, shadow, themed, useScheme } from '@/constants/theme';
 import { formatRange, formatSchedule, formatSum, t } from '@/lib/i18n';
 import { notice } from '@/lib/dialog';
@@ -23,6 +23,7 @@ const MAX_PHOTOS = 3;
 
 export default function OrderScreen() {
   useScheme();
+  useCatalog();
   const { categoryId, problemId, description, photos, address, setDraft, scheduledAt, details } = useOrder();
   const create = useOrders((s) => s.create);
   const phone = useUser((s) => s.phone);
@@ -127,7 +128,7 @@ export default function OrderScreen() {
     <SafeAreaView edges={['top']} style={styles.root}>
       <ScreenHeader
         kicker={t('order.category')}
-        title={t(`categories.${categoryId}`)}
+        title={catName(categoryId)}
         right={
           <View style={[styles.catBadge, { backgroundColor: category.tint }]}>
             <category.icon size={24} color={category.ink} strokeWidth={2.2} />
@@ -142,7 +143,7 @@ export default function OrderScreen() {
             <Text variant="h3">{t('order.problemTitle')}</Text>
             <View style={styles.chips}>
               {list.map((id) => (
-                <Chip key={id} label={t(`problems.${id}`)} selected={id === problemId} onPress={() => setDraft({ problemId: id })} color={category.main} onColor={category.onMain} />
+                <Chip key={id} label={problemName(id)} selected={id === problemId} onPress={() => setDraft({ problemId: id })} color={category.main} onColor={category.onMain} />
               ))}
             </View>
           </View>

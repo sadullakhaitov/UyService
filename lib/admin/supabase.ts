@@ -1,7 +1,8 @@
 // Admin panel — haqiqiy server (Supabase). Ro'yxatlar admin_* ko'rinishlaridan, amallar admin_* RPC'lardan
 // (supabase/migrations/…_admin.sql): huquq, chegaralar va jurnal serverda tekshiriladi.
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { CategoryId } from '@/constants/categories';
+import { applyCatalog, type CategoryId } from '@/constants/categories';
+import { CATEGORY_COLS, categoryRow, PROBLEM_COLS, problemRow } from '@/lib/catalog';
 import { getSupabase } from '@/lib/supabase';
 import {
   ACTIVE_STATUSES,
@@ -17,7 +18,7 @@ import {
   type LogEntry,
   type Stats,
 } from './types';
-import { checkBalance, checkCallFee, checkPriceRange, checkPriority, checkPromo, checkReason, checkSubscription, clean, normalizePhone, RULES } from './rules';
+import { checkBalance, checkCallFee, checkNames, checkPriceRange, checkPriority, checkPromo, checkReason, checkSubscription, clean, normalizePhone, RULES } from './rules';
 
 type Row = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -31,7 +32,9 @@ const SIGNED_SEC = 3600;
 function fail(e: { code?: string; message?: string } | null | undefined): never {
   const code = e?.code;
   const m = e?.message ?? '';
-  const key = m.includes('active_orders')
+  const key = code === '23505'
+    ? 'errors.nameTaken'
+    : m.includes('active_orders')
     ? 'errors.activeOrders'
     : m.includes('free_used')
       ? 'errors.freeUsed'
@@ -502,15 +505,41 @@ export const supabaseAdmin: AdminApi = {
 
   async catalog() {
     const [c, p] = await Promise.all([
-      db().from('categories').select('id, call_fee, active, sort').order('sort'),
-      db().from('problems').select('id, category_id, price_min, price_max, sort').order('sort'),
+      db().from('categories').select(CATEGORY_COLS).order('sort'),
+      db().from('problems').select(PROBLEM_COLS).order('sort'),
     ]);
     if (c.error) fail(c.error);
     if (p.error) fail(p.error);
+    const cats = (c.data ?? []).map((r: Row) => categoryRow(r));
+    const probs = (p.data ?? []).map((r: Row) => problemRow(r));
+    // admin panelning boshqa bo'limlarida ham (buyurtmalar, ustalar) yangi nomlar ko'rinsin
+    applyCatalog(cats, probs);
     return {
-      categories: (c.data ?? []).map((r: Row) => ({ id: r.id as CategoryId, callFee: r.call_fee, active: r.active })),
-      problems: (p.data ?? []).map((r: Row) => ({ id: r.id, categoryId: r.category_id, priceMin: r.price_min, priceMax: r.price_max })),
+      categories: cats.filter((x) => !x.deleted).map((x) => ({ id: x.id, callFee: x.callFee, active: x.active, names: x.names, icon: x.icon, tone: x.tone })),
+      problems: probs.filter((x) => !x.deleted).map((x) => ({ id: x.id, categoryId: x.categoryId, priceMin: x.priceMin, priceMax: x.priceMax, names: x.names })),
     };
+  },
+  async createCategory({ names, icon, tone, callFee }) {
+    checkNames(names);
+    checkCallFee(callFee);
+    return (await rpc('admin_create_category', {
+      p_name_uz: names.uz, p_name_ru: names.ru, p_name_en: names.en, p_icon: icon, p_tone: tone, p_call_fee: callFee,
+    })) as string;
+  },
+  async createProblem({ categoryId, names, priceMin, priceMax }) {
+    checkNames(names);
+    checkPriceRange(priceMin, priceMax);
+    return (await rpc('admin_create_problem', {
+      p_category: categoryId, p_name_uz: names.uz, p_name_ru: names.ru, p_name_en: names.en, p_min: priceMin, p_max: priceMax,
+    })) as string;
+  },
+  async deleteCategory(id, reason) {
+    checkReason(reason);
+    await rpc('admin_delete_category', { p_id: id, p_reason: clean(reason) });
+  },
+  async deleteProblem(id, reason) {
+    checkReason(reason);
+    await rpc('admin_delete_problem', { p_id: id, p_reason: clean(reason) });
   },
   async updateCategory(id, callFee, active) {
     checkCallFee(callFee);

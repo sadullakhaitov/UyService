@@ -5,7 +5,7 @@ import { ScrollView, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Divider, Row, Text } from '@/components/ui';
 import { CountdownRing } from '@/components/ui/CountdownRing';
-import { getCategory, problems } from '@/constants/categories';
+import { getCategory, problems, catName, problemName } from '@/constants/categories';
 import { feePercent } from '@/constants/billing';
 import { DISPATCH } from '@/constants/dispatch';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
@@ -84,10 +84,10 @@ export default function Offer() {
             </View>
           )}
           <Text variant={tiny ? 'h2' : 'h1'} style={styles.centerText}>
-            {t(`problems.${offer.problemId}`)}
+            {problemName(offer.problemId)}
           </Text>
           <Text variant="small" style={styles.centerText} numberOfLines={tiny ? 2 : undefined}>
-            {offer.description ? `${t(`categories.${offer.categoryId}`)} · ${offer.description}` : t(`categories.${offer.categoryId}`)}
+            {offer.description ? `${catName(offer.categoryId)} · ${offer.description}` : catName(offer.categoryId)}
           </Text>
         </View>
 

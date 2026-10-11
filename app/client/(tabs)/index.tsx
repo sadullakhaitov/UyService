@@ -8,7 +8,7 @@ import { ScrollView, TextInput, View, type LayoutChangeEvent, type NativeScrollE
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, LogoMark, RatingBadge, Squish, Text } from '@/components/ui';
 import { ActiveOrders } from '@/components/ui/ActiveOrders';
-import { CALL_FEE, categories, getCategory, problems, WARRANTY_DAYS, type CategoryId } from '@/constants/categories';
+import { CALL_FEE, categories, getCategory, problems, WARRANTY_DAYS, type CategoryId, catName, problemName, useCatalog } from '@/constants/categories';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { formatSchedule, formatSum, t } from '@/lib/i18n';
 import { reverseGeocode } from '@/lib/location';
@@ -25,7 +25,7 @@ const BANNER_EVERY_MS = 5000;
 
 const problemLabel = (id: string) => {
   const p = problems.find((x) => x.id === id);
-  return p && GENERIC.has(id) ? `${t(`categories.${p.categoryId}`)}: ${t(`problems.${id}`)}` : t(`problems.${id}`);
+  return p && GENERIC.has(id) ? `${catName(p.categoryId)}: ${problemName(id)}` : problemName(id);
 };
 
 function greeting() {
@@ -35,6 +35,7 @@ function greeting() {
 
 export default function Home() {
   useScheme();
+  useCatalog();
   const { phone, name } = useUser();
   const setLastLocation = useUser((s) => s.setLastLocation);
   const favorites = useUser((s) => s.favorites);
@@ -57,8 +58,8 @@ export default function Home() {
 
   const pick = (categoryId: CategoryId, problemId?: string, preferredMasterId: string | null = null) => {
     reset();
-    const first = problems.find((p) => p.categoryId === categoryId)!;
-    setDraft({ categoryId, problemId: problemId ?? first.id, preferredMasterId });
+    const first = problems.find((p) => p.categoryId === categoryId);
+    setDraft({ categoryId, problemId: problemId ?? first?.id ?? 'other', preferredMasterId });
     router.push('/client/order');
   };
 
@@ -68,7 +69,7 @@ export default function Home() {
     if (!q) return [];
     return problems
       .filter((p) => p.id !== 'other')
-      .filter((p) => t(`problems.${p.id}`).toLowerCase().includes(q) || t(`categories.${p.categoryId}`).toLowerCase().includes(q))
+      .filter((p) => problemName(p.id).toLowerCase().includes(q) || catName(p.categoryId).toLowerCase().includes(q))
       .slice(0, 6);
   }, [query]);
 
@@ -144,9 +145,9 @@ export default function Home() {
                     </View>
                     <View style={styles.flex}>
                       <Text variant="bodyBold" numberOfLines={1}>
-                        {t(`problems.${p.id}`)}
+                        {problemName(p.id)}
                       </Text>
-                      <Text variant="caption">{t(`categories.${p.categoryId}`)}</Text>
+                      <Text variant="caption">{catName(p.categoryId)}</Text>
                     </View>
                     <ChevronRight size={18} color={colors.ink2} strokeWidth={2.2} />
                   </Squish>
@@ -164,8 +165,10 @@ export default function Home() {
           {t('home.popular')}
         </Text>
         <View style={styles.chips}>
-          {POPULAR.map((id) => {
-            const p = problems.find((x) => x.id === id)!;
+          {POPULAR.flatMap((id) => {
+            // admin o'chirgan muammo / yo'nalish ko'rinmaydi
+            const p = problems.find((x) => x.id === id);
+            if (!p) return [];
             const c = getCategory(p.categoryId);
             return (
               <Squish key={id} accessibilityRole="button" onPress={() => pick(p.categoryId, id)} style={[styles.chip, { backgroundColor: c.tint }]}>
@@ -204,7 +207,7 @@ export default function Home() {
                 <c.icon size={26} color={c.ink} strokeWidth={2} />
               </View>
               <Text style={styles.tileText} numberOfLines={2}>
-                {t(`categories.${c.id}`)}
+                {catName(c.id)}
               </Text>
             </Squish>
           ))}
@@ -223,7 +226,7 @@ export default function Home() {
                 </Text>
                 <View style={styles.favRow}>
                   <RatingBadge value={favorite.rating} />
-                  <Text variant="caption">{t(`categories.${favorite.categories[0]}`)}</Text>
+                  <Text variant="caption">{catName(favorite.categories[0])}</Text>
                 </View>
               </View>
               <View style={styles.favCall}>

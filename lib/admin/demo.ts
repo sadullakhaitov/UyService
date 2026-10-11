@@ -39,7 +39,8 @@ import {
   type VerifyStatus,
 } from './types';
 import { useAdminSession } from './session';
-import { checkBalance, checkCallFee, checkPriceRange, checkPriority, checkPromo, checkReason, checkSubscription, clean, normalizePhone, RULES } from './rules';
+import { saveCatalog } from '@/lib/catalog';
+import { checkBalance, checkCallFee, checkNames, checkPriceRange, checkPriority, checkPromo, checkReason, checkSubscription, clean, normalizePhone, RULES } from './rules';
 
 /** Sinov rejimida admin bo'lib kira oladigan raqam (kompaniya raqami) */
 export const DEMO_ADMIN_PHONE = normalizePhone(COMPANY.phone) ?? '+998901218887';
@@ -119,8 +120,9 @@ type DB = {
   support: DSupport[];
   chats: DChat[];
   log: DLog[];
-  categories: CatalogCategory[];
-  problems: CatalogProblem[];
+  /** `deleted` — admin o'chirgan (ro'yxatda ko'rinmaydi, nomi tarix uchun qoladi) */
+  categories: (CatalogCategory & { deleted?: boolean })[];
+  problems: (CatalogProblem & { deleted?: boolean })[];
   promos: PromoCode[];
   /** Murojaatlar (muammo, kafolat, eshik ochilmadi) — namunaviy */
   reports?: DReport[];
@@ -459,8 +461,8 @@ function generate(now: number): DB {
     support,
     chats,
     log: [],
-    categories: CATEGORIES.map((c) => ({ id: c.id, callFee: c.callFee, active: true })),
-    problems: PROBLEMS.map((p) => ({ id: p.id, categoryId: p.categoryId, priceMin: p.priceMin, priceMax: p.priceMax })),
+    categories: CATEGORIES.map((c) => ({ id: c.id, callFee: c.callFee, active: true, names: null, icon: null, tone: null })),
+    problems: PROBLEMS.map((p) => ({ id: p.id, categoryId: p.categoryId, priceMin: p.priceMin, priceMax: p.priceMax, names: null })),
     promos: demoPromos(now),
     local: { blockedAt: null, blockedReason: null, verifyNote: null, createdAt: now },
     seq: 1,
@@ -557,6 +559,19 @@ function reportView(db: DB, r: DReport): AdminReport {
 function demoPromos(now: number): PromoCode[] {
   const p = (code: string, priority: number, bonus: number, uses: number): PromoCode => ({ code, priority, bonus, maxUses: null, uses, expiresAt: null, active: true, createdAt: now - 20 * DAY });
   return [p('UYSERVICE', 10, 0, 14), p('BIRINCHI', 0, 20_000, 9), p('USTA2026', 5, 10_000, 3)];
+}
+
+const trimNames = (n: { uz: string; ru: string; en: string }) => {
+  const uz = n.uz.trim();
+  return { uz, ru: n.ru.trim() || uz, en: n.en.trim() || uz };
+};
+
+/** Sinov rejimida ham admin qo'shgan/o'chirgani ilovada (shu brauzerda) ko'rinsin */
+function syncCatalog(db: DB) {
+  saveCatalog({ categories: 
+    db.categories.map((c, i) => ({ id: c.id, active: c.active, deleted: !!c.deleted, sort: i, callFee: c.callFee, names: c.names ?? null, icon: c.icon ?? null, tone: c.tone ?? null })),
+    problems: db.problems.map((p, i) => ({ id: p.id, categoryId: p.categoryId, priceMin: p.priceMin, priceMax: p.priceMax, sort: i, deleted: !!p.deleted, names: p.names ?? null })),
+  });
 }
 
 async function load(): Promise<DB> {
@@ -1219,7 +1234,65 @@ export const demoAdmin: AdminApi = {
   async catalog() {
     const db = await load();
     await wait();
-    return { categories: db.categories.map((c) => ({ ...c })), problems: db.problems.map((p) => ({ ...p })) };
+    syncCatalog(db);
+    return {
+      categories: db.categories.filter((c) => !c.deleted).map(({ deleted: _, ...c }) => ({ ...c, names: c.names ?? null, icon: c.icon ?? null, tone: c.tone ?? null })),
+      problems: db.problems.filter((p) => !p.deleted).map(({ deleted: _, ...p }) => ({ ...p, names: p.names ?? null })),
+    };
+  },
+
+  async createCategory({ names, icon, tone, callFee }) {
+    const db = await load();
+    checkNames(names);
+    checkCallFee(callFee);
+    const n = trimNames(names);
+    if (db.categories.some((c) => !c.deleted && c.names?.uz.toLowerCase() === n.uz.toLowerCase())) throw new AdminError('errors.nameTaken');
+    const id = `c${Date.now().toString(36)}`;
+    db.categories.push({ id, callFee, active: true, names: n, icon, tone });
+    log(db, 'category_create', 'category', id, { name: n.uz, icon, tone, call_fee: callFee });
+    save();
+    await wait();
+    return id;
+  },
+
+  async createProblem({ categoryId, names, priceMin, priceMax }) {
+    const db = await load();
+    checkNames(names);
+    checkPriceRange(priceMin, priceMax);
+    if (!db.categories.some((c) => c.id === categoryId && !c.deleted)) throw new AdminError('errors.notFound');
+    const n = trimNames(names);
+    if (db.problems.some((p) => p.categoryId === categoryId && !p.deleted && p.names?.uz.toLowerCase() === n.uz.toLowerCase()))
+      throw new AdminError('errors.nameTaken');
+    const id = `p${Date.now().toString(36)}`;
+    db.problems.push({ id, categoryId, priceMin, priceMax, names: n });
+    log(db, 'problem_create', 'problem', id, { name: n.uz, category: categoryId, price: [priceMin, priceMax] });
+    save();
+    await wait();
+    return id;
+  },
+
+  async deleteCategory(id, reason) {
+    const db = await load();
+    checkReason(reason);
+    const c = db.categories.find((x) => x.id === id && !x.deleted);
+    if (!c) throw new AdminError('errors.notFound');
+    c.deleted = true;
+    c.active = false;
+    for (const p of db.problems) if (p.categoryId === id) p.deleted = true;
+    log(db, 'category_delete', 'category', id, { reason: clean(reason), name: c.names?.uz ?? null });
+    save();
+    await wait();
+  },
+
+  async deleteProblem(id, reason) {
+    const db = await load();
+    checkReason(reason);
+    const p = db.problems.find((x) => x.id === id && !x.deleted);
+    if (!p) throw new AdminError('errors.notFound');
+    p.deleted = true;
+    log(db, 'problem_delete', 'problem', id, { reason: clean(reason), name: p.names?.uz ?? null, category: p.categoryId });
+    save();
+    await wait();
   },
 
   async updateCategory(id, callFee, active) {

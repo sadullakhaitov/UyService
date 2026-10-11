@@ -13,7 +13,7 @@ import { VerifyBadge } from '@/components/admin/status';
 import { Cell, DataTable } from '@/components/admin/Table';
 import { toInt, useParamState } from '@/components/admin/useParams';
 import { Text } from '@/components/ui/Text';
-import { categories, type CategoryId } from '@/constants/categories';
+import { categories, type CategoryId, catName, useCatalog } from '@/constants/categories';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import { adminApi, type AdminMaster, type MasterFilter, type MasterQuery } from '@/lib/admin';
 import { adminErrorText, toast, useAdminQuery } from '@/lib/admin/hooks';
@@ -26,6 +26,7 @@ const PAGE = 25;
 
 export default function Masters() {
   useScheme();
+  useCatalog();
   const [v, set] = useParamState(DEFAULTS);
   const query: MasterQuery = {
     filter: (FILTERS.includes(v.f as MasterFilter) ? v.f : 'all') as MasterFilter,
@@ -50,7 +51,7 @@ export default function Masters() {
         all.rows.map((m) => [
           `${m.firstName} ${m.lastName}`,
           fmtPhone(m.phone),
-          m.categories.map((c) => t(`categories.${c}`)).join(', '),
+          m.categories.map((c) => catName(c)).join(', '),
           t(`admin.verify.${m.verifyStatus}`),
           m.plan ? t(`admin.plan.${m.plan}`) : '—',
           `${m.feePercent}%`,
@@ -91,7 +92,7 @@ export default function Masters() {
         <View style={styles.pills}>
           <Pill label={t('admin.common.allCategories')} active={!query.category} onPress={() => set({ c: '' })} />
           {categories.map((c) => (
-            <Pill key={c.id} label={t(`categories.${c.id}`)} icon={c.icon} color={c.ink} active={query.category === c.id} onPress={() => set({ c: c.id })} />
+            <Pill key={c.id} label={catName(c.id)} icon={c.icon} color={c.ink} active={query.category === c.id} onPress={() => set({ c: c.id })} />
           ))}
         </View>
       </View>

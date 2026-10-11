@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { CircleAlert, RotateCcw, ShieldCheck } from 'lucide-react-native';
 import { View } from 'react-native';
 import { Avatar, RatingBadge, Squish, Text } from '@/components/ui';
-import { getCategory, WARRANTY_DAYS } from '@/constants/categories';
+import { getCategory, WARRANTY_DAYS, catName, problemName } from '@/constants/categories';
 import { ReportSheet } from '@/components/sheets/ReportSheet';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import type { CategoryId } from '@/constants/categories';
@@ -61,7 +61,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
             </View>
             <View style={styles.flex}>
               <Text variant="bodyBold">
-                {t(`categories.${item.categoryId}`)} · {t(`problems.${item.problemId}`)}
+                {catName(item.categoryId)} · {problemName(item.problemId)}
               </Text>
               <Text variant="caption" numberOfLines={1}>
                 {formatDate(new Date(item.at))}

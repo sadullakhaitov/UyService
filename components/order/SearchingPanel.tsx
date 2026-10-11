@@ -9,7 +9,7 @@ import type { MapBaseProps } from '@/components/map';
 import { Sheet } from '@/components/sheets/Sheet';
 import { CancelSheet, CLIENT_REASONS } from '@/components/sheets/CancelSheet';
 import { Button, Card, IconButton, IndeterminateBar, Row, Text } from '@/components/ui';
-import { getCategory } from '@/constants/categories';
+import { getCategory, catName, problemName } from '@/constants/categories';
 import { colors, themed, useScheme } from '@/constants/theme';
 import { blur } from '@/lib/geo';
 import { formatSchedule, formatSum, t } from '@/lib/i18n';
@@ -145,7 +145,7 @@ export function SearchingPanel({ order, onHeight, onRetry }: { order: ActiveOrde
         )}
 
         <Card tone="muted">
-          <Row label={t('searching.service')} value={`${t(`categories.${order.categoryId}`)} · ${t(`problems.${order.problemId}`)}`} />
+          <Row label={t('searching.service')} value={`${catName(order.categoryId)} · ${problemName(order.problemId)}`} />
           <Row label={t('searching.nearby')} value={t('searching.count', { count: candidates })} />
           {!scheduled ? <Row label={t('searching.radius')} value={t('common.km', { value: info.radiusKm })} /> : null}
           {info.offered ? <Row label={t('searching.offered')} value={String(info.offered)} /> : null}

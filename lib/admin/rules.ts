@@ -12,6 +12,7 @@ export const RULES = {
   callFeeMax: 1_000_000,
   priceMax: 100_000_000,
   reasonMax: 500,
+  nameMax: 40,
   messageMax: 4000,
   promoPriorityMax: 50,
   promoBonusMax: 1_000_000,
@@ -38,6 +39,12 @@ export function checkPriority(points: number) {
 
 export function checkReason(reason: string | undefined) {
   if (!clean(reason)) throw new AdminError('errors.reasonRequired');
+}
+
+/** Yangi yo'nalish/muammo nomi: o'zbekchasi majburiy, har biri 40 belgigacha (…_catalog_edit.sql) */
+export function checkNames(n: { uz: string; ru: string; en: string }) {
+  if (!n.uz.trim()) throw new AdminError('errors.nameRequired');
+  if ([n.uz, n.ru, n.en].some((x) => x.trim().length > RULES.nameMax)) throw new AdminError('errors.nameLong');
 }
 
 export function checkCallFee(fee: number) {

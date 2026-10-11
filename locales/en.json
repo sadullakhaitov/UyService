@@ -913,7 +913,10 @@
       "deleteAdmin": "An admin can't be deleted. Remove admin rights in Settings first",
       "deleteLocal": "In test mode the master on this device can't be deleted",
       "freeUsed": "This master has already used a free period — extend it on their page",
-      "passportRequired": "The master has no passport uploaded (or it was rejected) — the free period requires a passport"
+      "passportRequired": "The master has no passport uploaded (or it was rejected) — the free period requires a passport",
+      "nameRequired": "Enter a name",
+      "nameTaken": "This name already exists",
+      "nameLong": "Name must be 40 characters or fewer"
     },
     "login": {
       "title": "Admin sign-in",
@@ -1293,7 +1296,7 @@
       "allGood": "All masters can take orders"
     },
     "catalog": {
-      "subtitle": "Call-out fee and estimated prices — what clients see in the app",
+      "subtitle": "Services, problem types and prices — this is what clients and handymen see in the app",
       "callFee": "Call-out fee, UZS",
       "active": "Visible in the app",
       "on": "Enabled",
@@ -1302,7 +1305,37 @@
       "min": "From",
       "max": "To",
       "saved": "{{name}}: saved",
-      "problemSaved": "{{name}}: price saved"
+      "problemSaved": "{{name}}: price saved",
+      "add": "New service",
+      "addTitle": "Add a service",
+      "addText": "For example, Gardener or Cleaning. Once added, clients see it in the app and handymen can add it to their services. Then add problem types to it.",
+      "nameUz": "Name (Uzbek)",
+      "nameRu": "Russian",
+      "nameEn": "English",
+      "namePlaceholder": "For example: Bog'bon",
+      "problemPlaceholder": "For example: O't o'rish",
+      "icon": "Icon",
+      "color": "Color",
+      "preview": "How it looks in the app",
+      "created": "{{name}}: service added",
+      "delete": "Delete",
+      "deleteTitle": "Delete the «{{name}}» service?",
+      "deleteText": "Clients will not see it, no new orders, and its problem types are deleted too. Past orders keep the name. This cannot be undone: to hide it for a while, turn off «Visible in the app».",
+      "deleted": "{{name}}: deleted",
+      "addProblem": "Add problem type",
+      "addProblemTitle": "{{name}}: new problem type",
+      "addProblemText": "Clients pick from this list when ordering.",
+      "priceHint": "Approximate price range, UZS. Leave both empty for \"negotiable\".",
+      "problemCreated": "{{name}}: problem type added",
+      "deleteProblem": "Delete problem type",
+      "deleteProblemTitle": "Delete «{{name}}»?",
+      "deleteProblemText": "Clients will not be able to pick it. Past orders keep the name.",
+      "problemDeleted": "{{name}}: deleted",
+      "preset": {
+        "notNeeded": "Not needed",
+        "duplicate": "Duplicate",
+        "mistake": "Added by mistake"
+      }
     },
     "log": {
       "subtitle": "Every admin action: who, when, what. It can't be edited or deleted.",
@@ -1327,7 +1360,11 @@
         "delete_account": "Account deleted",
         "free_pass": "Free period code",
         "free_pass_revoke": "Free period code revoked",
-        "free_period": "Free period changed"
+        "free_period": "Free period changed",
+        "category_create": "Service added",
+        "category_delete": "Service deleted",
+        "problem_create": "Problem type added",
+        "problem_delete": "Problem type deleted"
       },
       "t": {
         "master": "master",
@@ -1634,5 +1671,8 @@
     "text": "I agree that my passport photo and selfie are used only to verify my identity. Clients never see them — only the reviewing staff.",
     "needTitle": "Give consent first",
     "needText": "To upload your passport and selfie, tick the consent above."
+  },
+  "catalog": {
+    "unknown": "Service"
   }
 }
