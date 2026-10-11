@@ -16,6 +16,10 @@
     <meta property="og:description" content="O'zbekiston bo'ylab uyga usta chaqirish. Usta kelayotganini xaritada kuzating." />
     <meta property="og:site_name" content="UyService" />
     <title>UyService</title>
+    <!-- Telefonga ilova bo'lib o'rnatish (PWA): "Bosh ekranga qo'shish" — ikonka, nom, manzil satrisiz oyna -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="UyService" />
     <!-- Telegram Mini App: faqat Telegram ichida ochilganda (manzilda tgWebAppData bor) Telegram skripti yuklanadi
          — lib/telegram.ts shu orqali foydalanuvchini SMS'siz kiritadi. Oddiy brauzerga ortiqcha yuk yo'q -->
     <script>
@@ -53,5 +57,8 @@
   <body>
     <noscript>UyService ishlashi uchun JavaScript yoqilgan bo'lishi kerak.</noscript>
     <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+    </script>
   </body>
 </html>

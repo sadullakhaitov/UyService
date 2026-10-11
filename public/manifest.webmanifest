@@ -1,0 +1,19 @@
+{
+  "name": "UyService — uyga usta chaqirish",
+  "short_name": "UyService",
+  "description": "O'zbekiston bo'ylab uyga usta chaqirish. Usta kelayotganini xaritada kuzating.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "uz",
+  "background_color": "#F6F8F7",
+  "theme_color": "#0E5A4B",
+  "categories": ["lifestyle", "utilities"],
+  "icons": [
+    { "src": "/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
