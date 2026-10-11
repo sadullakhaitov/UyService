@@ -1,0 +1,6 @@
+# uyservice.uz — qidiruv tizimlari uchun: hamma sahifa ochiq, admin panel yopiq
+User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: https://uyservice.uz/sitemap.xml
