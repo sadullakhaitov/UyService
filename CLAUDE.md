@@ -150,6 +150,7 @@ supabase/                 ← server (joylangan): README.md — joylash bo'yicha
   functions/{dispatch,offer-respond,offer-timeout,send-sms,push-send,telegram-auth,telegram-bot,free-pass-send} ← Edge Functions (send-sms — kirish kodi: Telegram bot yoki Eskiz.uz SMS; free-pass-send — bepul davr kodi: Telegram yoki SMS; push-send — push_outbox → Expo Push API yoki Telegram bot; telegram-* — Telegram orqali kirish va bot)
   tests/                  ← run.sh — hammasi: supabase_stub.sql + rls/admin/price/push/telegram/master_cancel/promo/client_care/admin_delete/security/free_pass/presence/consent/catalog_edit_test.sql + unit/ (Telegram imzosi, yo'l bo'yicha vaqt) + e2e/ (usta qidirish, push, kirish kodi, bepul davr kodi, fon rejimi — Deno + PostgREST)
 .github/workflows/ci.yml  ← har push'da: typecheck, deno check, server sinovlari (Postgres+PostGIS+PostgREST)
+.github/workflows/deploy-supabase.yml ← asosiy shoxda supabase/ o'zgarsa: db push + functions deploy (update.ps1 o'rniga; sirlar SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD)
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
 wrangler.jsonc            ← sayt (uyservice.uz) Cloudflare Workers'da: build `npx expo export --platform web` → `dist`, deploy `npx wrangler deploy`; hamma yo'llar index.html'ga (SPA)

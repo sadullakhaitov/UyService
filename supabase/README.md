@@ -14,6 +14,11 @@ loyiha papkasida (`UyService`) yoziladi.
 > **Keyingi yangilanishlar** (yangi migratsiya yoki funksiya qo'shilganda): `git pull`, keyin
 > `powershell -ExecutionPolicy Bypass -File supabase\update.ps1` — faqat `db push` va `functions deploy`
 > (sirlar, cron va Telegram o'zgarmaydi, SQL Editor'da hech narsa qilish shart emas).
+>
+> **Avtomatik (kompyutersiz):** asosiy shoxga PR birlashtirilganda `supabase/migrations`, `supabase/functions`
+> yoki `config.toml` o'zgargan bo'lsa, GitHub Actions (`.github/workflows/deploy-supabase.yml`) xuddi shu
+> `db push` va `functions deploy`ni o'zi qiladi. Bir marta repo sirlariga `SUPABASE_ACCESS_TOKEN` va
+> `SUPABASE_DB_PASSWORD` qo'shiladi. Qo'lda: GitHub → Actions → "Supabase deploy" → Run workflow.
 
 ---
 
