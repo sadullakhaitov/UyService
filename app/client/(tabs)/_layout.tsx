@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { ClipboardList, House, Map as MapIcon } from 'lucide-react-native';
+import { ClipboardList, House, Map as MapIcon, UserRound } from 'lucide-react-native';
 import { View } from 'react-native';
 import { Text } from '@/components/ui';
 import { pageLayout } from '@/components/ui/PageFrame';
@@ -53,7 +53,11 @@ export default function ClientTabs() {
           tabBarLabel: ({ color }) => <TabLabel text={t('tabs.profile')} color={color} />,
           tabBarIcon: ({ focused }) => (
             <View style={[styles.avatar, focused && styles.avatarOn]}>
-              <Text style={[styles.avatarText, focused && { color: colors.onPrimary }]}>{(name.trim()[0] ?? '?').toUpperCase()}</Text>
+              {name.trim() ? (
+                <Text style={[styles.avatarText, focused && { color: colors.onPrimary }]}>{(name.trim()[0] ?? '?').toUpperCase()}</Text>
+              ) : (
+                <UserRound size={15} color={focused ? colors.onPrimary : colors.primary} strokeWidth={2.4} />
+              )}
             </View>
           ),
         }}

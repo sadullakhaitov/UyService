@@ -1645,5 +1645,20 @@
   },
   "catalog": {
     "unknown": "Xizmat"
+  },
+  "install": {
+    "row": "Ilovani o'rnatish",
+    "rowHint": "Telefoningiz bosh ekraniga — bepul",
+    "title": "Ilovani o'rnatish",
+    "why": "UyService telefoningizda ilova bo'lib turadi: ikonkadan bir bosishda ochiladi, manzil satrisiz.",
+    "ios1": "Pastdagi «Ulashish» tugmasini bosing (yoki «⋯» → «Ulashish»)",
+    "ios1Chrome": "Manzil satrining o'ng tomonidagi «Ulashish» tugmasini bosing",
+    "ios2": "Ro'yxatni pastga surib, «Bosh ekranga qo'shish» (Add to Home Screen) ni tanlang",
+    "ios3": "«Qo'shish» ni bosing — ikonka bosh ekranda paydo bo'ladi",
+    "tg1": "Telegram ichida o'rnatib bo'lmaydi: tepadagi «⋯» → «Brauzerda ochish» ni bosing",
+    "tg2": "Brauzerda Profil → «Ilovani o'rnatish» ni yana bosing",
+    "manual1": "Brauzer menyusini oching (⋮ yoki ⋯)",
+    "manual2": "«Ilovani o'rnatish» yoki «Bosh ekranga qo'shish» ni tanlang",
+    "ok": "Tushunarli"
   }
 }
