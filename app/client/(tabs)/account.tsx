@@ -1,16 +1,18 @@
 import { router } from 'expo-router';
-import { ChevronRight, FileText, Globe, Info, LifeBuoy, LogIn, LogOut, ReceiptText, Shield, Trash2, Wrench } from 'lucide-react-native';
+import { ChevronRight, Download, FileText, Globe, Info, LifeBuoy, LogIn, LogOut, ReceiptText, Shield, Trash2, Wrench } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Squish, Text } from '@/components/ui';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
 import { ThemePicker } from '@/components/ui/ThemePicker';
+import { InstallSheet } from '@/components/sheets/InstallSheet';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { confirm } from '@/lib/dialog';
 import { t } from '@/lib/i18n';
 import { deleteAccount } from '@/lib/account';
 import { DEMO } from '@/lib/demo';
+import { promptInstall, useInstall, type InstallKind } from '@/lib/install';
 import { useMaster, useOrders, useUser } from '@/store';
 
 // Mijoz profili: ro'yxatdan o'tmagan bo'lsa ham ochiladi (mehmon)
@@ -22,6 +24,13 @@ export default function Account() {
   useEffect(() => setDraft(name), [name]);
   const registered = useMaster((s) => Boolean(s.profile.submittedAt));
   const guest = !phone;
+  // Saytni telefonga ilova bo'lib o'rnatish: Android — brauzer oynasi, iPhone/Telegram — yo'riqnoma
+  const install = useInstall();
+  const [guide, setGuide] = useState<Exclude<InstallKind, 'prompt'> | null>(null);
+  const onInstall = () => {
+    if (install === 'prompt') void promptInstall();
+    else if (install) setGuide(install);
+  };
 
   const activeOrders = useOrders((s) => s.orders.length);
   // Chiqishda hamma shaxsiy ma'lumot o'chadi; faol buyurtmalar bo'lsa — alohida ogohlantiramiz
@@ -71,6 +80,7 @@ export default function Account() {
         </View>
 
         {guest ? <Row icon={LogIn} label={t('account.login')} onPress={() => router.push('/phone')} primary /> : null}
+        {install ? <Row icon={Download} label={t('install.row')} hint={t('install.rowHint')} onPress={onInstall} /> : null}
         <Row icon={ReceiptText} label={t('client.history')} onPress={() => router.push('/client/history')} />
         <Row icon={Wrench} label={t('account.beMaster')} hint={t('account.beMasterHint')} onPress={beMaster} />
         {/* Qo'llab-quvvatlash: admin javob beradi (server rejimida raqam kerak — yozishma shu raqamga bog'lanadi) */}
@@ -90,6 +100,7 @@ export default function Account() {
         {!guest ? <Row icon={LogOut} label={t('account.logout')} onPress={onLogout} /> : null}
         {!guest ? <Row icon={Trash2} label={t('account.delete')} hint={t('account.deleteHint')} onPress={() => void deleteAccount()} danger /> : null}
       </ScrollView>
+      <InstallSheet kind={guide} onClose={() => setGuide(null)} />
     </SafeAreaView>
   );
 }
