@@ -19,6 +19,9 @@ loyiha papkasida (`UyService`) yoziladi.
 > yoki `config.toml` o'zgargan bo'lsa, GitHub Actions (`.github/workflows/deploy-supabase.yml`) xuddi shu
 > `db push` va `functions deploy`ni o'zi qiladi. Bir marta repo sirlariga `SUPABASE_ACCESS_TOKEN` va
 > `SUPABASE_DB_PASSWORD` qo'shiladi. Qo'lda: GitHub → Actions → "Supabase deploy" → Run workflow.
+>
+> **Zaxira:** har kecha 02:30 da (`.github/workflows/backup-db.yml`) baza (rollar, tuzilma, ma'lumotlar) shifrlanib
+> Actions artifakti bo'lib 30 kun saqlanadi; kalit — `SUPABASE_DB_PASSWORD`. Storage fayllari kirmaydi.
 
 ---
 
