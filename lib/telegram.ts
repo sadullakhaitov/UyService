@@ -25,6 +25,7 @@ type TgWebApp = {
   requestWriteAccess?: (cb?: (allowed: boolean) => void) => void;
   isVersionAtLeast?: (v: string) => boolean;
   openTelegramLink?: (url: string) => void;
+  openLink?: (url: string, opts?: { try_instant_view?: boolean; try_browser?: string }) => void;
 };
 
 /** Telegram ichida ochilgan bo'lsa — WebApp obyekti, aks holda null */
