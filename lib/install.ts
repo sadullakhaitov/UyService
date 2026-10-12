@@ -3,7 +3,7 @@
 // iPhone: brauzer buni dasturdan ochishga ruxsat bermaydi — qadamlar ko'rsatiladi (Ulashish → Bosh ekranga qo'shish)
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import { inTelegram } from './telegram';
+import { inTelegram, telegram } from './telegram';
 
 type InstallPrompt = Event & { prompt(): Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> };
 type InstallWindow = Window & { __uysInstall?: InstallPrompt | null };
@@ -46,4 +46,12 @@ export async function promptInstall(): Promise<boolean> {
   w.__uysInstall = null;
   window.dispatchEvent(new Event('uys-install'));
   return outcome === 'accepted';
+}
+
+/** Telegram ichidan saytni haqiqiy brauzerda (iPhone'da — Safari) ochish; u yerda yo'riqnoma o'zi chiqadi (?install=1) */
+export function openInBrowser() {
+  const url = `${location.origin}/client/account?install=1`;
+  const tg = telegram();
+  if (tg?.openLink) tg.openLink(url, { try_instant_view: false, try_browser: 'safari' });
+  else window.open(url, '_blank');
 }

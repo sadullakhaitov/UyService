@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronRight, Download, FileText, Globe, Info, LifeBuoy, LogIn, LogOut, ReceiptText, Shield, Trash2, Wrench } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
@@ -31,6 +31,11 @@ export default function Account() {
     if (install === 'prompt') void promptInstall();
     else if (install) setGuide(install);
   };
+  // Telegram'dan «Safari'da ochish» bilan kelgan (?install=1) — yo'riqnoma darhol ochiladi
+  const { install: fromTelegram } = useLocalSearchParams<{ install?: string }>();
+  useEffect(() => {
+    if (fromTelegram && install && install !== 'prompt' && install !== 'telegram') setGuide(install);
+  }, [fromTelegram, install]);
 
   const activeOrders = useOrders((s) => s.orders.length);
   // Chiqishda hamma shaxsiy ma'lumot o'chadi; faol buyurtmalar bo'lsa — alohida ogohlantiramiz
