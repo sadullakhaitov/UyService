@@ -47,6 +47,8 @@ type NearbyRow = {
   categories: string[];
 };
 
+type OfferEvent = Extract<DispatchEvent, { kind: 'offer' }>;
+
 export type StepOptions = {
   /** "Qayta urinish": qidiruvni boshidan boshlash */
   restart?: boolean;
@@ -99,7 +101,25 @@ async function tryStep(db: SupabaseClient, orderId: string, opts: StepOptions): 
     // Yangi taklif yuboriladigan bo'lsa — yetib kelish vaqti haqiqiy yo'l bo'yicha (eng yaqin 10 ta)
     const offerDue = !st.offer || now - st.offer.sentAt >= DISPATCH.offerTimeoutSec * 1000;
     if (offerDue && masters.length) eta = await roadEta(dOrder.location, masters.map((m) => m.location));
-    st = advanceDispatch(st, dOrder, masters, now, eta);
+  }
+  // Taklif qatori buyurtmadan OLDIN yoziladi: bitta ustaga bir vaqtda faqat bitta ochiq taklif (offers_one_open_per_master_idx).
+  // Parallel qidiruvlar (yo'l xizmatini kutish paytida) bir ustani tanlab qo'ysa — ikkinchisi uni chetlab keyingisiga o'tadi.
+  const base = st;
+  const taken = new Set<string>();
+  let offerRowId: string | null = null;
+  for (;;) {
+    st = base.done ? base : advanceDispatch(base, dOrder, masters.filter((m) => !taken.has(m.id)), now, eta);
+    const offer = st.events.slice(prev?.events.length ?? 0).find((e): e is OfferEvent => e.kind === 'offer');
+    if (!offer) break;
+    const r = await insertOffer(db, order, offer, masters, eta);
+    if (r === 'taken') {
+      taken.add(offer.masterId);
+      if (taken.size <= 10) continue;
+      st = advanceDispatch(base, dOrder, [], now, eta); // hammasi band — keyingi qadamda yana
+      break;
+    }
+    offerRowId = r;
+    break;
   }
   if (st === prev) return { ok: true, status: order.status, dispatch: prev, changed: false };
 
@@ -118,10 +138,13 @@ async function tryStep(db: SupabaseClient, orderId: string, opts: StepOptions): 
     .eq('dispatch_rev', order.dispatch_rev)
     .eq('status', 'searching')
     .select('id');
+  const lost = upd.error || !upd.data?.length;
+  // Boshqa qadam ulgurib qoldi — oldindan yozilgan taklif bekor (usta band bo'lib qolmasin)
+  if (lost && offerRowId) await db.from('offers').delete().eq('id', offerRowId);
   if (upd.error) return { ok: false, error: upd.error.message };
   if (!upd.data?.length) return 'conflict';
 
-  await applyEvents(db, order, fresh, masters, eta);
+  await applyEvents(db, order, fresh);
   return { ok: true, status: accepted ? 'on_the_way' : order.status, dispatch: st, changed: true };
 }
 
@@ -148,21 +171,38 @@ async function loadCandidates(db: SupabaseClient, order: OrderRow): Promise<Disp
   }));
 }
 
-async function applyEvents(db: SupabaseClient, order: OrderRow, events: DispatchEvent[], masters: DispatchMaster[], eta: EtaFn) {
+/** Taklif qatori. id — yozildi; 'taken' — bu usta boshqa buyurtmadan ochiq taklif olib bo'lgan; null — boshqa xato */
+async function insertOffer(
+  db: SupabaseClient,
+  order: OrderRow,
+  e: OfferEvent,
+  masters: DispatchMaster[],
+  eta: EtaFn,
+): Promise<string | 'taken' | null> {
   const here = { latitude: order.lat, longitude: order.lng };
+  const m = masters.find((x) => x.id === e.masterId);
+  const { data, error } = await db
+    .from('offers')
+    .insert({
+      order_id: order.id,
+      master_id: e.masterId,
+      sent_at: new Date(e.at).toISOString(),
+      expires_at: new Date(e.at + DISPATCH.offerTimeoutSec * 1000).toISOString(),
+      score: e.score,
+      eta_min: m ? eta(m.location, here) : null,
+      distance_km: m ? Math.round(distanceKm(m.location, here) * 10) / 10 : null,
+    })
+    .select('id')
+    .single();
+  if (error?.code === '23505') return 'taken';
+  if (error) console.error('offers.insert', error.message);
+  return (data?.id as string | undefined) ?? null;
+}
+
+async function applyEvents(db: SupabaseClient, order: OrderRow, events: DispatchEvent[]) {
   for (const e of events) {
     if (e.kind === 'offer') {
-      const m = masters.find((x) => x.id === e.masterId);
-      const { error } = await db.from('offers').insert({
-        order_id: order.id,
-        master_id: e.masterId,
-        sent_at: new Date(e.at).toISOString(),
-        expires_at: new Date(e.at + DISPATCH.offerTimeoutSec * 1000).toISOString(),
-        score: e.score,
-        eta_min: m ? eta(m.location, here) : null,
-        distance_km: m ? Math.round(distanceKm(m.location, here) * 10) / 10 : null,
-      });
-      if (error) console.error('offers.insert', error.message);
+      // taklif qatori tryStep'da yozildi
     } else if (e.kind === 'expired' || e.kind === 'declined' || e.kind === 'accepted') {
       await db
         .from('offers')
@@ -203,4 +243,28 @@ export async function activeSearches(db: SupabaseClient): Promise<string[]> {
   return ((data ?? []) as { id: string; dispatch: DispatchState | null }[])
     .filter((o) => !o.dispatch || !o.dispatch.done)
     .map((o) => o.id);
+}
+
+/**
+ * offer-timeout uchun: qidiruvdagi har bir buyurtmaga bitta qadam, bir vaqtda `concurrency` tadan.
+ * Har qadam yo'l xizmatini (≤ 2,5 s) kutishi mumkin — ketma-ket bo'lsa 100 mijozda bir aylanish 15 s dan oshardi
+ * (supabase/tests/load).
+ */
+export async function stepActiveSearches(db: SupabaseClient, concurrency = 8) {
+  const queue = await activeSearches(db);
+  const r = { stepped: queue.length, changed: 0, errors: 0 };
+  const worker = async () => {
+    for (let id = queue.shift(); id; id = queue.shift()) {
+      try {
+        const s = await dispatchStep(db, id);
+        if (s.ok && s.changed) r.changed++;
+        if (!s.ok) r.errors++;
+      } catch (e) {
+        r.errors++;
+        console.error(id, e);
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  return r;
 }

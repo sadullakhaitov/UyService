@@ -6,7 +6,7 @@
 // 4) bepul davr eslatmalari (7 kun, 1 kun qoldi, tugadi); fon rejimi: "Hali ishdamisiz?" (35 daq) / "Buyurtmalar to'xtadi" (45 daq)
 // 5) push-bildirishnomalar navbati (zaxira yo'l — odatda push-send darhol yuboradi)
 // Ruxsat: `x-cron-secret: <CRON_SECRET>` yoki `Authorization: Bearer <service_role key>`.
-import { activeSearches, dispatchStep, startDueScheduled } from '../_shared/engine.ts';
+import { startDueScheduled, stepActiveSearches } from '../_shared/engine.ts';
 import { adminClient, corsHeaders, isCronRequest, json } from '../_shared/http.ts';
 import { flushPush } from '../_shared/push.ts';
 
@@ -19,17 +19,7 @@ Deno.serve(async (req) => {
   const result = { scheduled: 0, stepped: 0, changed: 0, errors: 0, pushed: 0 };
   try {
     result.scheduled = (await startDueScheduled(db)).length;
-    for (const id of await activeSearches(db)) {
-      result.stepped++;
-      try {
-        const r = await dispatchStep(db, id);
-        if (r.ok && r.changed) result.changed++;
-        if (!r.ok) result.errors++;
-      } catch (e) {
-        result.errors++;
-        console.error(id, e);
-      }
-    }
+    Object.assign(result, await stepActiveSearches(db));
     // Buyurtmasi qidiruvda bo'lmagan, muddati o'tgan takliflar
     await db
       .from('offers')
