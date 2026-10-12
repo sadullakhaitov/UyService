@@ -1,7 +1,8 @@
 # Har kecha bazaning zaxira nusxasi (Supabase bepul tarifida kunlik zaxira yo'q).
 # Rollar, tuzilma va ma'lumotlar (`supabase db dump`) shifrlanib (AES-256, kalit - SUPABASE_DB_PASSWORD)
 # Actions artifakti bo'lib 30 kun saqlanadi. Repo ochiq bo'lgani uchun shifrsiz hech narsa yuklanmaydi.
-# Storage fayllari (rasmlar, hujjatlar) bunga kirmaydi.
+# Storage fayllari (pasport/selfi, ish namunalari, buyurtma rasmlari) ham shu arxivga kiradi (storage/<bucket>/).
+# Tiklash tartibi - supabase/README.md, 21-bo'lim.
 # Ochish: gpg --batch --passphrase "<baza paroli>" -d uyservice-db-SANA.tar.gz.gpg | tar -xz
 name: Baza zaxirasi
 
@@ -45,6 +46,19 @@ jobs:
           supabase db dump --linked --password "$SUPABASE_DB_PASSWORD" --data-only --use-copy -f backup/data.sql
           ls -la backup
           test -s backup/schema.sql
+      - name: Fayllar (Storage)
+        run: |
+          for b in documents works order-photos; do
+            if ! list=$(supabase storage ls -r "ss:///$b" --experimental --linked 2>&1); then
+              echo "::warning::Storage '$b': $list"; continue
+            fi
+            if [ -z "$(echo "$list" | grep -v '/$')" ]; then echo "$b: bo'sh"; continue; fi
+            mkdir -p "backup/storage/$b"
+            supabase storage cp -r "ss:///$b" "backup/storage/$b" --experimental --linked \
+              || echo "::warning::Storage '$b' papkasini nusxalab bo'lmadi"
+          done
+          mkdir -p backup/storage
+          find backup/storage -type f | wc -l
       - name: Shifrlash
         run: |
           echo "DAY=$(TZ=Asia/Tashkent date +%F)" >> "$GITHUB_ENV"

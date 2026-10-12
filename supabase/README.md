@@ -21,7 +21,8 @@ loyiha papkasida (`UyService`) yoziladi.
 > `SUPABASE_DB_PASSWORD` qo'shiladi. Qo'lda: GitHub → Actions → "Supabase deploy" → Run workflow.
 >
 > **Zaxira:** har kecha 02:30 da (`.github/workflows/backup-db.yml`) baza (rollar, tuzilma, ma'lumotlar) shifrlanib
-> Actions artifakti bo'lib 30 kun saqlanadi; kalit — `SUPABASE_DB_PASSWORD`. Storage fayllari kirmaydi.
+> Actions artifakti bo'lib 30 kun saqlanadi; kalit — `SUPABASE_DB_PASSWORD`. Storage fayllari (rasmlar, hujjatlar) ham
+> shu arxivda. Server buzilsa tiklash — 21-bo'lim.
 
 ---
 
@@ -330,6 +331,44 @@ Mini App yig'ilsa sahifa to'xtaydi va joylashuv kelmay qoladi. Oldin usta 2 daqi
 - `masters.doc_consent_at` — usta ilovada alohida rozilik bergan vaqt. Vaqtni server qo'yadi (telefon soati emas), bir marta beriladi va o'zgarmaydi.
 - Rozilik bo'lmasa pasport yoki selfi yo'li yozilmaydi (xato `23514 doc_consent`) — ilova ham rozilik belgilanmaguncha hujjat yuklatmaydi.
 - Oldin hujjat yuklagan ustalar: hujjat o'z joyida qoladi; yangisini yuklashda rozilik so'raladi. Sinov — `tests/consent_test.sql`.
+
+## 21. Server buzilsa — tiklash
+
+Nima qayerda turadi va buzilsa nima bo'ladi:
+
+| Qism | Qayerda | Yo'qolsa |
+|---|---|---|
+| Kod (ilova, sayt, migratsiyalar, funksiyalar) | GitHub | yo'qolmaydi — qayta joylanadi |
+| Sayt (uyservice.uz) | Cloudflare | `npx wrangler deploy` yoki asosiy shoxga istalgan birlashtirish |
+| Baza (foydalanuvchilar, buyurtmalar, balans) | Supabase | har kechagi zaxiradan (`backup-db.yml`, 30 kun) |
+| Fayllar (pasport, ish namunalari, rasmlar) | Supabase Storage | shu zaxira ichida, `storage/<bucket>/` |
+| Sirlar (Telegram, Eskiz, cron) | Supabase secrets | zaxirada **yo'q** — 8, 11-bo'limlardagidek qayta yoziladi |
+
+Supabase bepul tarifi: o'zining kunlik zaxirasi yo'q; loyiha 7 kun faolsiz qolsa to'xtatiladi (pg_cron har 15 s
+ishlagani uchun odatda faol hisoblanadi; to'xtasa — Dashboard → **Restore project**, ma'lumot o'chmaydi). Pro tarif
+($25/oy) — 7 kunlik kunlik zaxira va to'xtatilmaydi.
+
+**Tiklash (yangi Supabase loyihasiga):**
+
+1. GitHub → Actions → **Baza zaxirasi** → oxirgi muvaffaqiyatli ish → `uyservice-db-SANA` artifaktini yuklab oching:
+   ```bash
+   unzip uyservice-db-SANA.zip
+   gpg --batch --passphrase "<baza paroli>" -d db.tar.gz.gpg | tar -xz   # roles.sql, schema.sql, data.sql, storage/
+   ```
+   Parol — eski loyihaning baza paroli (`SUPABASE_DB_PASSWORD` siri bilan bir xil).
+2. Yangi loyiha yarating (1-bo'lim) va ulang: `npx supabase link --project-ref YANGI_REF`.
+3. Baza (tartib muhim; ulanish satri — Dashboard → Connect → Session pooler):
+   ```bash
+   psql "$DB_URL" -v ON_ERROR_STOP=0 -f roles.sql
+   psql "$DB_URL" -v ON_ERROR_STOP=0 -f schema.sql
+   psql "$DB_URL" -v ON_ERROR_STOP=1 -c "set session_replication_role = replica" -f data.sql
+   ```
+   `schema.sql`dagi "already exists" xatolari (Supabase'ning o'z sxemalari) — normal.
+4. Fayllar: `for b in documents works order-photos; do npx supabase storage cp -r storage/$b "ss:///$b" --experimental; done`
+5. Funksiyalar: `npx supabase functions deploy`; sirlar va cron — 8, 9, 11-bo'limlar; SMS hook — 7-bo'lim.
+6. Yangi `PROJECT_REF` va anon kalitni yozing: `.env`, Cloudflare (15-bo'lim), EAS (14-bo'lim),
+   `.github/workflows/backup-db.yml` va `deploy-supabase.yml` → `SUPABASE_PROJECT_REF`; repo sirlari
+   `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`. Telegram webhook'ni yangi manzilga qayta ulang (11-bo'lim).
 
 ## Eskiz.uz hali yo'q bo'lsa
 
