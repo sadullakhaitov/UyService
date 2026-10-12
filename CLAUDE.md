@@ -151,7 +151,7 @@ supabase/                 ← server (joylangan): README.md — joylash bo'yicha
   tests/                  ← run.sh — hammasi: supabase_stub.sql + rls/admin/price/push/telegram/master_cancel/promo/client_care/admin_delete/security/free_pass/presence/consent/catalog_edit_test.sql + unit/ (Telegram imzosi, yo'l bo'yicha vaqt) + e2e/ (usta qidirish, push, kirish kodi, bepul davr kodi, fon rejimi — Deno + PostgREST); load/ — yuklama sinovi (100 mijoz + 100 usta bir vaqtda, `run.sh`, natijalar — `load/README.md`)
 .github/workflows/ci.yml  ← har push'da: typecheck, deno check, server sinovlari (Postgres+PostGIS+PostgREST)
 .github/workflows/deploy-supabase.yml ← asosiy shoxda supabase/ o'zgarsa: db push + functions deploy (update.ps1 o'rniga; sirlar SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD)
-.github/workflows/backup-db.yml ← har kecha baza zaxirasi (supabase db dump → gpg AES-256, kalit SUPABASE_DB_PASSWORD) → Actions artifakti, 30 kun
+.github/workflows/backup-db.yml ← har kecha baza + Storage fayllari zaxirasi (supabase db dump, storage cp → gpg AES-256, kalit SUPABASE_DB_PASSWORD) → Actions artifakti, 30 kun; tiklash — `supabase/README.md` 21-bo'lim
 public/index.html         ← brauzer sahifasi: telefon uchun viewport, theme-color, overscroll yo'q, 100dvh
 public/_headers           ← sayt keshi (nomida hash bor fayllar uzoq saqlanadi)
 public/robots.txt, sitemap.xml, og.png ← Google/Yandex uchun (SEO): hamma sahifa ochiq, /admin yopiq; index.html'da sarlavha, tavsif (uz+ru), JSON-LD (brend, aloqa, xizmatlar), canonical (JS bilan har sahifaga) va #root ichida ilova yuklanguncha ko'rinadigan matn (React almashtiradi). Yangi ochiq sahifa — sitemap.xml'ga ham
