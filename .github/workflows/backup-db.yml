@@ -49,11 +49,15 @@ jobs:
       - name: Fayllar (Storage)
         run: |
           for b in documents works order-photos; do
-            mkdir -p "backup/storage/$b"
-            if ! supabase storage cp -r "ss:///$b/" "backup/storage/$b" --experimental --linked; then
-              echo "::warning::Storage '$b' papkasini nusxalab bo'lmadi"
+            if ! list=$(supabase storage ls -r "ss:///$b" --experimental --linked 2>&1); then
+              echo "::warning::Storage '$b': $list"; continue
             fi
+            if [ -z "$(echo "$list" | grep -v '/$')" ]; then echo "$b: bo'sh"; continue; fi
+            mkdir -p "backup/storage/$b"
+            supabase storage cp -r "ss:///$b" "backup/storage/$b" --experimental --linked \
+              || echo "::warning::Storage '$b' papkasini nusxalab bo'lmadi"
           done
+          mkdir -p backup/storage
           find backup/storage -type f | wc -l
       - name: Shifrlash
         run: |
