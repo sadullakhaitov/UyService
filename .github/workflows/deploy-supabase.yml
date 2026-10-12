@@ -47,3 +47,18 @@ jobs:
         run: supabase db push --include-all --password "$SUPABASE_DB_PASSWORD"
       - name: Server funksiyalari
         run: supabase functions deploy --use-api --project-ref "$SUPABASE_PROJECT_REF"
+      # Kirish kodlari chegarasi: Supabase standarti — butun loyiha uchun soatiga 30 ta SMS/bot kodi.
+      # Yuklama sinovi (supabase/tests/load): 200 kishi bir soatda birinchi marta kirsa, 31-chisidan "juda ko'p so'rov".
+      # Kamida SMS_PER_HOUR qilinadi (kattaroq bo'lsa tegilmaydi). Bitta raqamga baribir 60 s da bir marta.
+      - name: Kirish kodlari chegarasi (soatiga)
+        continue-on-error: true
+        env:
+          SMS_PER_HOUR: 300
+        run: |
+          API="https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/config/auth"
+          CUR=$(curl -sf -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" "$API" | jq -r '.rate_limit_sms_sent // empty')
+          echo "Hozir: soatiga ${CUR:-?} ta kod"
+          if [ -n "$CUR" ] && [ "$CUR" -lt "$SMS_PER_HOUR" ]; then
+            curl -sf -X PATCH -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
+              -d "{\"rate_limit_sms_sent\": $SMS_PER_HOUR}" "$API" | jq '{rate_limit_sms_sent}'
+          fi
