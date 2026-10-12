@@ -632,14 +632,19 @@ export function useLiveMasterFeed() {
     };
     void check();
     const t = setInterval(check, MASTER_POLL_MS);
-    const ch = db()
-      .channel('my-offers')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'offers' }, () => void check())
-      .subscribe();
+    // Filtr bilan: aks holda har bir taklif HAMMA onlayn ustalar uchun serverda tekshiriladi (supabase/tests/load)
+    let ch: ReturnType<ReturnType<typeof db>['channel']> | null = null;
+    void myId().then((uid) => {
+      if (stop || !uid) return;
+      ch = db()
+        .channel(`my-offers-${uid}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'offers', filter: `master_id=eq.${uid}` }, () => void check())
+        .subscribe();
+    });
     return () => {
       stop = true;
       clearInterval(t);
-      void db().removeChannel(ch);
+      if (ch) void db().removeChannel(ch);
     };
   }, [online, offerId, jobId]);
 
@@ -771,14 +776,21 @@ export function useLiveChat(chatId: string | undefined) {
     };
     void refresh();
     const t = setInterval(refresh, MASTER_POLL_MS);
-    const ch = db()
-      .channel(`chat-${chatId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, () => void refresh())
-      .subscribe();
+    // Faqat shu suhbat xabarlari (filtrsiz — har xabar hamma ochiq chatlar uchun serverda tekshiriladi)
+    let ch: ReturnType<ReturnType<typeof db>['channel']> | null = null;
+    void myId().then((uid) => {
+      const target = uid ? chatTarget(chatId, uid) : null;
+      if (stop || !target) return;
+      const filter = 'order_id' in target ? `order_id=eq.${target.order_id}` : `support_user_id=eq.${target.support_user_id}`;
+      ch = db()
+        .channel(`chat-${chatId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter }, () => void refresh())
+        .subscribe();
+    });
     return () => {
       stop = true;
       clearInterval(t);
-      void db().removeChannel(ch);
+      if (ch) void db().removeChannel(ch);
     };
   }, [chatId]);
 }

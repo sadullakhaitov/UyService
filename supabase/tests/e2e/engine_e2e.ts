@@ -108,5 +108,19 @@ await dispatchStep(db, O1);
 o = await order(O1);
 check(o.dispatch.offer?.masterId === M1, 'qayta qidiruv: taklif M1 ga (bekor qilgan M2 ga emas)', o.dispatch);
 
+// 10) ikki buyurtma bir vaqtda, bo'sh usta bitta (M2; M1 da O1 taklifi ochiq) — taklif faqat bittasiga
+await db.from('masters').update({ busy: false }).eq('id', M2);
+const two = await db
+  .from('orders')
+  .insert([1, 2].map(() => ({ client_id: '00000000-0000-4000-b000-00000000000a', category_id: 'plumber', lat: 41.275, lng: 69.205 })))
+  .select('id');
+const [A, B] = (two.data ?? []).map((x) => x.id as string);
+await Promise.all([dispatchStep(db, A), dispatchStep(db, B)]);
+const [oa, ob] = [await order(A), await order(B)];
+const open = (await db.from('offers').select('order_id, master_id').eq('status', 'sent')).data!;
+check(open.filter((x) => x.master_id === M2).length === 1, 'bitta ustaga bir vaqtda bitta ochiq taklif', open);
+check([oa, ob].filter((x) => x.dispatch?.offer?.masterId === M2).length === 1 && [oa, ob].filter((x) => !x.dispatch?.offer).length === 1,
+  'ikkinchi buyurtma bandni chetlab o\'tdi (keyingi qadamda yana qidiradi)', [oa.dispatch, ob.dispatch]);
+
 console.log('ALL ENGINE E2E TESTS PASSED');
 await proxy.shutdown();
