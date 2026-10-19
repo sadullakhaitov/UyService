@@ -22,6 +22,8 @@ const POPULAR = ['tap', 'socket', 'acCleaning', 'noPower', 'toilet', 'washer', '
 /** Bu muammolar nomi kategoriyasiz tushunarsiz ("Tozalash", "Yig'ish") — oldiga kategoriya qo'shiladi */
 const GENERIC = new Set(['acCleaning', 'acInstall', 'assembly', 'furnitureFix', 'paint', 'tile', 'door', 'other']);
 const BANNER_EVERY_MS = 5000;
+/** Bannerlar orasidagi bo'shliq (surilganda bir-biriga yopishmasin) */
+const BANNER_GAP = 12;
 
 const problemLabel = (id: string) => {
   const p = problems.find((x) => x.id === id);
@@ -256,22 +258,25 @@ function Banners({ onServices }: { onServices: () => void }) {
     { key: 'master', bg: () => colors.bannerCool, title: t('home.bannerMasterTitle'), text: t('home.bannerMasterText'), cta: t('home.bannerMasterCta'), icon: Wrench, onPress: () => router.push('/client/account') },
   ];
 
+  // Har sahifa banner + o'ng tomonda bo'shliq; ScrollView shu bo'shliqcha o'ngga chiqadi — banner chetlari boshqa kontent bilan bir tekisda qoladi
+  const page = w + BANNER_GAP;
+
   useEffect(() => {
     if (!w) return;
     const id = setInterval(() => {
       if (touching.current) return;
       setIndex((i) => {
         const next = (i + 1) % slides.length;
-        ref.current?.scrollTo({ x: next * w, animated: true });
+        ref.current?.scrollTo({ x: next * page, animated: true });
         return next;
       });
     }, BANNER_EVERY_MS);
     return () => clearInterval(id);
-  }, [w, slides.length]);
+  }, [w, page, slides.length]);
 
   const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     touching.current = false;
-    if (w) setIndex(Math.round(e.nativeEvent.contentOffset.x / w));
+    if (w) setIndex(Math.round(e.nativeEvent.contentOffset.x / page));
   };
 
   return (
@@ -280,6 +285,7 @@ function Banners({ onServices }: { onServices: () => void }) {
         ref={ref}
         horizontal
         pagingEnabled
+        style={{ marginRight: -BANNER_GAP }}
         showsHorizontalScrollIndicator={false}
         onScrollBeginDrag={() => (touching.current = true)}
         onMomentumScrollEnd={onScrollEnd}
@@ -289,7 +295,7 @@ function Banners({ onServices }: { onServices: () => void }) {
         {slides.map((s) => {
           const Icon = s.icon;
           return (
-            <View key={s.key} style={{ width: w || 1 }}>
+            <View key={s.key} style={{ width: w ? page : 1, paddingRight: BANNER_GAP }}>
               <Squish accessibilityRole="button" scaleTo={0.98} onPress={s.onPress} style={[styles.banner, { backgroundColor: s.bg() }]}>
                 {/* Bezak: o'ng tomonda katta ikonka yumshoq doiralar ichida */}
                 <View pointerEvents="none" style={styles.decoBig} />
