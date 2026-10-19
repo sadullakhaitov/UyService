@@ -135,34 +135,94 @@
         flex: 1;
       }
       input, textarea { outline: none; }
-      .seo {
-        margin: auto;
-        max-width: 560px;
-        padding: 24px;
-        font-family: system-ui, -apple-system, sans-serif;
-        color: #4E625C;
-        text-align: center;
-        font-size: 15px;
-        line-height: 1.5;
+      /* Ilova yuklanguncha: platformani tasvirlovchi qisqa animatsiya (usta chaqirasiz → eng yaqin usta keladi → ish bajariladi).
+         Faqat CSS + SVG, tashqi fayl yo'q; React ishga tushganda #root ichini almashtiradi va bu o'zi yo'qoladi */
+      .ld {
+        --ld-card: #FFFFFF; --ld-street: #E3EAE7; --ld-text: #0B2A24; --ld-muted: #4E625C; --ld-green: #0E5A4B; --ld-wave: #0E5A4B;
+        margin: auto; width: 280px; max-width: calc(100% - 32px); text-align: center;
+        font-family: system-ui, -apple-system, sans-serif; color: var(--ld-text);
       }
-      .seo-brand { font-size: 28px; font-weight: 800; color: #0B2A24; margin: 0 0 8px; }
-      .seo-brand span { color: #0E5A4B; }
-      .seo h1 { font-size: 18px; color: #0B2A24; margin: 0 0 12px; }
-      .seo a { color: #0E5A4B; }
       @media (prefers-color-scheme: dark) {
-        .seo { color: #9DB2AB; }
-        .seo-brand, .seo h1 { color: #E8F0ED; }
-        .seo-brand span, .seo a { color: #5CC2A6; }
+        .ld { --ld-card: #17211E; --ld-street: #24312D; --ld-text: #E8F0ED; --ld-muted: #9DB2AB; --ld-green: #5CC2A6; --ld-wave: #5CC2A6; }
       }
+      .ld-brand { font-size: 26px; font-weight: 800; margin: 0 0 16px; letter-spacing: -0.3px; }
+      .ld-brand span { color: var(--ld-green); }
+      .ld-scene { display: block; width: 100%; height: auto; border-radius: 22px; background: var(--ld-card); box-shadow: 0 10px 30px rgba(11, 42, 36, 0.10); }
+      .ld-st { stroke: var(--ld-street); stroke-width: 9; stroke-linecap: round; fill: none; }
+      .ld-pin { transform-box: fill-box; transform-origin: 50% 100%; animation: ld-drop 6s ease-out infinite; }
+      .ld-wave { fill: none; stroke: var(--ld-wave); stroke-width: 2; transform-box: fill-box; transform-origin: center; opacity: 0; animation: ld-wave 6s ease-out infinite; }
+      .ld-wave.w2 { animation-delay: 0.45s; }
+      .ld-route { fill: none; stroke: #E8772E; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 150; stroke-dashoffset: 150; animation: ld-route 6s linear infinite; }
+      .ld-master { animation: ld-move 6s ease-in-out infinite; }
+      .ld-check { transform-box: fill-box; transform-origin: center; opacity: 0; animation: ld-check 6s ease-out infinite; }
+      .ld-caps { position: relative; height: 44px; margin-top: 18px; }
+      .ld-caps p { position: absolute; inset: 0; margin: 0; font-size: 16px; font-weight: 700; line-height: 1.35; opacity: 0; animation: ld-cap 6s ease-in-out infinite; }
+      .ld-caps p small { display: block; font-size: 13px; font-weight: 500; color: var(--ld-muted); }
+      .ld-caps p:nth-child(2) { animation-delay: 2s; }
+      .ld-caps p:nth-child(3) { animation-delay: 4s; }
+      .ld-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+      .ld-dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--ld-street); animation: ld-dot 6s infinite; }
+      .ld-dots i:nth-child(2) { animation-delay: 2s; }
+      .ld-dots i:nth-child(3) { animation-delay: 4s; }
+      @keyframes ld-drop { 0% { transform: translateY(-18px); opacity: 0; } 8% { transform: translateY(0); opacity: 1; } 11% { transform: scaleY(0.92); } 14%, 100% { transform: none; opacity: 1; } }
+      @keyframes ld-wave { 0%, 8% { transform: scale(0.3); opacity: 0; } 12% { opacity: 0.5; } 30% { transform: scale(1.6); opacity: 0; } 100% { opacity: 0; } }
+      @keyframes ld-route { 0%, 33% { stroke-dashoffset: 150; opacity: 1; } 66% { stroke-dashoffset: 0; opacity: 1; } 72%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+      @keyframes ld-move {
+        0%, 30% { transform: translate(0, 0); opacity: 0; }
+        34% { transform: translate(0, 0); opacity: 1; }
+        46% { transform: translate(52px, 0); }
+        54% { transform: translate(52px, 45px); }
+        66%, 94% { transform: translate(80px, 45px); opacity: 1; }
+        100% { transform: translate(80px, 45px); opacity: 0; }
+      }
+      @keyframes ld-check { 0%, 68% { transform: scale(0.4); opacity: 0; } 74% { transform: scale(1.12); opacity: 1; } 78%, 94% { transform: scale(1); opacity: 1; } 100% { opacity: 0; } }
+      @keyframes ld-cap { 0% { opacity: 0; transform: translateY(6px); } 5%, 30% { opacity: 1; transform: none; } 34%, 100% { opacity: 0; transform: translateY(-6px); } }
+      @keyframes ld-dot { 0%, 33% { background: var(--ld-green); width: 18px; } 34%, 100% { background: var(--ld-street); width: 6px; } }
+      @media (prefers-reduced-motion: reduce) {
+        .ld *, .ld *::before { animation: none !important; }
+        .ld-caps p:first-child, .ld-check, .ld-master { opacity: 1; }
+        .ld-master { transform: translate(80px, 45px); }
+      }
+      /* Qidiruv tizimlari va ekran o'qiydigan dasturlar uchun matn (ko'zga ko'rinmaydi) */
+      .seo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
     </style>
   </head>
 
   <body>
     <noscript>UyService ishlashi uchun JavaScript yoqilgan bo'lishi kerak.</noscript>
     <div id="root">
-      <!-- Ilova yuklanguncha ko'rinadigan va qidiruv tizimlari o'qiydigan matn; ilova ishga tushganda React buni almashtiradi -->
+      <!-- Ilova yuklanguncha ko'rinadigan animatsiya; ilova ishga tushganda React #root ichini almashtiradi -->
+      <div class="ld" aria-hidden="true">
+        <p class="ld-brand"><span>Uy</span>Service</p>
+        <svg class="ld-scene" viewBox="0 0 240 170">
+          <path class="ld-st" d="M10 40 H230 M10 85 H230 M10 130 H230 M60 10 V160 M178 10 V160" />
+          <path class="ld-route" d="M30 40 H82 V85 H110" />
+          <circle class="ld-wave" cx="140" cy="85" r="28" />
+          <circle class="ld-wave w2" cx="140" cy="85" r="28" />
+          <g class="ld-pin">
+            <path d="M140 52 C128 52 120 60.5 120 71.5 C120 85 140 101 140 101 C140 101 160 85 160 71.5 C160 60.5 152 52 140 52 Z" fill="#0E5A4B" />
+            <path d="M130 73.5 L140 64.5 L150 73.5 M133 72 V80.5 a1.6 1.6 0 0 0 1.6 1.6 H145.4 a1.6 1.6 0 0 0 1.6 -1.6 V72" fill="none" stroke="#FFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
+            <rect x="137.5" y="74.5" width="5" height="7.6" rx="1.4" fill="#E8772E" />
+          </g>
+          <g class="ld-master">
+            <circle cx="30" cy="40" r="11" fill="#E8772E" stroke="#FFF" stroke-width="3" />
+            <path d="M26 44 L31.5 38.5 M30.5 34.6 a4 4 0 0 0 4.9 4.9 l-1.8 -1.8 0.4 -2.7 2.7 -0.4" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </g>
+          <g class="ld-check">
+            <circle cx="162" cy="50" r="12" fill="#1F9D6B" stroke="#FFF" stroke-width="3" />
+            <path d="M156.5 50.5 l3.8 3.8 l7 -7.5" fill="none" stroke="#FFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          </g>
+        </svg>
+        <div class="ld-caps">
+          <p>Usta chaqirasiz<small>santexnik, elektrik, konditsioner…</small></p>
+          <p>Eng yaqin usta keladi<small>xaritada kuzatib turasiz</small></p>
+          <p>Ish bajariladi<small>narx oldindan, 30 kun kafolat</small></p>
+        </div>
+        <div class="ld-dots"><i></i><i></i><i></i></div>
+      </div>
+      <!-- Qidiruv tizimlari o'qiydigan matn (ko'rinmaydi) -->
       <main class="seo">
-        <p class="seo-brand"><span>Uy</span>Service</p>
+        <p>UyService</p>
         <h1>UyService — uyga usta chaqirish</h1>
         <p>O'zbekiston bo'ylab uyga ishonchli usta: santexnik, elektrik, konditsioner, mebel, ta'mirlash, maishiy texnika. Eng yaqin usta topiladi, narx oldindan aytiladi, ish 30 kun kafolatlanadi. Chaqiruv — 50 000 so'm, ish qilinsa narx ichida.</p>
         <p lang="ru">UyService — вызов мастера на дом по всему Узбекистану: сантехник, электрик, мастер по кондиционерам, мебели, ремонту и бытовой технике.</p>
