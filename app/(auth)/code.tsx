@@ -5,7 +5,7 @@ import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AuthShell } from '@/components/ui/AuthShell';
 import { Button, IconButton, Text } from '@/components/ui';
 import { colors, fonts, themed, useScheme } from '@/constants/theme';
-import { noChannel, sendCode, verifyCode } from '@/lib/auth';
+import { noChannel, screenCode, sendCode, verifyCode } from '@/lib/auth';
 import { afterSignIn } from '@/lib/afterSignIn';
 import { t } from '@/lib/i18n';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -20,6 +20,12 @@ export default function CodeScreen() {
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<'auth.codeWrong' | 'auth.sendFailed' | 'auth.noChannel' | null>(null);
   const input = useRef<TextInput>(null);
+  // VAQTINCHA: SMS yo'q — kod shu ekranda (Telegram orqali ketgan bo'lsa null)
+  const [shown, setShown] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isSupabaseConfigured) screenCode(phone).then(setShown);
+  }, [phone]);
 
   useEffect(() => {
     if (left <= 0) return;
@@ -46,8 +52,10 @@ export default function CodeScreen() {
   const resend = async () => {
     setLeft(59);
     setError(null);
+    setShown(null);
     const res = await sendCode(phone);
     if (!res.ok) setError(noChannel(res) ? 'auth.noChannel' : 'auth.sendFailed');
+    else setShown(await screenCode(phone));
   };
 
   return (
@@ -57,6 +65,23 @@ export default function CodeScreen() {
         <Text variant="h1">{t('auth.codeTitle')}</Text>
         <Text variant="small">{t('auth.codeHint', { phone: phone || '+998' })}</Text>
       </View>
+
+      {shown ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${t('auth.screenCode')} ${shown}`}
+          onPress={() => {
+            setCode(shown);
+            setError(null);
+            verify(shown);
+          }}
+          style={styles.shown}
+        >
+          <Text variant="small">{t('auth.screenCode')}</Text>
+          <Text style={styles.shownCode}>{shown}</Text>
+          <Text variant="caption">{t('auth.screenCodeHint')}</Text>
+        </Pressable>
+      ) : null}
 
       <View style={styles.codeWrap}>
         <Pressable accessibilityLabel={t('auth.codeLabel')} onPress={() => input.current?.focus()} style={styles.boxes}>
@@ -134,5 +159,7 @@ const styles = themed(() => ({
   meta: { gap: 8 },
   link: { fontFamily: fonts.bold, fontSize: 14, color: colors.primary },
   demo: { color: colors.accentInk },
+  shown: { gap: 4, padding: 16, borderRadius: 18, backgroundColor: colors.primarySoft, alignItems: 'center' },
+  shownCode: { fontFamily: fonts.heavy, fontSize: 30, letterSpacing: 6, color: colors.primary },
   error: { color: colors.danger },
 }));

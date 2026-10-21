@@ -372,6 +372,12 @@ ishlagani uchun odatda faol hisoblanadi; to'xtasa — Dashboard → **Restore pr
 
 ## Eskiz.uz hali yo'q bo'lsa
 
+- **VAQTINCHA (21-oktabr): kod ekranda.** Raqam egasining Telegram'i ma'lum bo'lmasa (botda «Raqamni ulashish» yoki
+  Telegram orqali kirmagan) va Eskiz ulanmagan bo'lsa, `send-sms` kodni `otp_screen`ga yozadi, ilova kod ekranida
+  "Tasdiqlash kodingiz: …" deb ko'rsatadi (`…_otp_on_screen.sql`, `lib/auth.ts` → `screenCode`). Admin raqamiga — yo'q.
+  ⚠️ Bu vaqtda Telegram'i ulanmagan raqamga istalgan odam kira oladi. Eskiz siri (`ESKIZ_EMAIL`…) yozilishi bilan kod
+  o'zi SMS bilan ketadi; darhol o'chirish — `npx supabase secrets set OTP_ON_SCREEN=off`.
+
 - **Mijoz va ustalar** Telegram orqali kiradi (11-bo'lim) — SMS kerak emas. Oddiy brauzerda raqam + SMS bilan kirish
   Eskiz ulanmaguncha ishlamaydi (6, 7-bo'limlarning SMS qismini keyinga qoldiring).
 - **Admin panel** SMS kod bilan kiradi. Vaqtincha: Authentication → Sign In / Providers → Phone → **Test Phone Numbers**

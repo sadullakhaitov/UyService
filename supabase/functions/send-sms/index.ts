@@ -11,6 +11,8 @@
 //   ESKIZ_EMAIL, ESKIZ_PASSWORD — my.eskiz.uz kabinetidagi login (ixtiyoriy — bo'lmasa faqat Telegram)
 //   ESKIZ_FROM — jo'natuvchi nomi (ixtiyoriy, standart '4546')
 //   SMS_TEMPLATE — matn (ixtiyoriy, standart "UyService kodi: {code}"). Eskiz'da oldindan tasdiqlangan bo'lishi shart!
+//   OTP_ON_SCREEN — VAQTINCHA: Eskiz ulanmaguncha Telegram'i noma'lum raqamga kod ilova ekranida chiqadi
+//     (…_otp_on_screen.sql). Standart — yoqilgan; "off" — o'chirish (eski holat: no_channel). Eskiz ulansa — SMS.
 import { Webhook } from 'npm:standardwebhooks@1.0.0';
 import { adminClient } from '../_shared/http.ts';
 import { deliverOtp } from '../_shared/otp.ts';
@@ -53,7 +55,14 @@ Deno.serve(async (req) => {
     ? (to: string, code: string) => eskizSend(to, (Deno.env.get('SMS_TEMPLATE') || 'UyService kodi: {code}').replace('{code}', code))
     : null; // Eskiz hali ulanmagan — faqat Telegram
   try {
-    const via = await deliverOtp(adminClient(), { userId: data.user?.id ?? '', digits: phone, otp, botToken: Deno.env.get('TELEGRAM_BOT_TOKEN'), sms });
+    const via = await deliverOtp(adminClient(), {
+      userId: data.user?.id ?? '',
+      digits: phone,
+      otp,
+      botToken: Deno.env.get('TELEGRAM_BOT_TOKEN'),
+      sms,
+      screen: Deno.env.get('OTP_ON_SCREEN') !== 'off',
+    });
     console.log(`send-sms: ${via}`, `…${phone.slice(-4)}`);
     if (via === 'no_channel') return hookError(422, 'no_channel'); // ilova: "Botga kirib raqamingizni ulashing"
   } catch (e) {

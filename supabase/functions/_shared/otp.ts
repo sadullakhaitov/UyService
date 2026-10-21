@@ -28,15 +28,24 @@ export async function telegramFor(db: SupabaseClient, userId: string, digits: st
   return c?.telegram_id ? { chat: Number(c.telegram_id), lang: p?.language ?? 'uz' } : null;
 }
 
-export type OtpResult = 'telegram' | 'sms' | 'no_channel';
+export type OtpResult = 'telegram' | 'sms' | 'screen' | 'no_channel';
 
 /**
  * Kodni yuboradi. sms — SMS yuboruvchi (Eskiz) yoki null (ulanmagan). Telegram yubora olmasa (bot bloklangan,
  * tarmoq) — SMS'ga o'tadi. SMS xatosi tashqariga chiqadi.
+ * screen — VAQTINCHA (Eskiz paketi olinguncha): SMS ulanmagan bo'lsa kod otp_screen'ga yoziladi, ilova ekranda
+ * ko'rsatadi (admin raqamiga — yo'q, no_channel).
  */
 export async function deliverOtp(
   db: SupabaseClient,
-  opts: { userId: string; digits: string; otp: string; botToken?: string | null; sms: ((digits: string, otp: string) => Promise<void>) | null },
+  opts: {
+    userId: string;
+    digits: string;
+    otp: string;
+    botToken?: string | null;
+    sms: ((digits: string, otp: string) => Promise<void>) | null;
+    screen?: boolean;
+  },
   f: typeof fetch = fetch,
 ): Promise<OtpResult> {
   if (opts.botToken) {
@@ -60,7 +69,12 @@ export async function deliverOtp(
       }
     }
   }
-  if (!opts.sms) return 'no_channel';
+  if (!opts.sms) {
+    if (!opts.screen) return 'no_channel';
+    const { data, error } = await db.rpc('otp_screen_put', { p_phone: opts.digits, p_code: opts.otp });
+    if (error) throw new Error(`otp_screen_put: ${error.message}`);
+    return data === true ? 'screen' : 'no_channel';
+  }
   await opts.sms(opts.digits, opts.otp);
   return 'sms';
 }
