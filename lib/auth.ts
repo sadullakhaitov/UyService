@@ -40,9 +40,25 @@ export async function verifyCode(phone: string, code: string): Promise<AuthResul
   try {
     const { data, error } = await db.auth.verifyOtp({ phone: toE164(phone), token: code, type: 'sms' });
     if (error || !data.session) return { ok: false, error: error?.message ?? 'invalid_code' };
+    void db.rpc('otp_screen_done').then(undefined, () => {}); // ekrandagi kod ishlatildi — o'chiriladi
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/**
+ * VAQTINCHA (Eskiz SMS paketi olinguncha): Telegram'i noma'lum raqamga kod SMS o'rniga ekranda chiqadi —
+ * send-sms uni otp_screen'ga yozadi (…_otp_on_screen.sql). Kod yo'q bo'lsa (bot yoki SMS orqali ketgan) — null.
+ */
+export async function screenCode(phone: string): Promise<string | null> {
+  const db = getSupabase();
+  if (!db) return null;
+  try {
+    const { data } = await db.rpc('otp_screen_code', { p_phone: toE164(phone) });
+    return typeof data === 'string' && data ? data : null;
+  } catch {
+    return null;
   }
 }
 

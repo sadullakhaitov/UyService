@@ -27,6 +27,8 @@
     "codeLabel": "Code",
     "resendIn": "Resend in {{sec}} s",
     "resend": "Resend code",
+    "screenCode": "Your verification code",
+    "screenCodeHint": "Tap to fill it in",
     "codeDemo": "Demo mode: any 6 digits",
     "loginToOrder": "Confirm your number to call a handyman",
     "loginToMaster": "Confirm your number to work as a handyman",

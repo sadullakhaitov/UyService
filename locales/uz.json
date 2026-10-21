@@ -27,6 +27,8 @@
     "codeLabel": "Kod",
     "resendIn": "Qayta yuborish: {{sec}} s",
     "resend": "Kodni qayta yuborish",
+    "screenCode": "Tasdiqlash kodingiz",
+    "screenCodeHint": "Bosing — kod o'zi kiritiladi",
     "codeDemo": "Demo rejim: istalgan 6 ta raqam",
     "loginToOrder": "Usta chaqirish uchun raqamingizni tasdiqlang",
     "loginToMaster": "Usta bo'lib ishlash uchun raqamingizni tasdiqlang",
