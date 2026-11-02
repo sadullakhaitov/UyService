@@ -41,3 +41,22 @@ Tuzatilgan:
    serverda tekshirilardi. Endi faqat o'ziniki.
 
 Server (sinovda — 2 yadro) 200 kishida 5 ms da javob beradi — zaxira katta; 1000 + 1000 da sekinlashadi, lekin to'xtamaydi.
+
+## Natija (2-noyabr 2026) — chegarani topish
+
+Baza va PostgREST — 2 yadroda, yuk beruvchi — boshqa 2 yadroda; har daraja 4 daqiqa (1 daqiqa ko'tarilish).
+"Faol" — har biri to'xtovsiz ishlaydi (mijoz buyurtma ketidan buyurtma, usta har 5 s joylashuv) — oddiy foydalanuvchidan ancha og'ir.
+
+| Bir vaqtda (mijoz + usta) | So'rov/s | Javob p95 | Usta topilishi p50 / p95 | `offer-timeout` aylanishi | Xato |
+|---|---|---|---|---|---|
+| 500 + 500 | ~600 | 0,1–1,2 s | 13 s / 38 s | 3–20 s | 0 |
+| 750 + 750 | ~700 | ~1 s | 18 s / 68 s | 25–33 s | ~0 |
+| 1000 + 1000 | ~650 (to'ldi) | ~2 s | 29 s / 72 s | 84–103 s | 0 |
+| 2000 + 2000 | ~400 | 6–15 s | 100 s / 132 s | 200 s | ulanish navbati (504), ish deyarli tugamaydi |
+
+Xulosa: 2 yadroli bazada **~1000–1500 faol foydalanuvchi qulay**, ~2000 — chegara (sekin, lekin ishlaydi), 4000 da buziladi.
+Birinchi tor joy — `offer-timeout` (qidiruvdagi buyurtmalarni 8 tadan qadamlaydi): 1000+ da 15 s dan uzoq aylanadi va usta
+topish sekinlashadi. Ikkinchisi — yozuvlar (ustalar joylashuvi: 1000 usta = sekundiga 200 yozuv).
+
+Supabase bepul tarifidagi boshqa chegaralar (sinovda yo'q): Realtime — 200 ulanish (ortig'i har 2–4 s so'rovga o'tadi, ilova ishlayveradi);
+trafik — oyiga 5 GB (sinovda bir faol foydalanuvchi ≈ 1,5 MB/soat → oyiga ~3000 "foydalanuvchi-soat"); baza — 500 MB.

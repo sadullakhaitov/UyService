@@ -68,10 +68,23 @@ check(r === 'sms' && calls.length === 0, 'bot tokeni yo‘q — faqat SMS', r);
 const anon = createClient(`http://127.0.0.1:${Deno.env.get('E2E_PORT') ?? 54331}`, await jwt({ role: 'anon' }), {
   auth: { persistSession: false, autoRefreshToken: false },
 });
+// Faqat YANGI raqamga (hech qachon kirmagan, anketa/buyurtma yo'q) — aks holda begona hisobga kirib bo'lardi
+const NEWBIE = '00000000-0000-4000-b000-00000000000e';
 reset();
-r = await deliverOtp(db, { userId: M2, digits: '998904444444', otp: '888888', botToken: null, sms: null, screen: true }, fakeTg());
-const { data: shown, error: se } = await anon.rpc('otp_screen_code', { p_phone: '+998 90 444 44 44' });
-check(r === 'screen' && shown === '888888' && smsSent.length === 0, 'SMS yo‘q — kod ekranda (anon o‘qiydi)', { r, shown, se });
+r = await deliverOtp(db, { userId: NEWBIE, digits: '998905555555', otp: '888888', botToken: null, sms: null, screen: true }, fakeTg());
+const { data: shown, error: se } = await anon.rpc('otp_screen_code', { p_phone: '+998 90 555 55 55' });
+check(r === 'screen' && shown === '888888' && smsSent.length === 0, 'yangi raqam, SMS yo‘q — kod ekranda (anon o‘qiydi)', { r, shown, se });
+
+// Usta anketasi bor (M2) yoki buyurtmasi bor mijoz (CLIENT) — kod ekranda chiqmaydi (hujumchi o'qiy olmaydi)
+r = await deliverOtp(db, { userId: M2, digits: '998904444444', otp: '565656', botToken: null, sms: null, screen: true }, fakeTg());
+const { data: m2code } = await anon.rpc('otp_screen_code', { p_phone: '998904444444' });
+check(r === 'no_channel' && m2code === null, 'usta hisobi — kod ekranda emas (no_channel → bot)', { r, m2code });
+r = await deliverOtp(db, { userId: CLIENT, digits: '998901111111', otp: '575757', botToken: null, sms: null, screen: true }, fakeTg());
+const { data: c1code } = await anon.rpc('otp_screen_code', { p_phone: '998901111111' });
+check(r === 'no_channel' && c1code === null, 'buyurtmasi bor mijoz — kod ekranda emas', { r, c1code });
+r = await deliverOtp(db, { userId: '00000000-0000-4000-b000-00000000000f', digits: '998906666666', otp: '585858', botToken: null, sms: null, screen: true }, fakeTg());
+const { data: oldcode } = await anon.rpc('otp_screen_code', { p_phone: '998906666666' });
+check(r === 'no_channel' && oldcode === null, 'avval kirgan hisob (buyurtmasiz ham) — kod ekranda emas', { r, oldcode });
 
 const { data: other } = await anon.rpc('otp_screen_code', { p_phone: '998901111111' });
 check(other === null, 'boshqa raqamning kodi yo‘q', other);
@@ -81,7 +94,7 @@ check(direct, 'otp_screen jadvalini anon to‘g‘ridan-to‘g‘ri o‘qiy olma
 
 // SMS ulangan bo'lsa — ekran emas, SMS
 reset();
-r = await deliverOtp(db, { userId: M2, digits: '998904444444', otp: '999999', botToken: null, sms, screen: true }, fakeTg());
+r = await deliverOtp(db, { userId: NEWBIE, digits: '998905555555', otp: '999999', botToken: null, sms, screen: true }, fakeTg());
 check(r === 'sms' && smsSent.length === 1, 'Eskiz ulangan — SMS, ekran emas', r);
 
 // Telegram ma'lum bo'lsa — bot, ekran emas
