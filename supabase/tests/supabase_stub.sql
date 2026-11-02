@@ -27,7 +27,8 @@ create table if not exists auth.users (
   phone text unique,
   email text,
   raw_user_meta_data jsonb default '{}'::jsonb,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  last_sign_in_at timestamptz
 );
 
 create or replace function auth.uid() returns uuid language sql stable as $$
