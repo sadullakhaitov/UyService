@@ -23,7 +23,10 @@ Deno.serve(async (req) => {
   // Rejalashtirilgan buyurtma — mijoz "Hozir qidirish" bosdi: qidiruv darhol boshlanadi
   if (body.restart && order.status === 'scheduled') {
     const { error } = await db.from('orders').update({ status: 'searching', dispatch: null }).eq('id', body.order_id).eq('status', 'scheduled');
-    if (error) return json({ ok: false, error: error.message }, 500);
+    if (error) {
+      console.error(error);
+      return json({ ok: false, error: 'server_error' }, 500);
+    }
   }
   // Qayta boshlash faqat qidiruv "topilmadi" bilan tugaganda
   const restart = Boolean(body.restart) && order.status === 'searching' && order.dispatch?.done === 'none';
@@ -33,6 +36,6 @@ Deno.serve(async (req) => {
     return r.ok ? json(r) : json(r, r.error === 'not_found' ? 404 : 409);
   } catch (e) {
     console.error(e);
-    return json({ ok: false, error: String((e as Error).message ?? e) }, 500);
+    return json({ ok: false, error: 'server_error' }, 500); // ichki xato matni tashqariga chiqmaydi (logda bor)
   }
 });

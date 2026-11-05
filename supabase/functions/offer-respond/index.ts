@@ -31,6 +31,6 @@ Deno.serve(async (req) => {
     return json({ ok: true, status: r.status, accepted: body.accept && r.status === 'on_the_way' });
   } catch (e) {
     console.error(e);
-    return json({ ok: false, error: String((e as Error).message ?? e) }, 500);
+    return json({ ok: false, error: 'server_error' }, 500); // ichki xato matni tashqariga chiqmaydi (logda bor)
   }
 });
