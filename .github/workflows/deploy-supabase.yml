@@ -48,9 +48,9 @@ jobs:
         # (yangisida --remote, eskisida --linked)
         run: |
           if supabase db push --help 2>&1 | grep -q -- '--remote'; then TARGET=--remote; else TARGET=--linked; fi
-          supabase db push $TARGET --include-all --password "$SUPABASE_DB_PASSWORD"
+          supabase db push $TARGET --yes --include-all --password "$SUPABASE_DB_PASSWORD"
       - name: Server funksiyalari
-        run: supabase functions deploy --use-api --project-ref "$SUPABASE_PROJECT_REF"
+        run: supabase functions deploy --yes --use-api --project-ref "$SUPABASE_PROJECT_REF"
       # Kirish kodlari chegarasi: Supabase standarti — butun loyiha uchun soatiga 30 ta SMS/bot kodi.
       # Yuklama sinovi (supabase/tests/load): 200 kishi bir soatda birinchi marta kirsa, 31-chisidan "juda ko'p so'rov".
       # Kamida SMS_PER_HOUR qilinadi (kattaroq bo'lsa tegilmaydi). Bitta raqamga baribir 60 s da bir marta.
