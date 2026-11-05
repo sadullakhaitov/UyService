@@ -513,7 +513,9 @@ export async function liveSubmitMaster() {
   // Hujjat holati: yangi anketada pasport bo'lsa — tekshiruvga; mavjud (masalan, tasdiqlangan) holatni o'zgartirmaymiz
   if (!exists) must(await db().from('masters').insert({ ...row, verify_status: passport ? 'pending' : 'none' }));
   else must(await db().from('masters').update(row).eq('id', uid));
-  await db().from('profiles').update({ role: 'master', name: `${profile.firstName} ${profile.lastName}`.trim() }).eq('id', uid);
+  await db().from('profiles').update({ name: `${profile.firstName} ${profile.lastName}`.trim() }).eq('id', uid);
+  // Admin usta ham bo'lsa — admin qoladi (ustalik masters qatoridan bilinadi; server ham saqlaydi — …_keep_admin_role.sql)
+  await db().from('profiles').update({ role: 'master' }).eq('id', uid).neq('role', 'admin');
 }
 
 /**
