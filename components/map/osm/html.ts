@@ -6,6 +6,11 @@
 import { INSET_MS, type MapInit } from '../page';
 
 const MAPLIBRE = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl';
+// Fayllarning SHA-384 izi (Subresource Integrity): CDN'da fayl o'zgartirilsa (buzib kirish), brauzer uni ishga
+// tushirmaydi — xarita sahifasi sayt bilan bir manzilda (blob) ochiladi va kirish sessiyasiga yeta oladi.
+// Versiya almashtirilsa — izlarni ham yangilang: npm pack maplibre-gl@X && openssl dgst -sha384 -binary … | base64
+const MAPLIBRE_JS_SRI = 'sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj';
+const MAPLIBRE_CSS_SRI = 'sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V';
 const STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 
 export function buildMapHtml({ lang, init, colors }: { lang: string; init: MapInit; colors: Record<string, string> }) {
@@ -15,7 +20,7 @@ export function buildMapHtml({ lang, init, colors }: { lang: string; init: MapIn
 <meta charset="utf-8">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<link rel="stylesheet" href="${MAPLIBRE}.css">
+<link rel="stylesheet" href="${MAPLIBRE}.css" integrity="${MAPLIBRE_CSS_SRI}" crossorigin="anonymous">
 <style>
 html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:${colors.map}}
 *{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
@@ -46,7 +51,7 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;overflow:hidden;backgro
   send({type:'boot'});
 })();
 </script>
-<script src="${MAPLIBRE}.js" onerror="window.__ys.send({type:'error',message:'script'})"></script>
+<script src="${MAPLIBRE}.js" integrity="${MAPLIBRE_JS_SRI}" crossorigin="anonymous" onerror="window.__ys.send({type:'error',message:'script'})"></script>
 </head><body><div id="map"></div>
 <script>
 (function(){
