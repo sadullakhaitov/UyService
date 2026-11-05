@@ -44,7 +44,11 @@ jobs:
       - name: Loyihani ulash
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
       - name: Jadvallar (yangi migratsiyalar)
-        run: supabase db push --include-all --password "$SUPABASE_DB_PASSWORD"
+        # Yangi CLI (v3+) standart bo'yicha mahalliy bazaga yozadi — ulangan loyihani aniq ko'rsatamiz
+        # (yangisida --remote, eskisida --linked)
+        run: |
+          if supabase db push --help 2>&1 | grep -q -- '--remote'; then TARGET=--remote; else TARGET=--linked; fi
+          supabase db push $TARGET --include-all --password "$SUPABASE_DB_PASSWORD"
       - name: Server funksiyalari
         run: supabase functions deploy --use-api --project-ref "$SUPABASE_PROJECT_REF"
       # Kirish kodlari chegarasi: Supabase standarti — butun loyiha uchun soatiga 30 ta SMS/bot kodi.
