@@ -432,7 +432,8 @@
     "deleteActive": "Avval faol buyurtmani yakunlang yoki bekor qiling.",
     "deleteAdmin": "Admin o'z hisobini o'chira olmaydi — avval boshqa admin sizni adminlikdan olsin.",
     "deletedTitle": "Hisob o'chirildi",
-    "deletedText": "Ma'lumotlaringiz o'chirildi. Xohlasangiz, keyin yana ro'yxatdan o'tishingiz mumkin."
+    "deletedText": "Ma'lumotlaringiz o'chirildi. Xohlasangiz, keyin yana ro'yxatdan o'tishingiz mumkin.",
+    "userIdCopy": "ID {{id}} — nusxalash"
   },
   "address": {
     "title": "Manzilni qidirish",
@@ -959,7 +960,7 @@
     },
     "masters": {
       "subtitle": "Jami: {{n}}",
-      "search": "Ism yoki telefon",
+      "search": "Ism, telefon yoki ID",
       "empty": "Bu filtr bo'yicha usta yo'q",
       "notFound": "Usta topilmadi",
       "noName": "Ismsiz",
@@ -1175,7 +1176,7 @@
     },
     "users": {
       "subtitle": "Jami: {{n}}",
-      "search": "Ism yoki telefon",
+      "search": "Ism, telefon yoki ID",
       "empty": "Foydalanuvchi topilmadi",
       "notFound": "Foydalanuvchi topilmadi",
       "noName": "Ismsiz",

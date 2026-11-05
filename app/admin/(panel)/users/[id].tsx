@@ -7,7 +7,7 @@ import { ConfirmDialog, ReasonDialog } from '@/components/admin/Dialog';
 import { fmtAgo, fmtDateOnly, fmtDateTime, fmtNum, fmtSum, initials } from '@/components/admin/format';
 import { AButton, Empty, ErrorBox, KV, Panel, Skeleton } from '@/components/admin/kit';
 import { LogList } from '@/components/admin/LogList';
-import { PhoneActions, RoleBadge } from '@/components/admin/people';
+import { PhoneActions, RoleBadge, withId } from '@/components/admin/people';
 import { ReviewItem } from '@/components/admin/ReviewItem';
 import { AdminPage, useAdminLayout } from '@/components/admin/Shell';
 import { CategoryLabel, OrderBadge } from '@/components/admin/status';
@@ -48,7 +48,7 @@ export default function UserPage() {
   const name = u ? u.name || t('admin.users.noName') : '';
 
   return (
-    <AdminPage title={u ? name : t('admin.nav.users')} subtitle={u ? t('admin.users.since', { date: fmtDateOnly(u.createdAt) }) : undefined} back="/admin/users" onRefresh={q.reload} refreshing={q.refreshing}>
+    <AdminPage title={u ? name : t('admin.nav.users')} subtitle={u ? withId(u.shortId, t('admin.users.since', { date: fmtDateOnly(u.createdAt) })) : undefined} back="/admin/users" onRefresh={q.reload} refreshing={q.refreshing}>
       {!u ? (
         <Skeleton h={140} r={18} />
       ) : (

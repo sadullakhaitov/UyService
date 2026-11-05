@@ -40,6 +40,7 @@ import {
 } from './types';
 import { useAdminSession } from './session';
 import { saveCatalog } from '@/lib/catalog';
+import { demoUserId } from '@/lib/userId';
 import { checkBalance, checkCallFee, checkNames, checkPriceRange, checkPriority, checkPromo, checkReason, checkSubscription, clean, normalizePhone, RULES } from './rules';
 
 /** Sinov rejimida admin bo'lib kira oladigan raqam (kompaniya raqami) */
@@ -626,8 +627,10 @@ function localMaster(db: DB): { m: AdminMaster; u: AdminUser } | null {
   const phone = normalizePhone(user.phone ?? '') ?? '';
   const canTake = free || (!(pct > 0 && mp.balance < BALANCE_LIMIT) && !(plan === 'subscription' && mp.subscriptionUntil < Date.now()));
   const loc = user.lastLocation ?? null;
+  const shortId = phone ? demoUserId(phone) : null;
   const m: AdminMaster = {
     id: LOCAL_MASTER_ID,
+    shortId,
     firstName: p.firstName,
     lastName: p.lastName,
     phone,
@@ -662,6 +665,7 @@ function localMaster(db: DB): { m: AdminMaster; u: AdminUser } | null {
   };
   const u: AdminUser = {
     id: LOCAL_MASTER_ID,
+    shortId,
     phone,
     name: user.name || p.firstName || null,
     role: 'master',
@@ -690,6 +694,7 @@ function masterView(db: DB, m: DMaster): AdminMaster {
   const pct = feePercent(plan, verified, free);
   return {
     id: m.id,
+    shortId: demoUserId(u.phone),
     firstName: m.firstName,
     lastName: m.lastName,
     phone: u.phone,
@@ -751,6 +756,7 @@ function userView(db: DB, u: DUser): AdminUser {
   const done = mine.filter((o) => o.status === 'completed');
   return {
     id: u.id,
+    shortId: demoUserId(u.phone),
     phone: u.phone,
     name: u.name,
     role: u.role,
@@ -780,6 +786,8 @@ function reviewView(db: DB, r: DReview): AdminReview {
   };
 }
 
+/** Qidiruv uchun: "id 10234" ("ID 10234", "#10234", "10234" ham topiladi) */
+const idText = (n: number | null) => (n ? `id ${n} #${n}` : null);
 const paginate = <T,>(rows: T[], page: number, size: number): Page<T> => ({ rows: rows.slice(page * size, page * size + size), total: rows.length });
 const matches = (q: string, ...fields: (string | null | undefined)[]) => {
   const s = q.trim().toLowerCase();
@@ -949,7 +957,7 @@ export const demoAdmin: AdminApi = {
     else if (f === 'blocked') rows = rows.filter((m) => m.blockedAt);
     else if (f === 'lowBalance') rows = rows.filter((m) => !m.canTake);
     if (q.category) rows = rows.filter((m) => m.categories.includes(q.category!));
-    rows = rows.filter((m) => matches(q.q, `${m.firstName} ${m.lastName}`, m.phone));
+    rows = rows.filter((m) => matches(q.q, `${m.firstName} ${m.lastName}`, m.phone, idText(m.shortId)));
     const val = (m: AdminMaster) =>
       ({ created: m.createdAt, rating: m.rating ?? -1, balance: m.balance, jobs: m.jobsDone, activity: m.activity })[q.sort];
     if (f === 'pending' && q.sort === 'created') rows.sort((a, b) => (a.submittedAt ?? 0) - (b.submittedAt ?? 0));
@@ -1153,7 +1161,7 @@ export const demoAdmin: AdminApi = {
     else if (q.filter === 'masters') rows = rows.filter((u) => u.isMaster);
     else if (q.filter === 'admins') rows = rows.filter((u) => u.role === 'admin');
     else if (q.filter === 'blocked') rows = rows.filter((u) => u.blockedAt);
-    rows = rows.filter((u) => matches(q.q, u.name, u.phone));
+    rows = rows.filter((u) => matches(q.q, u.name, u.phone, idText(u.shortId)));
     rows.sort((a, b) => b.createdAt - a.createdAt);
     return paginate(rows, q.page, q.pageSize);
   },

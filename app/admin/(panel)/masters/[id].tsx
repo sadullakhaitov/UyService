@@ -10,7 +10,7 @@ import { dec, fmtAgo, fmtDateOnly, fmtDateTime, fmtNum, fmtSum, initials } from 
 import { AButton, Badge, Empty, ErrorBox, KV, Panel, Skeleton } from '@/components/admin/kit';
 import { LogList } from '@/components/admin/LogList';
 import { BalanceDialog, FreeDialog, PriorityDialog, SubscriptionDialog } from '@/components/admin/masterDialogs';
-import { PhoneActions, PresenceBadge } from '@/components/admin/people';
+import { PhoneActions, PresenceBadge, withId } from '@/components/admin/people';
 import { PhotoThumb } from '@/components/admin/Photos';
 import { ReviewItem } from '@/components/admin/ReviewItem';
 import { AdminPage, useAdminLayout } from '@/components/admin/Shell';
@@ -59,7 +59,7 @@ export default function MasterDetail() {
   const subActive = !!m?.subscriptionUntil && m.subscriptionUntil > Date.now();
 
   return (
-    <AdminPage title={m ? name : t('admin.nav.masters')} subtitle={m ? t('admin.masters.since', { date: fmtDateOnly(m.createdAt) }) : undefined} back="/admin/masters" onRefresh={q.reload} refreshing={q.refreshing}>
+    <AdminPage title={m ? name : t('admin.nav.masters')} subtitle={m ? withId(m.shortId, t('admin.masters.since', { date: fmtDateOnly(m.createdAt) })) : undefined} back="/admin/masters" onRefresh={q.reload} refreshing={q.refreshing}>
       {!m ? (
         <Skeleton h={160} r={18} />
       ) : (

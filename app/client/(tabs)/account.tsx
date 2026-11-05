@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, ScreenHeader, Squish, Text } from '@/components/ui';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
 import { ThemePicker } from '@/components/ui/ThemePicker';
+import { UserIdTag } from '@/components/ui/UserIdTag';
 import { InstallSheet } from '@/components/sheets/InstallSheet';
 import { colors, fonts, radius, themed, useScheme } from '@/constants/theme';
 import { confirm } from '@/lib/dialog';
@@ -79,6 +80,7 @@ export default function Account() {
                   style={styles.nameInput}
                 />
                 <Text variant="small">{phone}</Text>
+                <UserIdTag />
               </>
             )}
           </View>

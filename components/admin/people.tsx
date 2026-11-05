@@ -7,10 +7,14 @@ import { colors, fonts, themed, useScheme } from '@/constants/theme';
 import type { AdminMaster, AdminUser } from '@/lib/admin/types';
 import { toast } from '@/lib/admin/hooks';
 import { t } from '@/lib/i18n';
+import { fmtUserId } from '@/lib/userId';
 import { fmtAgo, fmtPhone, initials } from './format';
 import { AButton, Badge } from './kit';
 
-export function MasterName({ m, size = 36 }: { m: Pick<AdminMaster, 'firstName' | 'lastName' | 'phone' | 'photo'>; size?: number }) {
+/** "ID 10234 · +998 90 …" */
+export const withId = (id: number | null | undefined, rest: string) => (id ? `${fmtUserId(id)} · ${rest}` : rest);
+
+export function MasterName({ m, size = 36 }: { m: Pick<AdminMaster, 'firstName' | 'lastName' | 'phone' | 'photo'> & { shortId?: number | null }; size?: number }) {
   useScheme();
   return (
     <View style={styles.row}>
@@ -20,7 +24,7 @@ export function MasterName({ m, size = 36 }: { m: Pick<AdminMaster, 'firstName' 
           {`${m.firstName} ${m.lastName}`.trim() || t('admin.masters.noName')}
         </Text>
         <Text numberOfLines={1} style={styles.sub}>
-          {fmtPhone(m.phone)}
+          {withId(m.shortId, fmtPhone(m.phone))}
         </Text>
       </View>
     </View>
