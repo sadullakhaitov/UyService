@@ -56,6 +56,8 @@ function db(): SupabaseClient {
 
 /** PostgREST ilike uchun: maxsus belgilar olib tashlanadi */
 const like = (q: string) => `%${q.trim().toLowerCase().replace(/[%_,()*\\]/g, ' ')}%`;
+/** Odam qidiruvi: "ID 10234", "id10234", "#10234" → "id 10234" (search ustunida shunday yozilgan); oddiy raqam — telefon yoki ID */
+const likePerson = (q: string) => like(q.replace(/^\s*#\s*/, 'id ').replace(/^\s*id\s*/i, 'id '));
 const range = (page: number, size: number) => [page * size, page * size + size - 1] as const;
 
 const publicUrl = (bucket: string, path: string | null) => (path ? db().storage.from(bucket).getPublicUrl(path).data.publicUrl : null);
@@ -71,6 +73,7 @@ async function signed(bucket: string, paths: (string | null)[]): Promise<(string
 function toMaster(r: Row): AdminMaster {
   return {
     id: r.id,
+    shortId: r.short_id ?? null,
     firstName: r.first_name ?? '',
     lastName: r.last_name ?? '',
     phone: r.phone ?? '',
@@ -168,6 +171,7 @@ function toReport(r: Row): AdminReport {
 function toUser(r: Row): AdminUser {
   return {
     id: r.id,
+    shortId: r.short_id ?? null,
     phone: r.phone ?? '',
     name: r.name,
     role: r.role,
@@ -312,7 +316,7 @@ export const supabaseAdmin: AdminApi = {
     else if (q.filter === 'online') r = r.eq('online', true);
     else if (q.filter === 'blocked') r = r.not('blocked_at', 'is', null);
     else if (q.filter === 'lowBalance') r = r.eq('can_take', false);
-    if (q.q.trim()) r = r.ilike('search', like(q.q));
+    if (q.q.trim()) r = r.ilike('search', likePerson(q.q));
     if (q.category) r = r.contains('categories', [q.category]);
     const col = { created: 'created_at', rating: 'rating', balance: 'balance', jobs: 'jobs_count', activity: 'activity' }[q.sort];
     // Tekshiruv navbati — eng eski ariza birinchi
@@ -439,7 +443,7 @@ export const supabaseAdmin: AdminApi = {
     else if (q.filter === 'masters') r = r.eq('is_master', true);
     else if (q.filter === 'admins') r = r.eq('role', 'admin');
     else if (q.filter === 'blocked') r = r.not('blocked_at', 'is', null);
-    if (q.q.trim()) r = r.ilike('search', like(q.q));
+    if (q.q.trim()) r = r.ilike('search', likePerson(q.q));
     const { data, count, error } = await r.order('created_at', { ascending: false }).range(...range(q.page, q.pageSize));
     if (error) fail(error);
     return { rows: (data ?? []).map(toUser), total: count ?? 0 };

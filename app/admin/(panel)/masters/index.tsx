@@ -47,8 +47,9 @@ export default function Masters() {
       const all = await adminApi.masters({ ...query, page: 0, pageSize: 5000 });
       await downloadCsv(
         csvName('ustalar'),
-        [t('admin.col.name'), t('admin.col.phone'), t('admin.col.categories'), t('admin.col.verify'), t('admin.col.plan'), t('admin.col.fee'), t('admin.col.balance'), t('admin.col.rating'), t('admin.col.jobs'), t('admin.col.registered')],
+        ['ID', t('admin.col.name'), t('admin.col.phone'), t('admin.col.categories'), t('admin.col.verify'), t('admin.col.plan'), t('admin.col.fee'), t('admin.col.balance'), t('admin.col.rating'), t('admin.col.jobs'), t('admin.col.registered')],
         all.rows.map((m) => [
+          m.shortId ?? '',
           `${m.firstName} ${m.lastName}`,
           fmtPhone(m.phone),
           m.categories.map((c) => catName(c)).join(', '),

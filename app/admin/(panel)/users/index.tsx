@@ -6,7 +6,7 @@ import { View } from 'react-native';
 import { csvName, downloadCsv } from '@/components/admin/csv';
 import { fmtAgo, fmtDateOnly, fmtNum, fmtPhone, fmtSum, initials } from '@/components/admin/format';
 import { AButton, ErrorBox, Pager, Panel, SearchBox, Tabs } from '@/components/admin/kit';
-import { RoleBadge } from '@/components/admin/people';
+import { RoleBadge, withId } from '@/components/admin/people';
 import { AdminPage } from '@/components/admin/Shell';
 import { Cell, DataTable } from '@/components/admin/Table';
 import { toInt, useParamState } from '@/components/admin/useParams';
@@ -35,8 +35,9 @@ export default function Users() {
       const all = await adminApi.users({ ...query, page: 0, pageSize: 10_000 });
       await downloadCsv(
         csvName('foydalanuvchilar'),
-        [t('admin.col.name'), t('admin.col.phone'), t('admin.col.role'), t('admin.col.language'), t('admin.col.orders'), t('admin.col.spent'), t('admin.col.lastOrder'), t('admin.col.registered'), t('admin.col.blocked')],
+        ['ID', t('admin.col.name'), t('admin.col.phone'), t('admin.col.role'), t('admin.col.language'), t('admin.col.orders'), t('admin.col.spent'), t('admin.col.lastOrder'), t('admin.col.registered'), t('admin.col.blocked')],
         all.rows.map((u) => [
+          u.shortId ?? '',
           u.name ?? '',
           fmtPhone(u.phone),
           t(`admin.role.${u.role === 'admin' ? 'admin' : u.isMaster ? 'master' : 'client'}`),
@@ -86,7 +87,7 @@ export default function Users() {
               render: (u) => (
                 <View style={styles.row}>
                   <Avatar initials={initials(u.name)} size={34} />
-                  <Cell title={u.name || t('admin.users.noName')} sub={fmtPhone(u.phone)} />
+                  <Cell title={u.name || t('admin.users.noName')} sub={withId(u.shortId, fmtPhone(u.phone))} />
                 </View>
               ),
             },
@@ -101,7 +102,7 @@ export default function Users() {
             <View style={styles.row}>
               <Avatar initials={initials(u.name)} size={36} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Cell title={u.name || t('admin.users.noName')} sub={`${fmtPhone(u.phone)} · ${t('admin.users.ordersN', { n: u.ordersCount })}`} />
+                <Cell title={u.name || t('admin.users.noName')} sub={withId(u.shortId, `${fmtPhone(u.phone)} · ${t('admin.users.ordersN', { n: u.ordersCount })}`)} />
               </View>
               <RoleBadge u={u} />
             </View>

@@ -451,7 +451,8 @@
     "deleteActive": "Finish or cancel your active order first.",
     "deleteAdmin": "An admin can't delete their own account — another admin has to remove your admin rights first.",
     "deletedTitle": "Account deleted",
-    "deletedText": "Your data has been deleted. You can sign up again any time."
+    "deletedText": "Your data has been deleted. You can sign up again any time.",
+    "userIdCopy": "ID {{id}} — copy"
   },
   "address": {
     "title": "Find address",
@@ -982,7 +983,7 @@
     },
     "masters": {
       "subtitle": "Total: {{n}}",
-      "search": "Name or phone",
+      "search": "Name, phone or ID",
       "empty": "No masters match this filter",
       "notFound": "Master not found",
       "noName": "No name",
@@ -1204,7 +1205,7 @@
     },
     "users": {
       "subtitle": "Total: {{n}}",
-      "search": "Name or phone",
+      "search": "Name, phone or ID",
       "empty": "No users found",
       "notFound": "User not found",
       "noName": "No name",

@@ -23,6 +23,7 @@ import { confirm, notice } from '@/lib/dialog';
 import { t } from '@/lib/i18n';
 import { guardActiveJob } from '@/lib/masterGuard';
 import { useMaster, useUser } from '@/store';
+import { UserIdTag } from '@/components/ui/UserIdTag';
 import { catName } from '@/constants/categories';
 
 
@@ -40,9 +41,12 @@ export default function Profile() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Squish accessibilityRole="button" scaleTo={0.98} onPress={() => router.push('/master/edit')} style={styles.head}>
           <Avatar initials={initials} size={64} solid photo={profile.photo} />
-          <Text style={styles.name} numberOfLines={1}>
-            {name}
-          </Text>
+          <View style={styles.headText}>
+            <Text style={styles.name} numberOfLines={1}>
+              {name}
+            </Text>
+            <UserIdTag />
+          </View>
           <ChevronRight size={26} color={colors.ink} strokeWidth={2.6} />
         </Squish>
 
@@ -203,6 +207,7 @@ const styles = themed(() => ({
   flex: { flex: 1 },
   scroll: { paddingBottom: 32, gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, paddingVertical: 12 },
+  headText: { flex: 1, minWidth: 0 },
   name: { fontFamily: fonts.heavy, fontSize: 30, color: colors.ink, flexShrink: 1 },
   block: { backgroundColor: colors.surface, borderRadius: radius.sheet, padding: 16, gap: 14 },
   roleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },

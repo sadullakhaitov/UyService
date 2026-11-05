@@ -44,6 +44,8 @@ export type AdminMe = { id: string; phone: string; name: string | null };
 
 export type AdminMaster = {
   id: string;
+  /** Qisqa ID raqami (profiles.short_id): "ID 10234" */
+  shortId: number | null;
   firstName: string;
   lastName: string;
   phone: string;
@@ -120,6 +122,8 @@ export type AdminOrder = {
 
 export type AdminUser = {
   id: string;
+  /** Qisqa ID raqami (profiles.short_id): "ID 10234" */
+  shortId: number | null;
   phone: string;
   name: string | null;
   role: UserRole;
