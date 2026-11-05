@@ -33,18 +33,13 @@ jobs:
             exit 1
           fi
       - uses: actions/checkout@v4
-      # "latest" GitHub API'dan so'raladi — ba'zan "rate limit exceeded" (5-noyabr). Bir marta qayta urinamiz
-      - id: cli
-        uses: supabase/setup-cli@v1
-        continue-on-error: true
-        with:
-          version: latest
-      - if: steps.cli.outcome == 'failure'
-        run: sleep 20
-      - if: steps.cli.outcome == 'failure'
-        uses: supabase/setup-cli@v1
-        with:
-          version: latest
+      # Supabase CLI npm'dan (supabase/setup-cli "latest"ni GitHub API'dan so'raydi va tez-tez "rate limit exceeded"
+      # bilan to'xtaydi — 5-noyabr). npm paketi binarni releases'dan yuklaydi (API cheklovi yo'q)
+      - name: Supabase CLI
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sb" --no-audit --no-fund supabase@latest
+          echo "$RUNNER_TEMP/sb/node_modules/.bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/sb/node_modules/.bin/supabase" --version
       - name: Loyihani ulash
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
       - name: Nusxa olish
