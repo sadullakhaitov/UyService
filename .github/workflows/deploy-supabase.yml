@@ -38,7 +38,16 @@ jobs:
             exit 1
           fi
       - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      # "latest" GitHub API'dan so'raladi — ba'zan "rate limit exceeded" (5-noyabr). Bir marta qayta urinamiz
+      - id: cli
+        uses: supabase/setup-cli@v1
+        continue-on-error: true
+        with:
+          version: latest
+      - if: steps.cli.outcome == 'failure'
+        run: sleep 20
+      - if: steps.cli.outcome == 'failure'
+        uses: supabase/setup-cli@v1
         with:
           version: latest
       - name: Loyihani ulash
@@ -65,4 +74,17 @@ jobs:
           if [ -n "$CUR" ] && [ "$CUR" -lt "$SMS_PER_HOUR" ]; then
             curl -sf -X PATCH -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
               -d "{\"rate_limit_sms_sent\": $SMS_PER_HOUR}" "$API" | jq '{rate_limit_sms_sent}'
+          fi
+      # Email orqali ro'yxatdan o'tish: email tasdiqlanmasa hisob ochilmaydi (telefonsiz soxta hisoblarga qarshi).
+      # Telegram orqali kirish yashirin emailni server o'zi tasdiqlaydi (email_confirm) — unga ta'sir qilmaydi.
+      # docs/xavfsizlik-auditi-3.md → P3
+      - name: Email tasdiqlash majburiy
+        continue-on-error: true
+        run: |
+          API="https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/config/auth"
+          AUTO=$(curl -sf -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" "$API" | jq -r '.mailer_autoconfirm // empty')
+          echo "Hozir: mailer_autoconfirm=${AUTO:-?}"
+          if [ "$AUTO" = "true" ]; then
+            curl -sf -X PATCH -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
+              -d '{"mailer_autoconfirm": false}' "$API" | jq '{mailer_autoconfirm}'
           fi

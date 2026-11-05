@@ -113,6 +113,6 @@ Deno.serve(async (req) => {
     return json({ ok: true, token_hash: link.properties.hashed_token, phone, name: p?.name ?? name });
   } catch (e) {
     console.error(e);
-    return json({ ok: false, error: String((e as Error).message ?? e) }, 500);
+    return json({ ok: false, error: 'server_error' }, 500); // ichki xato matni tashqariga chiqmaydi (logda bor)
   }
 });

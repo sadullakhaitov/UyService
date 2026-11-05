@@ -4,10 +4,12 @@
 //    keyingi usta / radius kengaytirish / 3 daqiqadan keyin "bo'sh usta yo'q"
 // 3) yetim qolgan eski takliflar yopiladi
 // 4) bepul davr eslatmalari (7 kun, 1 kun qoldi, tugadi); fon rejimi: "Hali ishdamisiz?" (35 daq) / "Buyurtmalar to'xtadi" (45 daq)
-// 5) push-bildirishnomalar navbati (zaxira yo'l — odatda push-send darhol yuboradi)
+// 5) o'chirilgan hisob va almashtirilgan hujjatlarning fayllari (storage_trash)
+// 6) push-bildirishnomalar navbati (zaxira yo'l — odatda push-send darhol yuboradi)
 // Ruxsat: `x-cron-secret: <CRON_SECRET>` yoki `Authorization: Bearer <service_role key>`.
 import { startDueScheduled, stepActiveSearches } from '../_shared/engine.ts';
 import { adminClient, corsHeaders, isCronRequest, json } from '../_shared/http.ts';
+import { cleanupStorage } from '../_shared/cleanup.ts';
 import { flushPush } from '../_shared/push.ts';
 
 Deno.serve(async (req) => {
@@ -31,6 +33,11 @@ Deno.serve(async (req) => {
     if (remindErr) console.error('free_pass_reminders', remindErr.message);
     const { error: presErr } = await db.rpc('presence_reminders');
     if (presErr) console.error('presence_reminders', presErr.message);
+    try {
+      await cleanupStorage(db);
+    } catch (e) {
+      console.error('cleanup', e);
+    }
     try {
       result.pushed = (await flushPush(db)).sent;
     } catch (e) {

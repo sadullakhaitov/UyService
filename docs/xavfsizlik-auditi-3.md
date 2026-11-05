@@ -145,11 +145,12 @@ delete from auth.sessions where user_id = any (ids);
 |---|---|---|---|
 | P1 | **Kirishni to'xtatish:** kod chegarasi butun loyiha uchun soatiga 300 ta (`deploy-supabase.yml`). Skript har xil raqamlarga kod so'rab, bir soat ichida hammaning kirishini to'xtatishi mumkin; Eskiz ulangach — har SMS pul (SMS pumping). DoS bo'lgani uchun sinalmadi. | O'rta | Supabase → Authentication → Attack Protection → **Captcha (Cloudflare Turnstile, bepul)** yoqish + ilovaga Turnstile vidjeti. Alohida vazifa. |
 | P2 | **Ekrandagi kod — soxta hisoblar:** yangi raqamga egasini tekshirmay kod beriladi, ya'ni istalgancha hisob ochish mumkin (soxta buyurtmalar bilan ustalarni bezovta qilish — har hisobga 3 faol / sutkasiga 10). V1, V3, V4 zararini kamaytirdi, ildizi — vaqtinchalik qaror. | O'rta | Eskiz paketini olish → `ESKIZ_*` sirlari → `OTP_ON_SCREEN=off`. |
-| P3 | **Email orqali ro'yxatdan o'tish:** Supabase'da Email provayderi yoqilgan bo'lsa, telefonsiz hisob ochish mumkin (Telegram kirishi yashirin email ishlatadi, shuning uchun o'chirib bo'lmaydi). | Past | Dashboard → Auth → Email: "Confirm email" yoqilganini tekshirish. |
-| P4 | **Ustalar ro'yxati hammaga ochiq:** `master_cards` (anon) — hamma ustaning id, to'liq ismi, surati; raqobatchi butun bazani yig'ib olishi mumkin. | Past | Familiyani bosh harf bilan qisqartirish yoki faqat kerakli usta bo'yicha so'rash. |
-| P5 | **Fayllar qoladi:** hisob o'chirilganda fayllar faqat ilova tomonidan o'chiriladi (xato bo'lsa pasport Storage'da qoladi); pasport almashtirilsa eskisi qoladi. | Past | Server tomonida (Edge Function) fayllarni o'chirish. |
+| P3 | **Email orqali ro'yxatdan o'tish:** Supabase'da Email provayderi yoqilgan bo'lsa, telefonsiz hisob ochish mumkin (Telegram kirishi yashirin email ishlatadi, shuning uchun o'chirib bo'lmaydi). | Past | ✅ Har deploy'da `mailer_autoconfirm=false` qilinadi (`deploy-supabase.yml`) — email tasdiqlanmasa hisob ochilmaydi. |
+| P4 | **Ustalar ro'yxati hammaga ochiq:** `master_cards` (anon) — hamma ustaning id, to'liq ismi, surati; raqobatchi butun bazani yig'ib olishi mumkin. | Past | ✅ Familiya faqat bosh harf bilan: "Alisher V." (`…_security_audit_3b.sql`). |
+| P5 | **Fayllar qoladi:** hisob o'chirilganda fayllar faqat ilova tomonidan o'chiriladi (xato bo'lsa pasport Storage'da qoladi); pasport almashtirilsa eskisi qoladi. | Past | ✅ Server navbati `storage_trash` → `offer-timeout` Storage API bilan o'chiradi (`_shared/cleanup.ts`). |
 
-Ma'lumot uchun (zaiflik emas): Edge Function'lar 500 xatoda ichki xato matnini qaytaradi; CORS `*` (cookie yo'q,
+Ma'lumot uchun (zaiflik emas): Edge Function'lar 500 xatoda ichki xato matnini qaytarardi — ✅ endi `server_error`
+(matn logda); deploy'da Supabase CLI versiyasini olish ba'zan "rate limit" bilan to'xtardi — ✅ bir marta qayta urinadi; CORS `*` (cookie yo'q,
 token bilan — xavfsiz); admin 8 soatlik chiqishi faqat ilova tomonida (server sessiyasi refresh token bilan uzayadi);
 eshik kodi 4 xonali (5 xato → 10 daqiqa — usta allaqachon tayinlangan, maqsad — shaxsini tasdiqlash).
 
@@ -187,9 +188,8 @@ PGRST_BIN=/yo'l/postgrest bash supabase/tests/run.sh        # + E2E
 1. ✅ V1–V6 — shu PR'da.
 2. **Eskiz SMS'ni ulash va ekrandagi kodni o'chirish** (`OTP_ON_SCREEN=off`) — P2 va V1'ning ildizi.
 3. **Captcha (Turnstile)** kirish kodiga — P1.
-4. Supabase Dashboard: "Confirm email" yoqilgan, JWT muddati 1 soat (standart) — P3.
-5. Hisob o'chirilganda fayllarni serverda o'chirish — P5.
-6. `master_cards`dan to'liq familiyani olib tashlash — P4.
+4. ✅ P3, P4, P5 — ikkinchi PR'da (`…_security_audit_3b.sql`, `_shared/cleanup.ts`, `deploy-supabase.yml`).
+5. Eskiz ulanguncha ekrandagi kod qoladi (egasining qarori, 5-noyabr) — V1 tuzatishi shu davrda himoya qiladi.
 
 ## 9. Xavfsiz kod bo'yicha qoidalar (keyingi ishlar uchun)
 
