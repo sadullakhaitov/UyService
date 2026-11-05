@@ -96,6 +96,13 @@ check(direct, 'otp_screen jadvalini anon to‘g‘ridan-to‘g‘ri o‘qiy olma
 reset();
 r = await deliverOtp(db, { userId: NEWBIE, digits: '998905555555', otp: '999999', botToken: null, sms, screen: true }, fakeTg());
 check(r === 'sms' && smsSent.length === 1, 'Eskiz ulangan — SMS, ekran emas', r);
+// Raqam ekran orqali ochilgan edi — egasiga kod SMS bilan ketdi: da'vo yopildi (begona sessiyalar o'chadi)
+const { data: claim, error: claimErr } = await db.from('otp_screen_claims').select('phone').eq('phone', '998905555555');
+check(!claimErr && claim?.length === 0, 'ekran orqali ochilgan raqam — egasi SMS olganda da’vo yopiladi', { claim, claimErr });
+// Raqam almashtirish: kirgan hisob (F) begona yangi raqamga ekrandan kod ololmaydi
+r = await deliverOtp(db, { userId: '00000000-0000-4000-b000-00000000000f', digits: '998907777777', otp: '595959', botToken: null, sms: null, screen: true }, fakeTg());
+const { data: chg } = await anon.rpc('otp_screen_code', { p_phone: '998907777777' });
+check(r === 'no_channel' && chg === null, 'kirgan hisob boshqa (yangi) raqamga ekrandan kod ololmaydi', { r, chg });
 
 // Telegram ma'lum bo'lsa — bot, ekran emas
 reset();

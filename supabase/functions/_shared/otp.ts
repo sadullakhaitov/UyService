@@ -31,6 +31,20 @@ export async function telegramFor(db: SupabaseClient, userId: string, digits: st
 export type OtpResult = 'telegram' | 'sms' | 'screen' | 'no_channel';
 
 /**
+ * Kod raqam egasi tasdiqlangan yo'l bilan ketdi (Telegram/SMS). Raqam ilgari ekrandagi kod bilan ochilgan bo'lsa,
+ * hisobning boshqa sessiyalari o'chiriladi — raqamni oldindan egallagan begona chiqib ketadi (…_security_audit_3.sql).
+ * Xato kirishni to'xtatmaydi.
+ */
+export async function ownerVerified(db: SupabaseClient, digits: string) {
+  try {
+    const { error } = await db.rpc('otp_owner_verified', { p_phone: digits });
+    if (error) console.error('otp_owner_verified', error.message);
+  } catch (e) {
+    console.error('otp_owner_verified', (e as Error).message);
+  }
+}
+
+/**
  * Kodni yuboradi. sms — SMS yuboruvchi (Eskiz) yoki null (ulanmagan). Telegram yubora olmasa (bot bloklangan,
  * tarmoq) — SMS'ga o'tadi. SMS xatosi tashqariga chiqadi.
  * screen — VAQTINCHA (Eskiz paketi olinguncha): SMS ulanmagan bo'lsa kod otp_screen'ga yoziladi, ilova ekranda
@@ -62,7 +76,10 @@ export async function deliverOtp(
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chat_id: tg.chat, text: otpText(tg.lang, opts.otp), parse_mode: 'HTML', protect_content: true }),
         });
-        if (res.ok) return 'telegram';
+        if (res.ok) {
+          await ownerVerified(db, opts.digits);
+          return 'telegram';
+        }
         console.error('telegram send', res.status, await res.text().catch(() => ''));
       } catch (e) {
         console.error('telegram send', (e as Error).message);
@@ -71,10 +88,12 @@ export async function deliverOtp(
   }
   if (!opts.sms) {
     if (!opts.screen) return 'no_channel';
-    const { data, error } = await db.rpc('otp_screen_put', { p_phone: opts.digits, p_code: opts.otp });
+    // p_user — kod so'ralgan hisob: boshqa raqamli (raqam almashtirish) yoki avval kirgan bo'lsa — ekranda emas
+    const { data, error } = await db.rpc('otp_screen_put', { p_phone: opts.digits, p_code: opts.otp, p_user: opts.userId || null });
     if (error) throw new Error(`otp_screen_put: ${error.message}`);
     return data === true ? 'screen' : 'no_channel';
   }
   await opts.sms(opts.digits, opts.otp);
+  await ownerVerified(db, opts.digits);
   return 'sms';
 }

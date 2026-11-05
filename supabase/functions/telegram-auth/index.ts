@@ -7,6 +7,7 @@
 //   4) kirish uchun bir martalik token qaytadi: ilova supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })
 // Sir: TELEGRAM_BOT_TOKEN (`npx supabase secrets set TELEGRAM_BOT_TOKEN=...`).
 import { adminClient, corsHeaders, json, readJson } from '../_shared/http.ts';
+import { ownerVerified } from '../_shared/otp.ts';
 import { uzPhone, verifyTelegramData } from '../_shared/telegram.ts';
 
 type TgUser = { id: number; first_name?: string; last_name?: string; language_code?: string };
@@ -69,6 +70,8 @@ Deno.serve(async (req) => {
         }
       }
       if (!phone) return json({ ok: false, need: 'contact' });
+      // Raqamni Telegram tasdiqladi: ilgari ekrandagi kod bilan ochilgan bo'lsa — boshqa sessiyalar o'chiriladi
+      await ownerVerified(db, phone);
 
       const { data: prof } = await db.from('profiles').select('id').eq('phone', phone).maybeSingle();
       if (prof) userId = prof.id;
@@ -90,7 +93,9 @@ Deno.serve(async (req) => {
       if (name) await db.from('profiles').update({ name }).eq('id', userId).is('name', null);
     }
     if (!userId) return json({ ok: false, need: 'contact' });
-    if (linked?.blocked_at) return json({ ok: false, error: 'blocked' }, 403);
+    // Bloklangan yoki o'chirilgan hisob — bog'langan bo'lmasa ham (birinchi Telegram kirishi) kirmaydi
+    const { data: acc } = await db.from('profiles').select('blocked_at').eq('id', userId).maybeSingle();
+    if (linked?.blocked_at || acc?.blocked_at) return json({ ok: false, error: 'blocked' }, 403);
 
     // Kirish: yashirin email + bir martalik "magic link" tokeni (SMS'siz sessiya)
     const email = `tg${tg.id}@telegram.uyservice.uz`;

@@ -1,7 +1,10 @@
 # Butun sayt: faqat HTTPS (HSTS), brauzer fayl turini taxmin qilmaydi, boshqa saytlarga to'liq manzil ketmaydi.
-# X-Frame-Options bu yerda YO'Q — web.telegram.org Mini App'ni iframe ichida ochadi.
+# X-Frame-Options bu yerda YO'Q — web.telegram.org Mini App'ni iframe ichida ochadi. Lekin boshqa (begona) sayt
+# uyservice.uz'ni o'z sahifasiga yashirin joylab, foydalanuvchini aldab bostira olmasin (clickjacking): ichiga
+# joylashga faqat o'zimiz va Telegram veb-versiyasi ruxsat etilgan (telefon/kompyuterdagi Telegram ilovasiga ta'sir qilmaydi).
 /*
   Strict-Transport-Security: max-age=31536000
+  Content-Security-Policy: frame-ancestors 'self' https://web.telegram.org https://*.telegram.org
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
 # Cloudflare (Workers static assets): nomida hash bor fayllar (JS, shriftlar, rasmlar) uzoq keshlanadi — sayt tez ochiladi
@@ -13,6 +16,7 @@
 /admin*
   X-Robots-Tag: noindex, nofollow
   X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
   Referrer-Policy: same-origin
 # PWA: service worker har safar yangisi tekshiriladi
 /sw.js

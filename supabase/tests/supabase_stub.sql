@@ -31,6 +31,20 @@ create table if not exists auth.users (
   last_sign_in_at timestamptz
 );
 
+-- Sessiyalar (GoTrue): refresh_tokens.user_id — matn
+create table if not exists auth.sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz default now()
+);
+create table if not exists auth.refresh_tokens (
+  id bigserial primary key,
+  token text,
+  user_id varchar(255),
+  session_id uuid references auth.sessions (id) on delete cascade,
+  revoked boolean default false
+);
+
 create or replace function auth.uid() returns uuid language sql stable as $$
   select coalesce(
     nullif(current_setting('request.jwt.claim.sub', true), ''),
